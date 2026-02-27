@@ -22,7 +22,7 @@ collections:
           - label: "Photos"
             name: "photos"
             widget: "list"
-            # allow_multiple memungkinkan kamu pilih banyak foto sekaligus
+            # allow_multiple memungkigit nkan kamu pilih banyak foto sekaligus
             field: 
               label: "Image"
               name: "url"
