@@ -1,362 +1,32 @@
 ---
 import '../styles/global.css';
+import { getCollection } from 'astro:content';
 
-// 1. DATA UTAMA (Tambah batch atau anggota cukup di sini saja)
-const teamData = {
-  "Batch 8": {
-    "Project Manager": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-    ],
-    "Graphic Designer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Video Operations": [
-      "https://assets.codepen.io/16327/portrait-number-4.png",
-      "https://assets.codepen.io/16327/portrait-number-5.png"
-    ],
-    "Social Media Operation": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Journalist": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Public Relations": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Photografer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Finance Accountant": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Editorial and Publish Management": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ]
-  },
-  "Batch 7": {
-     "Project Manager": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-    ],
-    "Graphic Designer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Video Operations": [
-      "https://assets.codepen.io/16327/portrait-number-4.png",
-      "https://assets.codepen.io/16327/portrait-number-5.png"
-    ],
-    "Social Media Operation": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Journalist": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Public Relations": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Photografer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Finance Accountant": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Editorial and Publish Management": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ]
-  },
-  "Batch 6 KKN": {
-     "Project Manager": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-    ],
-    "Graphic Designer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Video Operations": [
-      "https://assets.codepen.io/16327/portrait-number-4.png",
-      "https://assets.codepen.io/16327/portrait-number-5.png"
-    ],
-    "Social Media Operation": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Journalist": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Public Relations": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Photografer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Finance Accountant": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Editorial and Publish Management": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-  },
-  "Batch 5": {
-     "Project Manager": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-    ],
-    "Graphic Designer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Video Operations": [
-      "https://assets.codepen.io/16327/portrait-number-4.png",
-      "https://assets.codepen.io/16327/portrait-number-5.png"
-    ],
-    "Social Media Operation": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Journalist": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Public Relations": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Photografer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Finance Accountant": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Editorial and Publish Management": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-  },
-  "Batch 4": {
-     "Project Manager": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-    ],
-    "Graphic Designer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Video Operations": [
-      "https://assets.codepen.io/16327/portrait-number-4.png",
-      "https://assets.codepen.io/16327/portrait-number-5.png"
-    ],
-    "Social Media Operation": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Journalist": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Public Relations": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Photografer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Finance Accountant": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Editorial and Publish Management": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-  },
-  "Batch 3": {
-     "Project Manager": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-    ],
-    "Graphic Designer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Video Operations": [
-      "https://assets.codepen.io/16327/portrait-number-4.png",
-      "https://assets.codepen.io/16327/portrait-number-5.png"
-    ],
-    "Social Media Operation": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Journalist": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Public Relations": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Photografer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Finance Accountant": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Editorial and Publish Management": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-  },
-  "Batch 2": {
-     "Project Manager": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-    ],
-    "Graphic Designer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Video Operations": [
-      "https://assets.codepen.io/16327/portrait-number-4.png",
-      "https://assets.codepen.io/16327/portrait-number-5.png"
-    ],
-    "Social Media Operation": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Journalist": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Public Relations": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Photografer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Finance Accountant": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Editorial and Publish Management": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-  },
-  "Batch 1": {
-     "Project Manager": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-    ],
-    "Graphic Designer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Video Operations": [
-      "https://assets.codepen.io/16327/portrait-number-4.png",
-      "https://assets.codepen.io/16327/portrait-number-5.png"
-    ],
-    "Social Media Operation": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Journalist": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Public Relations": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Photografer": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Finance Accountant": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-    "Editorial and Publish Management": [
-      "https://assets.codepen.io/16327/portrait-number-1.png",
-      "https://assets.codepen.io/16327/portrait-number-2.png",
-      "https://assets.codepen.io/16327/portrait-number-3.png"
-    ],
-  }
+// 1. Ambil data koleksi
+const allBatches = await getCollection('teams');
+
+// 2. Inisialisasi objek teamData
+const teamData: any = {};
+
+/** * Gunakan tipe data eksplisit (a: any, b: any) 
+ * untuk memperbaiki error pada fungsi .sort() 
+ */
+const sortedBatches = allBatches.sort((a: any, b: any) => 
+  b.data.title.localeCompare(a.data.title)
+);
+
+/** * Gunakan (batch: any) untuk memperbaiki error 
+ * pada fungsi .forEach() 
+ */
+sortedBatches.forEach((batch: any) => {
+  const data = batch.data;
+  teamData[data.title] = {};
   
-};
+  data.roles.forEach((r: any) => {
+    teamData[data.title][r.role_name] = r.photos;
+  });
+});
+---
 ---
 
 <html lang="id">
@@ -372,14 +42,13 @@ const teamData = {
 
         header { padding: 60px 20px; text-align: center; }
         .main-title { font-size: 6vw; font-weight: 800; line-height: 0.8; letter-spacing: -0.05em; }
-        #changing-font { display: inline-block; min-width: 150px; }
+        .italic-text { font-style: italic; font-weight: 100; margin-right: 4px; }
 
-        /* WRAPPER UTAMA */
-        .teams-app { max-width: 900px; margin: 0 auto; padding-bottom: 100px; }
+        .teams-app { max-width: 900px; margin: 0 auto; padding-bottom: 150px; }
         
         .batch-container { margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; overflow: hidden; background: rgba(255,255,255,0.05); }
         .batch-trigger { 
-            width: 100%; padding: 15px; background: none; border: none; color: white;
+            width: 100%; padding: 25px; background: none; border: none; color: white;
             font-size: 1.5rem; font-weight: 800; cursor: pointer; display: flex; 
             justify-content: space-between; align-items: center; transition: 0.3s;
         }
@@ -405,16 +74,21 @@ const teamData = {
         .nav-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid white; background: transparent; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .nav-btn:hover { background: white; color: var(--pih-dark); }
         .nav-btn:disabled { opacity: 0.2; cursor: not-allowed; }
-        .italic-text {font-style: italic; font-weight: 100; margin-right: 4px;}
+
+        /* Dock Style */
+        .dock-wrapper { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; }
+        .toolbar { list-style: none; display: flex; gap: 15px; background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); padding: 12px 25px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.2); margin: 0; }
+        .toolbarLink { display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; background: white; border-radius: 12px; color: var(--pih-dark); transition: 0.3s; }
+        .toolbarLink:hover { transform: translateY(-5px); background: var(--pih-blue); color: white; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1 class="main-title">PIH Intern <span class="italic-text">and</span> KKN <br/></h1>
+        <h1 class="main-title">PIH Intern <span class="italic-text">and</span> KKN</h1>
     </header>
 
-    <div class="teams-app" id="teams-app" data-teams={JSON.stringify(teamData)}>
+    <main class="teams-app" id="teams-app" data-teams={JSON.stringify(teamData)}>
         {Object.entries(teamData).map(([batch, roles]) => (
             <div class="batch-container" data-batch={batch}>
                 <button class="batch-trigger">
@@ -423,7 +97,7 @@ const teamData = {
                 
                 <div class="batch-content">
                     <div class="roles-nav">
-                        {Object.keys(roles).map((role) => (
+                        {Object.keys(roles as object).map((role) => (
                             <button class="role-btn" data-role={role}>
                                 {role}
                             </button>
@@ -433,7 +107,7 @@ const teamData = {
                     <div class="slider-section">
                         <div class="slider-viewport">
                             <div class="slider-inner">
-                                <p class="placeholder" style="opacity: 0.5;">Pilih role di atas untuk melihat anggota</p>
+                                <p class="placeholder" style="opacity: 0.5; width: 100%; text-align: center;">Pilih role untuk melihat tim</p>
                             </div>
                         </div>
                         <div class="nav-controls">
@@ -444,62 +118,24 @@ const teamData = {
                 </div>
             </div>
         ))}
-    </div>
+    </main>
 
-
-
-    	<div class="dock-wrapper">
-    <ul class="toolbar">
-        <li class="toolbarItem">
-            <a class="toolbarLink" href="/">
-                <span class="tooltip">Home</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house text-slate-800">
-                    <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                </svg>
-            </a>
-        </li>
-
-        <li class="toolbarItem">
-            <a class="toolbarLink" href="/teams">
-                <span class="tooltip">Teams</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users text-slate-800">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-            </a>
-        </li>
-
-        <li class="toolbarItem">
-            <a class="toolbarLink" href="/guideline">
-                <span class="tooltip">Guidelines</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bolt-icon lucide-bolt text-slate-800"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><circle cx="12" cy="12" r="4"/></svg>
-            </a>
-        </li>
-    </ul>
-</div>
+    <nav class="dock-wrapper">
+        <ul class="toolbar">
+            <li><a href="/" class="toolbarLink"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></a></li>
+            <li><a href="/teams" class="toolbarLink"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></a></li>
+            <li><a href="/guideline" class="toolbarLink"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg></a></li>
+        </ul>
+    </nav>
 
     <script>
         import { gsap } from "gsap";
 
-        // 3. AMBIL DATA DARI ATRIBUT HTML (TIDAK PERLU TULIS ULANG DATA)
+        // Inisialisasi Data dari Astro
         const appElement = document.getElementById("teams-app") as HTMLElement;
         const teamData = JSON.parse(appElement.dataset.teams || "{}");
 
-        // FONT CHANGER LOGIC
-        function initFontChanger() {
-            const target = document.querySelector("#changing-font") as HTMLElement;
-            const fonts = ["'Funnel Display'", "'Playfair Display'", "'Dancing Script'", "'Satisfy'"];
-            let idx = 0;
-            if (!target) return;
-            setInterval(() => {
-                idx = (idx + 1) % fonts.length;
-                gsap.to(target, { opacity: 0, duration: 0.3, onComplete: () => {
-                    target.style.fontFamily = fonts[idx];
-                    gsap.to(target, { opacity: 1, duration: 0.3 });
-                }});
-            }, 2000);
-        }
-
-        // BATCH & SLIDER LOGIC
+        // Logika Slider & Dropdown
         document.querySelectorAll('.batch-container').forEach(container => {
             const trigger = container.querySelector('.batch-trigger') as HTMLButtonElement;
             const content = container.querySelector('.batch-content') as HTMLElement;
@@ -511,13 +147,11 @@ const teamData = {
             let currentIndex = 0;
             let totalImages = 0;
 
-            // Dropdown Toggle
             trigger.addEventListener('click', () => {
                 const isOpen = content.style.display === 'flex';
                 content.style.display = isOpen ? 'none' : 'flex';
             });
 
-            // Role Selection
             container.querySelectorAll('.role-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const role = btn.getAttribute('data-role')!;
@@ -529,6 +163,7 @@ const teamData = {
                     container.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
 
+                    // Render Gambar Slider
                     sliderInner.innerHTML = "";
                     gsap.set(sliderInner, { x: 0 });
                     
@@ -543,12 +178,14 @@ const teamData = {
             });
 
             function updateNav() {
+                if (!prevBtn || !nextBtn) return;
                 prevBtn.disabled = currentIndex === 0;
                 nextBtn.disabled = currentIndex >= totalImages - 1 || totalImages <= 1;
             }
 
             function move(dir: number) {
                 currentIndex += dir;
+                // Geser 250px (lebar img) + 20px (gap)
                 gsap.to(sliderInner, { x: -currentIndex * 270, duration: 0.6, ease: "power2.out" });
                 updateNav();
             }
@@ -556,34 +193,6 @@ const teamData = {
             nextBtn.addEventListener('click', () => move(1));
             prevBtn.addEventListener('click', () => move(-1));
         });
-
-        window.addEventListener("load", initFontChanger);
-
-        // 5. DOCK INTERACTION
-				const dock = document.querySelector(".toolbar") as HTMLElement;
-				const icons = document.querySelectorAll(".toolbarItem");
-				if (dock && icons.length > 0) {
-					const firstIcon = icons[0] as HTMLElement;
-					const min = 48; const max = 100; const bound = min * Math.PI;
-					gsap.set(icons, { transformOrigin: "50% 120%", height: 40 });
-					dock.addEventListener("mousemove", (event: MouseEvent) => {
-						const rect = dock.getBoundingClientRect();
-						const offset = rect.left + firstIcon.offsetLeft;
-						const pointer = event.clientX - offset;
-						icons.forEach((icon, i) => {
-							const distance = (i * min + min / 2) - pointer;
-							let x = 0, scale = 1;
-							if (Math.abs(distance) < bound) {
-								const rad = distance / min * 0.5;
-								scale = 1 + (max / min - 1) * Math.cos(rad);
-								x = 2 * (max - min) * Math.sin(rad);
-							} else { x = (distance < 0 ? 2 : -2) * (max - min); }
-							gsap.to(icon, { duration: 0.3, x: x, scale: scale, ease: "power3.out" });
-						});
-					});
-					dock.addEventListener("mouseleave", () => gsap.to(icons, { duration: 0.3, scale: 1, x: 0 }));
-				}
-
     </script>
 </body>
 </html>

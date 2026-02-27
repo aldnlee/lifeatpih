@@ -1,16 +1,27 @@
 backend:
-  name: git-gateway
-  branch: main # Branch GitHub kamu
+  name: github
+  repo: aldnlee/lifeatpih
+  branch: main
+  # Hapus base_url agar menggunakan default Git Gateway
 
-media_folder: "public/images/uploads" # Folder tempat simpan foto kegiatan
-public_folder: "/images/uploads"
+media_folder: "public/images"
+public_folder: "/images"
 
 collections:
-  - name: "roles"
-    label: "Team Roles"
-    folder: "src/content/roles" # Folder Markdown untuk data Roles
+  - name: "teams"
+    label: "PIH Teams"
+    folder: "src/content/teams"
     create: true
+    format: "json"
     fields:
-      - { label: "Title", name: "title", widget: "string" }
-      - { label: "Description", name: "body", widget: "markdown" }
-      - { label: "Featured Image", name: "image", widget: "image" }
+      - { label: "Batch Name", name: "title", widget: "string" }
+      - label: "Roles"
+        name: "roles"
+        widget: "list"
+        fields:
+          - { label: "Role Name", name: "role_name", widget: "string" }
+          - label: "Photos"
+            name: "photos"
+            widget: "list"
+            # Langsung gunakan widget image sebagai item list agar hasilnya array string
+            field: { label: "Image", widget: "image" }
