@@ -2,7 +2,6 @@ backend:
   name: github
   repo: aldnlee/lifeatpih
   branch: main
-  # Jangan gunakan base_url jika menggunakan Netlify/Git Gateway
 
 media_folder: "public/images"
 public_folder: "/images"
@@ -23,5 +22,9 @@ collections:
           - label: "Photos"
             name: "photos"
             widget: "list"
-            # PROPERTI 'NAME' WAJIB ADA DI SINI
-            field: { label: "Image", name: "url", widget: "image" }
+            # allow_multiple memungkinkan kamu pilih banyak foto sekaligus
+            field: 
+              label: "Image"
+              name: "url"
+              widget: "image"
+              allow_multiple: true
