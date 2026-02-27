@@ -1,17 +1,448 @@
 ---
-
+import '../styles/global.css';
 ---
 
-<html lang="en">
+<html lang="id">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Life at PIH | Portofolio Interaktif</title>
+		<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Playfair+Display:ital,wght@0,900;1,900&family=Bebas+Neue&family=Satisfy&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Funnel+Display:ital,wght@0,300;0,800;1,300&family=Inter:ital,wght@0,400;0,800;1,300&display=swap" rel="stylesheet">
+		
+		<style is:global>
+			:root {
+				--bg-color: #1b509b;
+				--text-color: #ffffff;
+				--border-white: rgba(255, 255, 255, 0.2);
+			}
+
+			body {
+				font-family: 'Funnel Display', sans-serif;
+				background-color: var(--bg-color) !important;
+				color: var(--text-color) !important;
+				overflow-x: hidden;
+				margin: 0;
+			}
+
+			/* --- 1. HERO --- */
+			.trail-dot { pointer-events: none; position: absolute; opacity: 0; z-index: 5; }
+			.italic-text { font-style: italic; font-weight: 300; text-transform: lowercase; color: #ffffff; }
+
+			/* --- 2. ROLES --- */
+			.role-list-item { border-bottom: 1px solid var(--border-white) !important; cursor: none; transition: background-color 0.3s ease; }
+			.swipe-image {
+				position: fixed; top: 0; left: 0; width: 150px; height: 150px;
+				z-index: 50; pointer-events: none; opacity: 0; visibility: hidden;
+				border-radius: 50%; display: flex; align-items: center; justify-content: center;
+				background: #0f2854; box-shadow: 0 10px 30px rgba(0,0,0,0.2); font-size: 4rem;
+			}
+			.role-title { transition: color 0.3s ease; color: #ffffff; }
+
+			/* --- 3. GALLERY --- */
+			.panel { width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; position: relative; background: #000; }
+			.panel-image { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: -1; filter: brightness(0.4); }
+			.panel__title { font-size: 8vw; font-weight: 800; text-transform: uppercase; color: white; text-align: center; }
+
+			/* --- 4. DOCK --- */
+			.dock-wrapper { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); display: flex; justify-content: center; z-index: 999; padding-bottom: 15px; }
+			.toolbar { display: inline-flex; justify-content: center; align-items: flex-end; height: 60px; border-radius: 20px; padding: 10px; background-color: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); list-style: none; border: 1px solid rgba(255, 255, 255, 0.2); }
+			.toolbarItem { width: 40px; height: 40px; margin: 0 4px; position: relative; }
+			.toolbarLink { display: flex; height: 100%; width: 100%; text-decoration: none; align-items: center; justify-content: center; background: white; border-radius: 10px; font-size: 24px; }
+			.tooltip { position: absolute; top: -45px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 4px 12px; border-radius: 6px; font-size: 10px; font-weight: bold; opacity: 0; transition: opacity 0.2s; white-space: nowrap; }
+			.toolbarItem:hover .tooltip { opacity: 1; }
+
+			.shape-overlays {
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 50; /* Turunkan z-index overlay */
+        pointer-events: none;
+    }
+
+    footer#footer {
+        position: relative; /* Wajib ada agar z-index bekerja */
+        z-index: 100; /* Lebih tinggi dari overlay */
+        background-color: #000; /* Pastikan punya background agar overlay tidak tembus */
+    }
+
+    .dock-wrapper {
+        z-index: 1000; /* Dock harus paling atas */
+    }
+    
+    .shape-overlays.is-active {
+        pointer-events: auto; /* Aktifkan klik saat animasi jalan */
+    }
+	#footer {
+		  position: relative; /* Wajib ada agar z-index bekerja */
+        z-index: 100; /* Lebih tinggi dari overlay */
+	}
+	img {
+		width: 70px;
+	}
+	navbar{
+		position: relative;
+		z-index: 1;
+	}
+		</style>
 	</head>
-	<body>
-		<h1>Astro</h1>
+	<body class="antialiased">
+
+<div id="loader" class="fixed inset-0 z-[9999] flex items-center justify-center bg-[#1b509b]">
+    <svg id="svg-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 248 248" class="w-48 h-48 opacity-0">
+        <g class="loader-g1">
+            <image href="https://assets.codepen.io/16327/flair-2.png" />
+            <image href="https://assets.codepen.io/16327/flair-2.png" />
+            <image href="https://assets.codepen.io/16327/flair-2.png" />
+        </g>
+        <g class="loader-g2">
+            <image href="https://assets.codepen.io/16327/flair-3.png" mask="url(#m2)"/>
+        </g>
+        <mask id="m2" fill="#fff"><circle cx="124" cy="0" r="0"/><circle cx="124" cy="248" r="0"/></mask>
+        <g class="loader-g3">
+            <image href="https://assets.codepen.io/16327/flair-4.png" mask="url(#m3)"/>
+        </g>
+        <mask id="m3" fill="#fff">
+            <rect x="0" y="0" width="124" height="124"/><rect x="124" y="0" width="124" height="124"/>
+            <rect x="0" y="124" width="124" height="124"/><rect x="124" y="124" width="124" height="124"/>
+        </mask>
+        <g class="loader-g4"><image href="https://assets.codepen.io/16327/flair-5.png" x="70" /></g>
+        <g class="loader-g5"><image href="https://assets.codepen.io/16327/flair-7.png" mask="url(#m5)"/></g>
+        <mask id="m5" fill="#fff"><path d="M0 248h248L124 0 0 247z"/><circle cx="124" cy="83" r="83"/></mask>
+    </svg>
+</div>
+
+		<navbar class="relative flex px-8 mt-5 md:px-24 overflow-hidden">
+    <img src="/images/letermark-uin.png" class="ml-auto w-32" alt="Logo PIH" />
+</navbar>
+
+		<section id="home" class="relative h-screen flex flex-col justify-start pt-32 mt-10 px-8 md:px-24 overflow-hidden">
+			<div id="cursor-trail-container" class="pointer-events-none absolute inset-0 z-0">
+				{Array.from({ length: 6 }).map((_, i) => (
+					<div class="trail-dot w-4 h-4 bg-yellow-500/30 rounded-full blur-sm"></div>
+				))}
+			</div>
+			
+			<h1 class="text-[9.5vw] font-[900] leading-[0.85] tracking-tighter pointer-events-none z-10 text-white">
+    <div class="overflow-hidden">
+        <span id="line-1" class="block">Welcome<span id="line-1" class="italic-text ml-2">to</span></span>
+    </div>
+    <div class="overflow-hidden">
+        <span id="line-2" class="block">
+            Life at PIH.
+        </span>
+    </div>
+</h1>
+
+			<div id="scroll-hint" class="m-auto z-10 opacity-0">
+    <p class="text-[14px] font-bold tracking-[0.4em] uppercase text-white/50 flex flex-col items-center gap-4">
+        Scroll to continue 
+        <span class="w-[1px] h-12 bg-white/30 block"></span> </p>
+</div>
+		</section>
+
+		<section id="introduction" class="min-h-[70vh] mt-10px py-20 px-8 md:px-24 flex flex-col items-center justify-center">
+			<div class="max-w-5xl">
+				<h2 id="intro-text" class="text-white text-4xl md:text-6xl font-light leading-tight tracking-tight uppercase text-center">
+					Step into the dynamic world of communication and creativity at PIH UIN Jakarta.
+				</h2>
+			</div>
+		</section>
+
+		<section id="teams" class="py-32 mt-40">
+			<div class="px-8 md:px-24 mb-20">
+				<h2 class="text-6xl md:text-8xl font-black tracking-tighter uppercase leading-none text-white">
+					Discover <br/> Your Team
+				</h2>
+				<div class="w-20 h-2 bg-white mt-8"></div>
+			</div>
+			<ul class="w-full m-0 p-0 border-t border-white/20 grid grid-cols-1 md:grid-cols-2">
+				{[
+					{ role: "Project Manager", cat: "Strategic", icon: "📈" },
+					{ role: "Videografer", cat: "Production", icon: "🎬" },
+					{ role: "Photografer", cat: "Production", icon: "📸" },
+					{ role: "Graphic Designer", cat: "Creative", icon: "🎨" },
+					{ role: "Journalist", cat: "Content", icon: "✍️" },
+					{ role: "Public Relation", cat: "Communication", icon: "📢" },
+					{ role: "Social Media Optimization", cat: "Communication", icon: "📱" },
+					{ role: "Editorial and Publish Management", cat: "Operational", icon: "📅" },
+					{ role: "Finance", cat: "Operational", icon: "💰" },
+				].map((item) => (
+					<li class="role-list-item px-8 md:px-24 py-5 relative flex items-center justify-between group md:border-r border-white/20">
+						<div class="swipe-image">{item.icon}</div>
+						<div class="z-10">
+							<span class="text-[10px] font-bold tracking-[0.4em] text-white/60 uppercase">{item.cat}</span>
+							<h2 class="role-title text-3xl md:text-4xl font-light tracking-tight uppercase mt-2 text-white leading-tight">{item.role}</h2>
+						</div>
+					</li>
+				))}
+			</ul>
+			<div class="px-8 md:px-24 mb-20 mt-10">
+				<a href="/teams" class="text-2l md:text-2xl text-white hover:text-white/70 transition-colors duration-300 border-b border-white/20 pb-1">
+  				Find out more about roles &rarr;
+				</a>
+			</div>
+		</section>
+		
+		<section>	<svg class="shape-overlays" viewBox="0 0 100 100" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="gradient1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1b509b"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </linearGradient>
+    <linearGradient id="gradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f2854"/>
+      <stop offset="100%" stop-color="#1b509b"/>
+    </linearGradient>
+  </defs>
+  <path class="shape-overlays__path" fill="url(#gradient2)"></path>
+  <path class="shape-overlays__path" fill="url(#gradient1)"></path>
+</svg></section>
+	
+
+		<section id="footer" class="min-h-[70vh] py-40 px-8 md:px-24 flex flex-col items-center justify-center">
+			<div class="max-w-xl">
+				<h2 id="intro-text" class="text-white text-4xl md:text-6xl font-light leading-tight tracking-tight uppercase text-center">
+					Ready to Start Your Journey with Us?
+				</h2>
+			</div>
+		</section>
+
+
+<footer id="footer" class="py-20 bg-black text-center border-t border-white/10">
+    <p class="text-[10px] tracking-[0.5em] uppercase text-white/40">© 2026 PIH UIN Jakarta</p>
+</footer>
+
+
+		<div class="dock-wrapper">
+    <ul class="toolbar">
+        <li class="toolbarItem">
+            <a class="toolbarLink" href="/home">
+                <span class="tooltip">Home</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house text-slate-800">
+                    <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                </svg>
+            </a>
+        </li>
+
+        <li class="toolbarItem">
+            <a class="toolbarLink" href="/teams">
+                <span class="tooltip">Teams</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users text-slate-800">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+            </a>
+        </li>
+
+        <li class="toolbarItem">
+            <a class="toolbarLink" href="/guideline">
+                <span class="tooltip">Guidelines</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bolt-icon lucide-bolt text-slate-800"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><circle cx="12" cy="12" r="4"/></svg>
+            </a>
+        </li>
+    </ul>
+</div>
+
+		<script>
+    import { gsap } from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+    // @ts-ignore
+    import { SplitText } from "gsap/SplitText";
+
+    gsap.registerPlugin(ScrollTrigger, SplitText);
+
+    let introSplit: any;
+
+    // --- FUNGSI LOADING BAR BARU ---
+    function initLoader() {
+        const tl = gsap.timeline({
+            onComplete: () => {
+                // Menghilangkan loader dan memunculkan konten utama
+                gsap.to("#loader", { opacity: 0, duration: 0.8, pointerEvents: "none" });
+                gsap.to("#main-wrapper", { opacity: 1, duration: 1 });
+                
+                // JALANKAN INIT LAMA ANDA SETELAH LOADING SELESAI
+                init(); 
+            }
+        });
+
+        // Set awal loader agar terlihat
+        gsap.set('#svg-loader', { opacity: 1 });
+
+        // Sequence Animasi SVG Loader
+        tl.fromTo('.loader-g1', {scale:0.1, transformOrigin:'124 124'}, {duration:0.35, scale:1, ease:'expo.inOut'})
+          .to('.loader-g1', {duration:1.2, rotate:15, ease:'none'}, 0.1)
+          .to('.loader-g1 image', {scale:(i:any)=>[0.4,0.2,0.3][i], x:(i:any)=>[0,135,100][i], y:(i:any)=>[90,24,124][i], ease:'back'}, 0.4)
+          .to('.loader-g1 image', {duration:0.01, opacity:0, stagger:0.06}, 1.1)
+          .to('#m2 circle', {duration:0.4, attr:{r:"124"}, ease:'circ'}, 1.3)
+          .fromTo('.loader-g2', {scale:1, transformOrigin:'124 124'}, {duration:1, scale:0.9, ease:'none'}, 1.3)
+          .to('#m2 circle', {duration:0.3, attr:{cx:(i:any)=>["+=248","-=248"][i]}, ease:'sine.in'}, 2.1)
+          .fromTo('.loader-g3', {transformOrigin:'124 124', rotate:-90}, {duration:0.7, rotate:0, ease:'expo'}, 2.3)
+          .fromTo('#m3 rect', {transformOrigin:(i:any)=>['0 124','124 0','124 124','248 124'][i], scale:0},{duration:0.4, scale:1, ease:'expo', stagger:-0.03}, 2.3)
+          .to('.loader-g3', {duration:0.01, scale:0}, 3.2)
+          .from('.loader-g4 image', {duration:0.01, opacity:0}, 3.3)
+          .fromTo('.loader-g4', {transformOrigin:'83 124', rotate:15, scale:0.2}, {duration:0.5, rotate:0, scale:0.85, ease:'bounce'}, 3.3)
+          .to('.loader-g4 image', {duration:0.01, opacity:0}, 4.0)
+          .fromTo('#m5 path', {transformOrigin:'124 124', scale:0},{duration:0.6, scale:1, ease:'expo'}, 4.0)
+          .fromTo('#m5 circle', {transformOrigin:'83 0', scale:0},{scale:1, ease:'expo', duration: 0.5}, 4.2);
+    }
+
+    // --- FUNGSI INIT LAMA (TIDAK DIUBAH) ---
+    function init() {
+        // 1. HERO ANIMATION & HINT
+        const hero = document.querySelector("#home") as HTMLElement;
+        const dots = document.querySelectorAll(".trail-dot");
+        if (hero && dots.length > 0) {
+            const xTo = Array.from(dots).map(dot => gsap.quickTo(dot, "x", { duration: 0.4, ease: "power3" }));
+            const yTo = Array.from(dots).map(dot => gsap.quickTo(dot, "y", { duration: 0.4, ease: "power3" }));
+            hero.addEventListener("mousemove", (e) => {
+                dots.forEach((_, i) => {
+                    gsap.to({}, { onUpdate: () => { xTo[i](e.clientX - 8); yTo[i](e.clientY - 8); }, delay: i * 0.02 });
+                });
+            });
+        }
+
+        // Initial hint appearance
+        gsap.to("#scroll-hint", { opacity: 1, duration: 1, delay: 1 });
+
+        const scrollTl = gsap.timeline({ scrollTrigger: { trigger: "#home", start: "top top", end: "+=120%", scrub: 1, pin: true } });
+        scrollTl.to("#line-1", { y: 100, opacity: 0 })
+                .to("#line-2", { y: 200, opacity: 0 }, "-=0.6")
+                .to("#scroll-hint", { opacity: 0, y: 20 }, "-=0.8");
+
+        // 2. INTRODUCTION WITH TOGGLE ACTIONS (Show/Hide on Scroll)
+        function createTextAnimation(targetId: string, triggerId: string) {
+            const split = new SplitText(targetId, { type: "words" });
+            gsap.from(split.words, {
+                opacity: 0,
+                y: 50,
+                rotateX: -45,
+                transformOrigin: "50% 50%",
+                stagger: 0.1,
+                duration: 1.2,
+                ease: "power4.out",
+                scrollTrigger: {
+                    trigger: triggerId,
+                    start: "top 80%",
+                    end: "bottom 20%",
+                    toggleActions: "play reverse play reverse"
+                }
+            });
+        }
+
+        createTextAnimation("#introduction", "#introduction");
+        createTextAnimation("#teams-title", "#teams");
+        createTextAnimation("#footer", "#footer");
+
+        // 3. ROLES HOVER LOGIC
+        gsap.utils.toArray(".role-list-item").forEach((el: any) => {
+            const image = el.querySelector(".swipe-image");
+            if (!image) return;
+            const setX = gsap.quickTo(image, "x", { duration: 0.4, ease: "power3" });
+            const setY = gsap.quickTo(image, "y", { duration: 0.4, ease: "power3" });
+            const align = (e: MouseEvent) => { setX(e.clientX); setY(e.clientY); };
+            const fade = gsap.to(image, { autoAlpha: 1, duration: 0.3, paused: true });
+            el.addEventListener("mouseenter", (e: MouseEvent) => { fade.play(); document.addEventListener("mousemove", align); align(e); });
+            el.addEventListener("mouseleave", () => { fade.reverse(); document.removeEventListener("mousemove", align); });
+        });
+
+        // 4. GALLERY PANELS
+        let galleryPanels = gsap.utils.toArray("#gallery .panel");
+        galleryPanels.forEach((panel: any, i) => {
+            ScrollTrigger.create({ trigger: panel, start: "top top", pin: true, pinSpacing: false, end: i === galleryPanels.length - 1 ? "bottom bottom" : "max" });
+        });
+
+        // 5. DOCK INTERACTION
+        const dock = document.querySelector(".toolbar") as HTMLElement;
+        const icons = document.querySelectorAll(".toolbarItem");
+        if (dock && icons.length > 0) {
+            const firstIcon = icons[0] as HTMLElement;
+            const min = 48; const max = 100; const bound = min * Math.PI;
+            gsap.set(icons, { transformOrigin: "50% 120%", height: 40 });
+            dock.addEventListener("mousemove", (event: MouseEvent) => {
+                const rect = dock.getBoundingClientRect();
+                const offset = rect.left + firstIcon.offsetLeft;
+                const pointer = event.clientX - offset;
+                icons.forEach((icon, i) => {
+                    const distance = (i * min + min / 2) - pointer;
+                    let x = 0, scale = 1;
+                    if (Math.abs(distance) < bound) {
+                        const rad = distance / min * 0.5;
+                        scale = 1 + (max / min - 1) * Math.cos(rad);
+                        x = 2 * (max - min) * Math.sin(rad);
+                    } else { x = (distance < 0 ? 2 : -2) * (max - min); }
+                    gsap.to(icon, { duration: 0.3, x: x, scale: scale, ease: "power3.out" });
+                });
+            });
+            dock.addEventListener("mouseleave", () => gsap.to(icons, { duration: 0.3, scale: 1, x: 0 }));
+        }
+
+        // --- OVERLAYS ---
+        initOverlays(); 
+    }
+
+    function initOverlays() {
+        const overlay = document.querySelector(".shape-overlays") as HTMLElement;
+        const paths = document.querySelectorAll(".shape-overlays__path");
+        const numPoints = 10;
+        const numPaths = paths.length;
+        const delayPointsMax = 0.3;
+        const delayPerPath = 0.25;
+        const allPoints: number[][] = []; 
+
+        for (let i = 0; i < numPaths; i++) {
+            let points: number[] = []; 
+            allPoints.push(points);
+            for (let j = 0; j < numPoints; j++) { points.push(100); }
+        }
+
+        function render() {
+            for (let i = 0; i < numPaths; i++) {
+                const path = paths[i] as SVGPathElement;
+                const points = allPoints[i];
+                let d = `M 0 100 V ${points[0]} C`; 
+                for (let j = 0; j < numPoints - 1; j++) {
+                    let p = (j + 1) / (numPoints - 1) * 100;
+                    let cp = p - (1 / (numPoints - 1) * 100) / 2;
+                    d += ` ${cp} ${points[j]} ${cp} ${points[j+1]} ${p} ${points[j+1]}`;
+                }
+                d += ` V 100 H 0`;
+                path.setAttribute("d", d);
+            }
+        }
+
+        const animateOverlay = (targetValue: number) => {
+            const tl = gsap.timeline({ onUpdate: render });
+            const pointsDelay = Array.from({length: numPoints}, () => Math.random() * delayPointsMax);
+            for (let i = 0; i < numPaths; i++) {
+                const points = allPoints[i];
+                const pathDelay = delayPerPath * i;
+                for (let j = 0; j < numPoints; j++) {
+                    tl.to(points, { [j]: targetValue, duration: 0.9, ease: "power2.inOut" }, pointsDelay[j] + pathDelay);
+                }
+            }
+        };
+
+        ScrollTrigger.create({
+            trigger: "#footer",
+            start: "top 80%", 
+            onEnter: () => animateOverlay(0),
+            onLeaveBack: () => animateOverlay(100)
+        });
+    }
+
+    // --- EVENT LISTENERS ---
+    // Ubah pemanggilan awal ke initLoader
+    window.addEventListener("load", initLoader);
+
+    let resizeTimer: any;
+    window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(init, 250);
+    });
+
+</script>
 	</body>
 </html>

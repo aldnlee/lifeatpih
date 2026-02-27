@@ -1,0 +1,16 @@
+backend:
+  name: git-gateway
+  branch: main # Branch GitHub kamu
+
+media_folder: "public/images/uploads" # Folder tempat simpan foto kegiatan
+public_folder: "/images/uploads"
+
+collections:
+  - name: "roles"
+    label: "Team Roles"
+    folder: "src/content/roles" # Folder Markdown untuk data Roles
+    create: true
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "body", widget: "markdown" }
+      - { label: "Featured Image", name: "image", widget: "image" }
