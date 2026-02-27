@@ -2,7 +2,7 @@ backend:
   name: github
   repo: aldnlee/lifeatpih
   branch: main
-  # Hapus base_url agar menggunakan default Git Gateway
+  # Jangan gunakan base_url jika menggunakan Netlify/Git Gateway
 
 media_folder: "public/images"
 public_folder: "/images"
@@ -23,5 +23,5 @@ collections:
           - label: "Photos"
             name: "photos"
             widget: "list"
-            # Langsung gunakan widget image sebagai item list agar hasilnya array string
-            field: { label: "Image", widget: "image" }
+            # PROPERTI 'NAME' WAJIB ADA DI SINI
+            field: { label: "Image", name: "url", widget: "image" }

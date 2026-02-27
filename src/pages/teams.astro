@@ -23,7 +23,8 @@ sortedBatches.forEach((batch: any) => {
   teamData[data.title] = {};
   
   data.roles.forEach((r: any) => {
-    teamData[data.title][r.role_name] = r.photos;
+    // Ambil property .url dari tiap object di dalam array photos
+    teamData[data.title][r.role_name] = r.photos.map((p: any) => p.url);
   });
 });
 ---
