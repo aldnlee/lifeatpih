@@ -108,8 +108,8 @@ import '../styles/global.css';
             <rect x="0" y="0" width="124" height="124"/><rect x="124" y="0" width="124" height="124"/>
             <rect x="0" y="124" width="124" height="124"/><rect x="124" y="124" width="124" height="124"/>
         </mask>
-        <g class="loader-g4"><image href="https://assets.codepen.io/16327/flair-5.png" x="70" /></g>
-        <g class="loader-g5"><image href="https://assets.codepen.io/16327/flair-7.png" mask="url(#m5)"/></g>
+        <!-- <g class="loader-g4"><image href="https://assets.codepen.io/16327/flair-5.png" x="70" /></g>
+        <g class="loader-g5"><image href="https://assets.codepen.io/16327/flair-7.png" mask="url(#m5)"/></g>-->
         <mask id="m5" fill="#fff"><path d="M0 248h248L124 0 0 247z"/><circle cx="124" cy="83" r="83"/></mask>
     </svg>
 </div>
@@ -260,7 +260,7 @@ import '../styles/global.css';
         const tl = gsap.timeline({
             onComplete: () => {
                 // Menghilangkan loader dan memunculkan konten utama
-                gsap.to("#loader", { opacity: 0, duration: 0.8, pointerEvents: "none" });
+                gsap.to("#loader", { opacity: 0, duration: 0.4, pointerEvents: "none" });
                 gsap.to("#main-wrapper", { opacity: 1, duration: 1 });
                 
                 // JALANKAN INIT LAMA ANDA SETELAH LOADING SELESAI
@@ -281,12 +281,12 @@ import '../styles/global.css';
           .to('#m2 circle', {duration:0.3, attr:{cx:(i:any)=>["+=248","-=248"][i]}, ease:'sine.in'}, 2.1)
           .fromTo('.loader-g3', {transformOrigin:'124 124', rotate:-90}, {duration:0.7, rotate:0, ease:'expo'}, 2.3)
           .fromTo('#m3 rect', {transformOrigin:(i:any)=>['0 124','124 0','124 124','248 124'][i], scale:0},{duration:0.4, scale:1, ease:'expo', stagger:-0.03}, 2.3)
-          .to('.loader-g3', {duration:0.01, scale:0}, 3.2)
-          .from('.loader-g4 image', {duration:0.01, opacity:0}, 3.3)
+           /*.to('.loader-g3', {duration:0.01, scale:0}, 3.2)
+         .from('.loader-g4 image', {duration:0.01, opacity:0}, 3.3)
           .fromTo('.loader-g4', {transformOrigin:'83 124', rotate:15, scale:0.2}, {duration:0.5, rotate:0, scale:0.85, ease:'bounce'}, 3.3)
           .to('.loader-g4 image', {duration:0.01, opacity:0}, 4.0)
           .fromTo('#m5 path', {transformOrigin:'124 124', scale:0},{duration:0.6, scale:1, ease:'expo'}, 4.0)
-          .fromTo('#m5 circle', {transformOrigin:'83 0', scale:0},{scale:1, ease:'expo', duration: 0.5}, 4.2);
+          .fromTo('#m5 circle', {transformOrigin:'83 0', scale:0},{scale:1, ease:'expo', duration: 0.5}, 4.2);*/
     }
 
     // --- FUNGSI INIT LAMA (TIDAK DIUBAH) ---
