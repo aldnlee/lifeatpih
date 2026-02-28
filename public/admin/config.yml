@@ -12,6 +12,7 @@ media_library:
   config:
     cloud_name: "drfdkdkik"
     api_key: "754964683383539"
+    upload_preset: ml_default
 
 collections:
   - name: "teams"
