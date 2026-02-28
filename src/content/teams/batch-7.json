@@ -1,6 +1,12 @@
 {
   "roles": [
     {
+      "role_name": "Project Manager",
+      "photos": [
+        "/images/id_pm_aqil.png"
+      ]
+    },
+    {
       "photos": [
         "/images/id_gd_alden.png",
         "/images/ID_GD_Fazl.png",
@@ -12,10 +18,28 @@
       "role_name": "Graphic Designer"
     },
     {
-      "role_name": "Project Manager",
-      "photos": [
-        "/images/id_pm_aqil.png"
-      ]
+      "role_name": "Journalist"
+    },
+    {
+      "role_name": "Photographer"
+    },
+    {
+      "role_name": "Video Operations"
+    },
+    {
+      "role_name": "Editorial and Publish Management"
+    },
+    {
+      "role_name": "Content Creator"
+    },
+    {
+      "role_name": "Public Relations"
+    },
+    {
+      "role_name": "Social Media Operation"
+    },
+    {
+      "role_name": "Finance Accountant"
     }
   ],
   "title": "Batch 7"
