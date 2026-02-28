@@ -1,12 +1,12 @@
 import { defineCollection, z } from 'astro:content';
 
 const teamsCollection = defineCollection({
-  type: 'content',
+  type: 'data', // PENTING: Gunakan 'data' untuk file JSON
   schema: z.object({
-    title: z.string(), // Nama Batch (misal: Batch 7)
+    title: z.string(),
     roles: z.array(z.object({
       role_name: z.string(),
-      photos: z.array(z.string()) // Array path gambar
+      photos: z.array(z.any()) // Menggunakan any agar fleksibel terhadap string/object
     }))
   })
 });
