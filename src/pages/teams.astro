@@ -8,23 +8,28 @@ const allBatches = await getCollection('teams');
 // 2. Inisialisasi objek teamData
 const teamData: any = {};
 
-/** * Mengurutkan batch (misal: Batch 8 di paling atas)
+/** * Mengurutkan batch (Batch terbaru di atas)
  */
 const sortedBatches = allBatches.sort((a: any, b: any) => 
-  b.data.title.localeCompare(a.data.title)
+  (b.data.title || "").localeCompare(a.data.title || "")
 );
 
-/** * Memetakan data dari koleksi ke format yang dibaca oleh slider
+/** * Memetakan data dengan proteksi format foto
  */
 sortedBatches.forEach((batch: any) => {
   const data = batch.data;
+  if (!data.title) return;
+
   teamData[data.title] = {};
   
-  data.roles.forEach((r: any) => {
-    // PENTING: Decap menyimpan list gambar sebagai objek { url: "..." }
-    // Kita gunakan .map untuk mengambil string url-nya saja agar slider tidak error
-    teamData[data.title][r.role_name] = r.photos ? r.photos.map((p: any) => p.url) : [];
-  });
+  if (data.roles) {
+    data.roles.forEach((r: any) => {
+      // FIX: Cek apakah r.photos adalah array string atau array object
+      teamData[data.title][r.role_name] = r.photos 
+        ? r.photos.map((p: any) => (typeof p === 'string' ? p : p.url)) 
+        : [];
+    });
+  }
 });
 ---
 
@@ -33,24 +38,36 @@ sortedBatches.forEach((batch: any) => {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Teams | Life at PIH</title>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Playfair+Display:ital,wght@0,900;1,900&family=Funnel+Display:wght@300;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;800&display=swap" rel="stylesheet">
     
     <style is:global>
-        :root { --pih-blue: #1b509b; --pih-dark: #0f2854; }
-        body { font-family: 'Funnel Display', sans-serif; background: var(--pih-blue); color: white; margin: 0; overflow-x: hidden; }
+        :root { 
+            --pih-blue: #1b509b; 
+            --pih-dark: #0f2854; 
+            --white: #ffffff;
+        }
+        
+        body { 
+            font-family: 'Funnel Display', sans-serif; 
+            background: var(--pih-blue); 
+            color: white; 
+            margin: 0; 
+            overflow-x: hidden; 
+        }
 
         header { padding: 60px 20px; text-align: center; }
-        .main-title { font-size: 6vw; font-weight: 800; line-height: 0.8; letter-spacing: -0.05em; }
-        .italic-text { font-style: italic; font-weight: 100; margin-right: 4px; }
+        .main-title { font-size: 8vw; font-weight: 800; line-height: 0.8; letter-spacing: -0.05em; margin: 0; }
+        .italic-text { font-style: italic; font-weight: 100; opacity: 0.8; }
 
-        .teams-app { max-width: 900px; margin: 0 auto; padding-bottom: 150px; }
+        .teams-app { max-width: 900px; margin: 0 auto; padding: 0 20px 150px 20px; }
         
-        .batch-container { margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; overflow: hidden; background: rgba(255,255,255,0.05); }
+        .batch-container { margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; overflow: hidden; background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
         .batch-trigger { 
             width: 100%; padding: 25px; background: none; border: none; color: white;
             font-size: 1.5rem; font-weight: 800; cursor: pointer; display: flex; 
             justify-content: space-between; align-items: center; transition: 0.3s;
         }
+        .batch-trigger:hover { background: rgba(255,255,255,0.1); }
 
         .batch-content { display: none; flex-direction: column; padding: 20px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.1); }
         
@@ -60,28 +77,31 @@ sortedBatches.forEach((batch: any) => {
             color: white; border-radius: 30px; cursor: pointer; font-size: 0.8rem;
             text-transform: uppercase; letter-spacing: 0.1em; transition: 0.3s;
         }
-        .role-btn:hover, .role-btn.active { background: white; color: var(--pih-blue); }
+        .role-btn:hover, .role-btn.active { background: white; color: var(--pih-blue); font-weight: bold; }
 
         .slider-section { position: relative; width: 100%; overflow: hidden; }
         .slider-viewport { width: 100%; overflow: hidden; padding: 10px 0; }
-        .slider-inner { display: flex; gap: 20px; will-change: transform; }
-        .slider-inner img { width: 250px; height: 350px; object-fit: cover; flex-shrink: 0; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .slider-inner { display: flex; gap: 20px; will-change: transform; align-items: center; }
+        .slider-inner img { width: 250px; height: 350px; object-fit: cover; flex-shrink: 0; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); background: #eee; }
 
-        .nav-controls { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
-        .nav-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid white; background: transparent; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .nav-btn:hover { background: white; color: var(--pih-dark); }
+        .nav-controls { display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px; }
+        .nav-btn { width: 45px; height: 45px; border-radius: 50%; border: 1px solid white; background: transparent; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; font-size: 1.2rem; }
+        .nav-btn:hover:not(:disabled) { background: white; color: var(--pih-dark); }
         .nav-btn:disabled { opacity: 0.2; cursor: not-allowed; }
 
-        .dock-wrapper { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; }
-        .toolbar { list-style: none; display: flex; gap: 15px; background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); padding: 12px 25px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.2); margin: 0; }
-        .toolbarLink { display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; background: white; border-radius: 12px; color: var(--pih-dark); transition: 0.3s; }
-        .toolbarLink:hover { transform: translateY(-5px); background: var(--pih-blue); color: white; }
+        /* FLOATING DOCK STYLES */
+        .dock-wrapper { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); display: flex; justify-content: center; z-index: 999; padding-bottom: 15px; }
+			.toolbar { display: inline-flex; justify-content: center; align-items: flex-end; height: 60px; border-radius: 20px; padding: 10px; background-color: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); list-style: none; border: 1px solid rgba(255, 255, 255, 0.2); }
+			.toolbarItem { width: 40px; height: 40px; margin: 0 4px; position: relative; }
+			.toolbarLink { display: flex; height: 100%; width: 100%; text-decoration: none; align-items: center; justify-content: center; background: white; border-radius: 10px; font-size: 24px; }
+			.tooltip { position: absolute; top: -45px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 4px 12px; border-radius: 6px; font-size: 10px; font-weight: bold; opacity: 0; transition: opacity 0.2s; white-space: nowrap; }
+			.toolbarItem:hover .tooltip { opacity: 1; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1 class="main-title">PIH Intern <span class="italic-text">and</span> KKN</h1>
+        <h1 class="main-title">PIH Intern <span class="italic-text">&</span> KKN</h1>
     </header>
 
     <main class="teams-app" id="teams-app" data-teams={JSON.stringify(teamData)}>
@@ -103,7 +123,7 @@ sortedBatches.forEach((batch: any) => {
                     <div class="slider-section">
                         <div class="slider-viewport">
                             <div class="slider-inner">
-                                <p class="placeholder" style="opacity: 0.5; width: 100%; text-align: center;">Pilih role untuk melihat tim</p>
+                                <p class="placeholder" style="opacity: 0.5; width: 100%; text-align: center; padding: 40px 0;">Pilih role untuk melihat tim</p>
                             </div>
                         </div>
                         <div class="nav-controls">
@@ -116,16 +136,63 @@ sortedBatches.forEach((batch: any) => {
         ))}
     </main>
 
-    <nav class="dock-wrapper">
-        <ul class="toolbar">
-            <li><a href="/" class="toolbarLink"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></a></li>
-            <li><a href="/teams" class="toolbarLink"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></a></li>
-            <li><a href="/guideline" class="toolbarLink"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg></a></li>
-        </ul>
-    </nav>
+   	<div class="dock-wrapper">
+    <ul class="toolbar">
+        <li class="toolbarItem">
+            <a class="toolbarLink" href="/">
+                <span class="tooltip">Home</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house text-slate-800">
+                    <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                </svg>
+            </a>
+        </li>
+
+        <li class="toolbarItem">
+            <a class="toolbarLink" href="/teams">
+                <span class="tooltip">Teams</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users text-slate-800">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+            </a>
+        </li>
+
+        <li class="toolbarItem">
+            <a class="toolbarLink" href="/guideline">
+                <span class="tooltip">Guidelines</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bolt-icon lucide-bolt text-slate-800"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><circle cx="12" cy="12" r="4"/></svg>
+            </a>
+        </li>
+    </ul>
+</div>
 
     <script>
         import { gsap } from "gsap";
+
+         // 5. DOCK INTERACTION
+        const dock = document.querySelector(".toolbar") as HTMLElement;
+        const icons = document.querySelectorAll(".toolbarItem");
+        if (dock && icons.length > 0) {
+            const firstIcon = icons[0] as HTMLElement;
+            const min = 48; const max = 100; const bound = min * Math.PI;
+            gsap.set(icons, { transformOrigin: "50% 120%", height: 40 });
+            dock.addEventListener("mousemove", (event: MouseEvent) => {
+                const rect = dock.getBoundingClientRect();
+                const offset = rect.left + firstIcon.offsetLeft;
+                const pointer = event.clientX - offset;
+                icons.forEach((icon, i) => {
+                    const distance = (i * min + min / 2) - pointer;
+                    let x = 0, scale = 1;
+                    if (Math.abs(distance) < bound) {
+                        const rad = distance / min * 0.5;
+                        scale = 1 + (max / min - 1) * Math.cos(rad);
+                        x = 2 * (max - min) * Math.sin(rad);
+                    } else { x = (distance < 0 ? 2 : -2) * (max - min); }
+                    gsap.to(icon, { duration: 0.3, x: x, scale: scale, ease: "power3.out" });
+                });
+            });
+            dock.addEventListener("mouseleave", () => gsap.to(icons, { duration: 0.3, scale: 1, x: 0 }));
+        }
+
 
         const appElement = document.getElementById("teams-app") as HTMLElement;
         const teamData = JSON.parse(appElement.dataset.teams || "{}");
@@ -143,7 +210,9 @@ sortedBatches.forEach((batch: any) => {
 
             trigger.addEventListener('click', () => {
                 const isOpen = content.style.display === 'flex';
+                // Animasi sederhana untuk buka tutup
                 content.style.display = isOpen ? 'none' : 'flex';
+                trigger.querySelector('span')!.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
             });
 
             container.querySelectorAll('.role-btn').forEach(btn => {
@@ -161,12 +230,14 @@ sortedBatches.forEach((batch: any) => {
                     gsap.set(sliderInner, { x: 0 });
                     
                     if (totalImages === 0) {
-                        sliderInner.innerHTML = '<p style="opacity:0.5">Belum ada foto</p>';
+                        sliderInner.innerHTML = '<p style="opacity:0.5; width:100%; text-align:center; padding:40px 0;">Belum ada foto untuk role ini</p>';
                     } else {
                         images.forEach((src: string) => {
                             const img = document.createElement("img");
                             img.src = src;
-                            img.alt = "Team Member";
+                            img.alt = role;
+                            // Tambahkan error handling jika gambar tidak ditemukan
+                            img.onerror = () => { img.src = 'https://placehold.co/250x350?text=Foto+Tidak+Ada'; };
                             sliderInner.appendChild(img);
                         });
                     }
@@ -182,9 +253,12 @@ sortedBatches.forEach((batch: any) => {
             }
 
             function move(dir: number) {
-                currentIndex += dir;
-                gsap.to(sliderInner, { x: -currentIndex * 270, duration: 0.6, ease: "power2.out" });
-                updateNav();
+                if ((dir === 1 && currentIndex < totalImages - 1) || (dir === -1 && currentIndex > 0)) {
+                    currentIndex += dir;
+                    // 270 adalah lebar gambar (250) + gap (20)
+                    gsap.to(sliderInner, { x: -currentIndex * 270, duration: 0.5, ease: "back.out(1.2)" });
+                    updateNav();
+                }
             }
 
             nextBtn.addEventListener('click', () => move(1));
