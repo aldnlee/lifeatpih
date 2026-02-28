@@ -2,6 +2,8 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 
+import cloudflare from '@astrojs/cloudflare';
+
 export default defineConfig({
   // Pastikan Vite mengenali plugin Tailwind v4
   vite: {
@@ -12,5 +14,7 @@ export default defineConfig({
         usePolling: true,
       }
     }
-  }
+  },
+
+  adapter: cloudflare()
 });
