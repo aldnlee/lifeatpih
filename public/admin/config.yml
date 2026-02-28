@@ -36,3 +36,11 @@ collections:
               name: "url"
               widget: "image"
               allow_multiple: true
+
+  - name: "internal_docs"
+    label: "Dokumen Internal"
+    folder: "src/pages/internal" # Mengarah ke folder rahasia tadi
+    create: true
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Body", name: "body", widget: "markdown" }
