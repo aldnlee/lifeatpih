@@ -2,32 +2,30 @@
 import '../styles/global.css';
 import { getCollection } from 'astro:content';
 
-// 1. Ambil data koleksi
+// 1. Ambil data koleksi dari src/content/teams
 const allBatches = await getCollection('teams');
 
 // 2. Inisialisasi objek teamData
 const teamData: any = {};
 
-/** * Gunakan tipe data eksplisit (a: any, b: any) 
- * untuk memperbaiki error pada fungsi .sort() 
+/** * Mengurutkan batch (misal: Batch 8 di paling atas)
  */
 const sortedBatches = allBatches.sort((a: any, b: any) => 
   b.data.title.localeCompare(a.data.title)
 );
 
-/** * Gunakan (batch: any) untuk memperbaiki error 
- * pada fungsi .forEach() 
+/** * Memetakan data dari koleksi ke format yang dibaca oleh slider
  */
 sortedBatches.forEach((batch: any) => {
   const data = batch.data;
   teamData[data.title] = {};
   
   data.roles.forEach((r: any) => {
-    // Ambil property .url dari tiap object di dalam array photos
-    teamData[data.title][r.role_name] = r.photos.map((p: any) => p.url);
+    // PENTING: Decap menyimpan list gambar sebagai objek { url: "..." }
+    // Kita gunakan .map untuk mengambil string url-nya saja agar slider tidak error
+    teamData[data.title][r.role_name] = r.photos ? r.photos.map((p: any) => p.url) : [];
   });
 });
----
 ---
 
 <html lang="id">
@@ -56,7 +54,6 @@ sortedBatches.forEach((batch: any) => {
 
         .batch-content { display: none; flex-direction: column; padding: 20px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.1); }
         
-        /* Roles Navigation */
         .roles-nav { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
         .role-btn { 
             padding: 10px 20px; border: 1px solid white; background: transparent; 
@@ -65,18 +62,16 @@ sortedBatches.forEach((batch: any) => {
         }
         .role-btn:hover, .role-btn.active { background: white; color: var(--pih-blue); }
 
-        /* Slider Styles */
         .slider-section { position: relative; width: 100%; overflow: hidden; }
         .slider-viewport { width: 100%; overflow: hidden; padding: 10px 0; }
         .slider-inner { display: flex; gap: 20px; will-change: transform; }
-        .slider-inner img { width: 250px; flex-shrink: 0; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .slider-inner img { width: 250px; height: 350px; object-fit: cover; flex-shrink: 0; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 
         .nav-controls { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
         .nav-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid white; background: transparent; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .nav-btn:hover { background: white; color: var(--pih-dark); }
         .nav-btn:disabled { opacity: 0.2; cursor: not-allowed; }
 
-        /* Dock Style */
         .dock-wrapper { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; }
         .toolbar { list-style: none; display: flex; gap: 15px; background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); padding: 12px 25px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.2); margin: 0; }
         .toolbarLink { display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; background: white; border-radius: 12px; color: var(--pih-dark); transition: 0.3s; }
@@ -132,11 +127,9 @@ sortedBatches.forEach((batch: any) => {
     <script>
         import { gsap } from "gsap";
 
-        // Inisialisasi Data dari Astro
         const appElement = document.getElementById("teams-app") as HTMLElement;
         const teamData = JSON.parse(appElement.dataset.teams || "{}");
 
-        // Logika Slider & Dropdown
         document.querySelectorAll('.batch-container').forEach(container => {
             const trigger = container.querySelector('.batch-trigger') as HTMLButtonElement;
             const content = container.querySelector('.batch-content') as HTMLElement;
@@ -156,7 +149,7 @@ sortedBatches.forEach((batch: any) => {
             container.querySelectorAll('.role-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const role = btn.getAttribute('data-role')!;
-                    const images = teamData[batchName][role];
+                    const images = teamData[batchName][role] || [];
                     
                     currentIndex = 0;
                     totalImages = images.length;
@@ -164,15 +157,19 @@ sortedBatches.forEach((batch: any) => {
                     container.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
 
-                    // Render Gambar Slider
                     sliderInner.innerHTML = "";
                     gsap.set(sliderInner, { x: 0 });
                     
-                    images.forEach((src: string) => {
-                        const img = document.createElement("img");
-                        img.src = src;
-                        sliderInner.appendChild(img);
-                    });
+                    if (totalImages === 0) {
+                        sliderInner.innerHTML = '<p style="opacity:0.5">Belum ada foto</p>';
+                    } else {
+                        images.forEach((src: string) => {
+                            const img = document.createElement("img");
+                            img.src = src;
+                            img.alt = "Team Member";
+                            sliderInner.appendChild(img);
+                        });
+                    }
 
                     updateNav();
                 });
@@ -186,7 +183,6 @@ sortedBatches.forEach((batch: any) => {
 
             function move(dir: number) {
                 currentIndex += dir;
-                // Geser 250px (lebar img) + 20px (gap)
                 gsap.to(sliderInner, { x: -currentIndex * 270, duration: 0.6, ease: "power2.out" });
                 updateNav();
             }
