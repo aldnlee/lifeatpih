@@ -3,8 +3,12 @@ backend:
   repo: aldnlee/lifeatpih
   branch: main
 
-media_folder: "public/images"
-public_folder: "/images"
+# --- TAMBAHKAN INI ---
+media_library:
+  name: cloudinary
+  config:
+    cloud_name: "drfdkdkik"
+    api_key: "754964683383539"
 
 collections:
   - name: "teams"
