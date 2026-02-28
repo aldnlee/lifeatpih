@@ -10,6 +10,12 @@
         "/images/ID_GD_Ziza.png"
       ],
       "role_name": "Graphic Designer"
+    },
+    {
+      "role_name": "Project Manager",
+      "photos": [
+        "/images/ID_GD_Fathan.png"
+      ]
     }
   ],
   "title": "Batch 7"
