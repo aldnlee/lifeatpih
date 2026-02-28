@@ -1,5 +1,5 @@
 backend:
-  name: github
+  name: git-gateway
   repo: aldnlee/lifeatpih
   branch: main
 
@@ -22,7 +22,7 @@ collections:
           - label: "Photos"
             name: "photos"
             widget: "list"
-            # allow_multiple memungkigit nkan kamu pilih banyak foto sekaligus
+            # allow_multiple memungkigitnkan kamu pilih banyak foto sekaligus
             field: 
               label: "Image"
               name: "url"
