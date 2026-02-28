@@ -1,7 +1,10 @@
 backend:
-  name: git-gateway
+  name: github
   repo: aldnlee/lifeatpih
   branch: main
+  # URL di bawah ini harus sama dengan URL Worker kamu
+  base_url: https://lifeatpih.denleerider354.workers.dev 
+  auth_endpoint: /auth
 
 # --- TAMBAHKAN INI ---
 media_library:

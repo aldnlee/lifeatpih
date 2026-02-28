@@ -4,28 +4,25 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Content Manager | Life at PIH</title>
-    
-    <script src="https://unpkg.com/netlify-cms-media-library-cloudinary@^1.0.0/dist/netlify-cms-media-library-cloudinary.js"></script>
-    
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-
-    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+    <script>window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = { isDisabled: true };</script>
   </head>
   <body>
-    <script>
-      if (window.netlifyIdentity) {
-        window.netlifyIdentity.on("init", (user) => {
-          if (!user) {
-            window.netlifyIdentity.on("login", () => {
-              document.location.href = "/admin/";
-            });
-          }
-        });
+    <div id="nc-root"></div>
 
-        window.netlifyIdentity.on("login", () => {
-          window.netlifyIdentity.close();
-        });
-      }
+    <script src="https://unpkg.com/netlify-cms-media-library-cloudinary@^1.0.0/dist/netlify-cms-media-library-cloudinary.js"></script>
+
+    <script src="https://unpkg.com/decap-cms@^3.10.1/dist/decap-cms.js"></script>
+
+    <script>
+      // Menunggu DOM benar-benar siap
+      document.addEventListener('DOMContentLoaded', function() {
+        if (window.CMS) {
+          // Jika masih error appendChild, kita paksa init manual di sini
+          console.log("CMS Ready to render...");
+        } else {
+          console.error("CMS Script not loaded");
+        }
+      });
     </script>
   </body>
 </html>
