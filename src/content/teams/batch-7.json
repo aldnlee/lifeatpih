@@ -1,6 +1,12 @@
 {
   "roles": [
     {
+      "role_name": "Project Manager",
+      "photos": [
+        "/images/id_pm_aqil.png"
+      ]
+    },
+    {
       "photos": [
         "/images/id_gd_alden.png",
         "/images/ID_GD_Fazl.png",
@@ -10,6 +16,54 @@
         "/images/ID_GD_Ziza.png"
       ],
       "role_name": "Graphic Designer"
+    },
+    {
+      "role_name": "Journalist",
+      "photos": [
+        "/images/ID_GD_Fathan.png"
+      ]
+    },
+    {
+      "role_name": "Photographer",
+      "photos": [
+        "/images/ID_GD_Fathan.png"
+      ]
+    },
+    {
+      "role_name": "Video Operations",
+      "photos": [
+        "/images/ID_GD_Fathan.png"
+      ]
+    },
+    {
+      "role_name": "Editorial and Publish Management",
+      "photos": [
+        "/images/ID_GD_Fathan.png"
+      ]
+    },
+    {
+      "role_name": "Content Creator",
+      "photos": [
+        "/images/ID_GD_Fathan.png"
+      ]
+    },
+    {
+      "role_name": "Public Relations",
+      "photos": [
+        "/images/ID_GD_Fathan.png"
+      ]
+    },
+    {
+      "role_name": "Social Media Operation",
+      "photos": [
+        "/images/ID_GD_Fathan.png"
+      ]
+    },
+    {
+      "role_name": "Finance Accountant",
+      "photos": [
+        "/images/ID_GD_Fathan.png"
+      ]
     }
   ],
   "title": "Batch 7"
