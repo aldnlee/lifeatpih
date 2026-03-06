@@ -10,7 +10,20 @@ const teamsCollection = defineCollection({
     }))
   })
 });
+// src/content/config.ts
+const vacancies = defineCollection({
+  type: 'content',
+  schema: z.object({
+    batch_name: z.string(),
+    status: z.enum(["Open", "Closed"]),
+    roles: z.array(z.object({
+      role_title: z.string(),
+      description: z.string().optional(),
+    })),
+  }),
+});
 
 export const collections = {
   'teams': teamsCollection,
+  'vacancies': vacancies,
 };

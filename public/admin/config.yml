@@ -44,3 +44,24 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Body", name: "body", widget: "markdown" }
+
+  - name: "vacancies"
+    label: "Lowongan Magang"
+    folder: "src/content/vacancies"
+    create: true
+    slug: "{{slug}}"
+    format: "yaml" # Menggunakan format YAML agar lebih mudah dibaca
+    fields:
+      - { label: "Nama Batch", name: "batch_name", widget: "string", hint: "Contoh: Magang PIH Batch 9" }
+      - { label: "Status Pendaftaran", name: "status", widget: "select", options: ["Open", "Closed"], default: "Open" }
+      
+      # --- BAGIAN LIST ROLE ---
+      - label: "Daftar Role Tersedia"
+        name: "roles"
+        widget: "list"
+        summary: "{{fields.role_title}}" # Menampilkan nama role di ringkasan list
+        fields:
+          - { label: "Nama Role/Posisi", name: "role_title", widget: "string", hint: "Contoh: Graphic Designer" }
+          - { label: "Deskripsi Singkat (Opsional)", name: "description", widget: "text", required: false }
+      
+      - { label: "Konten Pengumuman", name: "body", widget: "markdown", hint: "Tulis detail persyaratan umum di sini" }

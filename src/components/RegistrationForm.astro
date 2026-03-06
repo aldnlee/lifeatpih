@@ -1,0 +1,154 @@
+---
+// src/components/RegistrationForm.astro
+// Sekarang menerima 'roles' (array) dan 'batchName' (string) dari join.astro
+const { roles = [], batchName = "Join the Squad" } = Astro.props;
+---
+
+<div class="registration-container p-8 rounded-[32px] bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl">
+    <div class="mb-10">
+        <h3 class="text-3xl font-black tracking-tighter uppercase text-white mb-2">{batchName}</h3>
+        <p class="text-white/60 text-sm font-light uppercase tracking-widest">Isi formulir untuk memulai perjalananmu di PIH UIN Jakarta.</p>
+    </div>
+
+    <form id="intern-form" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="form-group">
+                <label for="full_name">Nama Lengkap</label>
+                <input type="text" id="full_name" name="full_name" placeholder="Nama Anda..." required />
+            </div>
+            <div class="form-group">
+                <label for="contact">Email / WhatsApp</label>
+                <input type="text" id="contact" name="contact" placeholder="0812..." required />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="role">Posisi yang Dilamar</label>
+            <select id="role" name="role" required>
+                <option value="" disabled selected>Pilih Role Magang...</option>
+                {roles.map((r: any) => (
+                    <option value={r.role_title}>
+                        {r.role_title}
+                    </option>
+                ))}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="portfolio">Link Portofolio / CV (Gdrive/Behance)</label>
+            <input type="url" id="portfolio" name="portfolio" placeholder="https://..." required />
+        </div>
+
+        <button type="submit" id="submit-btn" class="submit-btn">
+            <span id="btn-text">Submit Application</span>
+        </button>
+        
+        <p id="response-msg" class="text-center text-sm font-bold mt-4 hidden"></p>
+    </form>
+</div>
+
+<script>
+    const form = document.getElementById('intern-form') as HTMLFormElement;
+    const btnText = document.getElementById('btn-text');
+    const msg = document.getElementById('response-msg');
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if(btnText) btnText.innerText = "Sending...";
+        
+        const formData = new FormData(form);
+        
+        try {
+            const response = await fetch('/api/submit', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                if(msg) {
+                    msg.innerText = "✅ Pendaftaran berhasil terkirim!";
+                    msg.classList.remove('hidden', 'text-red-400');
+                    msg.classList.add('text-green-400');
+                }
+                form.reset();
+            } else {
+                throw new Error(result.message || "Terjadi kesalahan");
+            }
+        } catch (error: any) {
+            if(msg) {
+                msg.innerText = "❌ Gagal: " + error.message;
+                msg.classList.remove('hidden', 'text-green-400');
+                msg.classList.add('text-red-400');
+            }
+        } finally {
+            if(btnText) btnText.innerText = "Submit Application";
+        }
+    });
+</script>
+
+<style>
+    .form-group { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px; 
+    }
+
+    label { 
+        font-size: 10px; 
+        font-weight: 800; 
+        text-transform: uppercase; 
+        letter-spacing: 0.1em;
+        color: rgba(255, 255, 255, 0.5); 
+    }
+
+    input, select { 
+        background: rgba(255, 255, 255, 0.05); 
+        border: 1px solid rgba(255, 255, 255, 0.1); 
+        padding: 16px; 
+        border-radius: 12px; 
+        color: white; 
+        font-family: inherit;
+        transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    select {
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1em;
+        cursor: pointer;
+    }
+
+    select option {
+        background-color: #0f2854; 
+        color: white;
+    }
+
+    .submit-btn { 
+        width: 100%; 
+        background: white; 
+        color: #0f2854; 
+        padding: 18px; 
+        border-radius: 16px; 
+        font-weight: 900; 
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        cursor: pointer; 
+        border: none;
+        transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        background: #f0f0f0;
+    }
+</style>
