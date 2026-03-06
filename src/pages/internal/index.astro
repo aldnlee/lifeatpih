@@ -1,12 +1,284 @@
 ---
-// src/pages/internal/index.astro
+import '../../styles/global.css';
+
+// Data Role Internal (Bisa disesuaikan)
+const roles = [
+  { name: "Project Manager", slug: "pm", icon: "📋" },
+  { name: "Public Relations", slug: "pr", icon: "🤝" },
+  { name: "Social Media", slug: "socmed", icon: "📱" },
+  { name: "Graphic Designer", slug: "designer", icon: "🎨" },
+  { name: "Web Developer", slug: "web-dev", icon: "💻" },
+  { name: "Content Writer", slug: "writer", icon: "✍️" },
+  { name: "Human Resources", slug: "hr", icon: "👥" },
+  { name: "Finance & Admin", slug: "finance", icon: "💰" },
+  { name: "Event Organizer", slug: "eo", icon: "🎪" },
+  { name: "Research & Dev", slug: "rnd", icon: "🔍" },
+];
 ---
-<html>
-  <body>
-    <h1>Area Internal Life at PIH</h1>
-    <p>Selamat datang di pusat dokumen Handover Batch 1.</p>
-    <ul>
-      <li><a href="/internal/sop">Lihat SOP Teknis</a></li>
-    </ul>
-  </body>
-</html>
+
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Internal Dashboard | Life at PIH</title>
+    <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;800&display=swap" rel="stylesheet">
+    
+    <style is:global>
+        :root { 
+            --pih-blue: #1b509b; 
+            --pih-dark: #0f2854; 
+            --white: #ffffff;
+            --accent: #3b82f6;
+        }
+        
+        body { 
+            font-family: 'Funnel Display', sans-serif; 
+            background: var(--pih-blue); 
+            color: white; 
+            margin: 0; 
+            overflow-x: hidden; 
+        }
+
+        header { padding: 60px 20px; text-align: center; }
+        .main-title { font-size: 6vw; font-weight: 800; line-height: 0.9; letter-spacing: -0.05em; margin: 0; text-transform: uppercase; }
+        .subtitle { opacity: 0.7; font-weight: 300; margin-top: 10px; font-size: 1.2rem; }
+
+        .dashboard-container { 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            padding: 0 20px 150px 20px; 
+            display: grid;
+            grid-template-cols: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        /* Responsive Grid: 5 kolom di desktop, 2 di mobile */
+        @media (min-width: 1024px) {
+            .dashboard-container { grid-template-columns: repeat(5, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .dashboard-container { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .role-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px 20px;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+        }
+
+        .role-card:hover {
+            background: white;
+            transform: translateY(-10px);
+            border-color: var(--white);
+        }
+
+        .role-card:hover .role-name { color: var(--pih-blue); }
+        .role-card:hover .role-icon { transform: scale(1.2); }
+
+        .role-icon { 
+            font-size: 3rem; 
+            margin-bottom: 15px; 
+            transition: transform 0.3s ease;
+        }
+
+        .role-name { 
+            font-weight: 800; 
+            font-size: 1.1rem; 
+            line-height: 1.2;
+            transition: color 0.3s ease;
+        }
+
+         /* FLOATING DOCK STYLES */
+        .dock-wrapper { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; justify-content: center; z-index: 1000; }
+        .toolbar { display: inline-flex; justify-content: center; align-items: center; height: 65px; border-radius: 22px; padding: 0 15px; background-color: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); list-style: none; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.3); margin: 0; }
+        .toolbarItem { width: 45px; height: 45px; margin: 0 6px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .toolbarLink { display: flex; height: 100%; width: 100%; text-decoration: none; align-items: center; justify-content: center; background: white; border-radius: 12px; color: var(--pih-dark); transition: transform 0.3s ease, background 0.3s ease; }
+        .toolbarLink:hover { transform: translateY(-5px); background: #f0f0f0; }
+        .tooltip { position: absolute; top: -45px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; opacity: 0; transition: opacity 0.2s; white-space: nowrap; pointer-events: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .toolbarItem:hover .tooltip { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 class="main-title">Internal<br/>Knowledge Base</h1>
+        <p class="subtitle">Pilih divisi untuk akses dokumen handover.</p>
+    </header>
+
+    <main class="dashboard-container">
+        {roles.map((role) => (
+            <a href={`/internal/roles/${role.slug}`} class="role-card">
+                <div class="role-icon">{role.icon}</div>
+                <div class="role-name">{role.name}</div>
+            </a>
+        ))}
+    </main>
+
+    <nav class="dock-wrapper">
+        <ul class="toolbar">
+            <li class="toolbarItem">
+                <a class="toolbarLink" href="/" >
+                    <span class="tooltip">Home</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </a>
+            </li>
+            <li class="toolbarItem">
+                <a class="toolbarLink" href="/teams" >
+                    <span class="tooltip">Hall of Fame</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </a>
+            </li>
+            <li class="toolbarItem">
+                <a class="toolbarLink" href="/internal" style="background: var(--pih-dark); color: white;">
+                    <span class="tooltip">Guidelines</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><circle cx="12" cy="12" r="4"/></svg>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+
+
+
+     <script>
+    import { gsap } from "gsap";
+
+    /**
+     * 1. LOGIKA DOCK (Navigasi Utama)
+     * Bagian ini harus berjalan di semua halaman.
+     */
+    const initDock = () => {
+        const dock = document.querySelector(".toolbar") as HTMLElement;
+        const icons = document.querySelectorAll(".toolbarItem");
+
+        if (dock && icons.length > 0) {
+            const firstIcon = icons[0] as HTMLElement;
+            const min = 48; 
+            const max = 100; 
+            const bound = min * Math.PI;
+            
+            gsap.set(icons, { transformOrigin: "50% 120%", height: 40 });
+            
+            dock.addEventListener("mousemove", (event: MouseEvent) => {
+                const rect = dock.getBoundingClientRect();
+                const offset = rect.left + firstIcon.offsetLeft;
+                const pointer = event.clientX - offset;
+                
+                icons.forEach((icon, i) => {
+                    const distance = (i * min + min / 2) - pointer;
+                    let x = 0, scale = 1;
+                    
+                    if (Math.abs(distance) < bound) {
+                        const rad = (distance / min) * 0.5;
+                        scale = 1 + (max / min - 1) * Math.cos(rad);
+                        x = 2 * (max - min) * Math.sin(rad);
+                    } else { 
+                        x = (distance < 0 ? 2 : -2) * (max - min); 
+                    }
+                    
+                    gsap.to(icon, { duration: 0.3, x: x, scale: scale, ease: "power3.out" });
+                });
+            });
+            
+            dock.addEventListener("mouseleave", () => {
+                gsap.to(icons, { duration: 0.3, scale: 1, x: 0 });
+            });
+        }
+    };
+
+    /**
+     * 2. LOGIKA TEAMS SLIDER (Modular)
+     * Menggunakan pengecekan ID agar tidak error jika element tidak ada.
+     */
+    const initTeamsSlider = () => {
+        const appElement = document.getElementById("teams-app") as HTMLElement;
+        
+        // JIKA TIDAK ADA DI HALAMAN INI, BERHENTI DI SINI (GUARD CLAUSE)
+        if (!appElement) return;
+
+        const teamData = JSON.parse(appElement.dataset.teams || "{}");
+
+        document.querySelectorAll('.batch-container').forEach(container => {
+            const trigger = container.querySelector('.batch-trigger') as HTMLButtonElement;
+            const content = container.querySelector('.batch-content') as HTMLElement;
+            const sliderInner = container.querySelector('.slider-inner') as HTMLElement;
+            const nextBtn = container.querySelector('.next-btn') as HTMLButtonElement;
+            const prevBtn = container.querySelector('.prev-btn') as HTMLButtonElement;
+            const batchName = container.getAttribute('data-batch')!;
+
+            let currentIndex = 0;
+            let totalImages = 0;
+
+            trigger.addEventListener('click', () => {
+                const isOpen = content.style.display === 'flex';
+                content.style.display = isOpen ? 'none' : 'flex';
+                const arrow = trigger.querySelector('span');
+                if (arrow) arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+            });
+
+            container.querySelectorAll('.role-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const role = btn.getAttribute('data-role')!;
+                    const images = teamData[batchName][role] || [];
+                    
+                    currentIndex = 0;
+                    totalImages = images.length;
+                    
+                    container.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    sliderInner.innerHTML = "";
+                    gsap.set(sliderInner, { x: 0 });
+                    
+                    if (totalImages === 0) {
+                        sliderInner.innerHTML = '<p style="opacity:0.5; width:100%; text-align:center; padding:60px 0;">Belum ada foto</p>';
+                    } else {
+                        images.forEach((src: string) => {
+                            const img = document.createElement("img");
+                            img.src = src;
+                            img.alt = role;
+                            img.loading = "lazy";
+                            sliderInner.appendChild(img);
+                        });
+                    }
+                    updateNav();
+                });
+            });
+
+            const updateNav = () => {
+                if (!prevBtn || !nextBtn) return;
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex >= totalImages - 1 || totalImages <= 1;
+            };
+
+            const move = (dir: number) => {
+                if ((dir === 1 && currentIndex < totalImages - 1) || (dir === -1 && currentIndex > 0)) {
+                    currentIndex += dir;
+                    gsap.to(sliderInner, { x: -currentIndex * 270, duration: 0.5, ease: "back.out(1.2)" });
+                    updateNav();
+                }
+            };
+
+            nextBtn.addEventListener('click', () => move(1));
+            prevBtn.addEventListener('click', () => move(-1));
+        });
+    };
+
+    // Jalankan semua inisialisasi saat halaman dimuat
+    document.addEventListener("DOMContentLoaded", () => {
+        initDock();
+        initTeamsSlider();
+    });
+</script>
+</body>
+</html> 

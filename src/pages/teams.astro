@@ -173,7 +173,7 @@ sortedBatches.forEach((batch: any) => {
                 </a>
             </li>
             <li class="toolbarItem">
-                <a class="toolbarLink" href="/guideline">
+                <a class="toolbarLink" href="/internal">
                     <span class="tooltip">Guidelines</span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><circle cx="12" cy="12" r="4"/></svg>
                 </a>
@@ -254,14 +254,29 @@ sortedBatches.forEach((batch: any) => {
             prevBtn.addEventListener('click', () => move(-1));
         });
 
-        // Dock Animation (Sederhana agar ringan)
-        const toolbar = document.querySelector(".toolbar");
-        const items = document.querySelectorAll(".toolbarItem");
-        
-        if (toolbar) {
-            toolbar.addEventListener("mouseleave", () => {
-                gsap.to(items, { scale: 1, x: 0, duration: 0.3 });
+         // 5. DOCK INTERACTION
+        const dock = document.querySelector(".toolbar") as HTMLElement;
+        const icons = document.querySelectorAll(".toolbarItem");
+        if (dock && icons.length > 0) {
+            const firstIcon = icons[0] as HTMLElement;
+            const min = 48; const max = 100; const bound = min * Math.PI;
+            gsap.set(icons, { transformOrigin: "50% 120%", height: 40 });
+            dock.addEventListener("mousemove", (event: MouseEvent) => {
+                const rect = dock.getBoundingClientRect();
+                const offset = rect.left + firstIcon.offsetLeft;
+                const pointer = event.clientX - offset;
+                icons.forEach((icon, i) => {
+                    const distance = (i * min + min / 2) - pointer;
+                    let x = 0, scale = 1;
+                    if (Math.abs(distance) < bound) {
+                        const rad = distance / min * 0.5;
+                        scale = 1 + (max / min - 1) * Math.cos(rad);
+                        x = 2 * (max - min) * Math.sin(rad);
+                    } else { x = (distance < 0 ? 2 : -2) * (max - min); }
+                    gsap.to(icon, { duration: 0.3, x: x, scale: scale, ease: "power3.out" });
+                });
             });
+            dock.addEventListener("mouseleave", () => gsap.to(icons, { duration: 0.3, scale: 1, x: 0 }));
         }
     </script>
 </body>
