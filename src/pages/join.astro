@@ -1,10 +1,14 @@
 ---
 import '../styles/global.css';
-import RegistrationForm from '../components/RegistrationForm.astro';
 import { getCollection } from 'astro:content';
 
+// 0. Definisi Interface untuk Type Safety
+interface Role {
+  role_title: string;
+  description?: string;
+}
+
 // 1. Ambil data dari content collection vacancies
-// Pakai 'as any' untuk menghindari error TypeScript jika folder baru dibuat
 const allBatches = await getCollection('vacancies' as any);
 
 // 2. Cari batch yang statusnya "Open"
@@ -14,8 +18,14 @@ const activeBatch = allBatches.find((b: any) => b.data.status === 'Open') as any
 const isAnyOpen = !!activeBatch;
 
 // 4. Ambil roles dan batch_name dengan safety check
-const availableRoles = activeBatch?.data?.roles || [];
+const availableRoles: Role[] = activeBatch?.data?.roles || [];
 const currentBatchName = activeBatch?.data?.batch_name || "Join the Squad";
+
+// Format roles untuk Select Option dengan tipe eksplisit
+const roleOptions = availableRoles.map((role: Role) => ({
+    display: `${role.role_title} (${currentBatchName})`,
+    value: `${role.role_title} - ${currentBatchName}`
+}));
 ---
 
 <html lang="id">
@@ -24,6 +34,7 @@ const currentBatchName = activeBatch?.data?.batch_name || "Join the Squad";
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{currentBatchName} | Life at PIH</title>
     <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     
     <style is:global>
         :root { 
@@ -68,11 +79,29 @@ const currentBatchName = activeBatch?.data?.batch_name || "Join the Squad";
             backdrop-filter: blur(10px);
         }
 
+        /* Glassmorphism Form */
         .registration-container {
-            border: 1px solid rgba(255,255,255,0.2) !important;
-            background: rgba(255,255,255,0.05) !important;
-            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 32px;
         }
+
+        input, select {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: white !important;
+            outline: none;
+        }
+
+        option { background: var(--pih-dark); color: white; }
 
         /* DOCK STYLES */
         .dock-wrapper { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; justify-content: center; z-index: 1000; }
@@ -99,13 +128,44 @@ const currentBatchName = activeBatch?.data?.batch_name || "Join the Squad";
             <div>
                 <div class="status-badge status-open">Recruitment Open</div>
                 
-                {/* Kirim data roles dan batchName ke komponen Form */}
-                <RegistrationForm roles={availableRoles} batchName={currentBatchName} />
+                <div class="registration-container">
+                    <form id="apply-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60">Nama Lengkap</label>
+                                <input type="text" id="full_name" required class="w-full px-5 py-4 rounded-2xl" placeholder="Sesuai KTP">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60">Jurusan</label>
+                                <input type="text" id="major" required class="w-full px-5 py-4 rounded-2xl" placeholder="Contoh: Informatika">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60">Posisi Magang</label>
+                            <select id="role_applied" required class="w-full px-5 py-4 rounded-2xl appearance-none">
+                                <option value="" disabled selected>-- Pilih Posisi --</option>
+                                {roleOptions.map((role) => (
+                                    <option value={role.value}>{role.display}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60">Link CV & Portofolio</label>
+                            <input type="url" id="portfolio_url" required class="w-full px-5 py-4 rounded-2xl" placeholder="https://drive.google.com/...">
+                        </div>
+
+                        <button type="submit" id="submit-btn" class="w-full bg-white text-[#1b509b] font-black py-5 rounded-2xl shadow-xl hover:scale-[1.02] transition-transform active:scale-95 uppercase tracking-widest text-sm">
+                            Kirim Lamaran Sekarang
+                        </button>
+                    </form>
+                </div>
                 
                 <div class="mt-12 text-center opacity-40">
                     <p class="text-[10px] uppercase font-bold tracking-[0.3em] mb-4">Posisi Tersedia:</p>
                     <div class="flex flex-wrap justify-center gap-3">
-                        {availableRoles.map((r: any) => (
+                        {availableRoles.map((r: Role) => (
                             <span class="text-[11px] border border-white/30 px-4 py-1.5 rounded-full">{r.role_title}</span>
                         ))}
                     </div>
@@ -154,6 +214,9 @@ const currentBatchName = activeBatch?.data?.batch_name || "Join the Squad";
 
     <script>
         import { gsap } from "gsap";
+        import { supabase } from '../lib/supabase';
+
+        // --- 1. DOCK ANIMATION ---
         const dock = document.querySelector(".toolbar") as HTMLElement;
         const icons = document.querySelectorAll(".toolbarItem");
         if (dock && icons.length > 0) {
@@ -177,6 +240,50 @@ const currentBatchName = activeBatch?.data?.batch_name || "Join the Squad";
             });
             dock.addEventListener("mouseleave", () => gsap.to(icons, { duration: 0.3, scale: 1, x: 0 }));
         }
+
+        // --- 2. SUPABASE SUBMISSION LOGIC ---
+        const form = document.getElementById('apply-form') as HTMLFormElement | null;
+        const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+
+        form?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!submitBtn) return;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<span class="animate-pulse">Mengirim...</span>`;
+
+            // Cek Sesi User
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                alert("Anda harus login terlebih dahulu.");
+                window.location.href = '/login';
+                return;
+            }
+
+            const formData = {
+                user_id: user.id,
+                user_email: user.email,
+                full_name: (document.getElementById('full_name') as HTMLInputElement).value,
+                major: (document.getElementById('major') as HTMLInputElement).value,
+                role_applied: (document.getElementById('role_applied') as HTMLSelectElement).value,
+                portfolio_url: (document.getElementById('portfolio_url') as HTMLInputElement).value,
+                status: 'administrasi'
+            };
+
+            const { error } = await supabase
+                .from('applications')
+                .insert([formData]);
+
+            if (error) {
+                alert("Terjadi kesalahan: " + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Kirim Lamaran Sekarang";
+            } else {
+                // Berhasil: Langsung arahkan ke dash
+                window.location.href = '/dash';
+            }
+        });
     </script>
 </body>
 </html>
