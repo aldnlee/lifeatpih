@@ -2,9 +2,9 @@ backend:
   name: github
   repo: aldnlee/lifeatpih
   branch: main
-  # URL di bawah ini harus sama dengan URL Worker kamu
-  base_url: https://lifeatpih.denleerider354.workers.dev 
+  base_url: https://lifeatpih.denleerider354.workers.dev
   auth_endpoint: /auth
+  # JANGAN masukkan site_id: demo.decapcms.org di sini
 
 # --- TAMBAHKAN INI ---
 media_library:
@@ -12,7 +12,8 @@ media_library:
   config:
     cloud_name: "drfdkdkik"
     api_key: "754964683383539"
-    upload_preset: ml_default
+    unsigned_upload_preset: "ml_default"
+    secure: true # Tambahkan ini untuk memaksa koneksi HTTPS
 
 collections:
   - name: "teams"
