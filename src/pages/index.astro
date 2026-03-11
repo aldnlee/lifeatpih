@@ -55,7 +55,7 @@ import '../styles/global.css';
             
             #footer { position: relative; z-index: 100; background-color: #000; }
             
-            .auth-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+            .auth-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
             .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
         </style>
     </head>
@@ -228,9 +228,23 @@ import '../styles/global.css';
 
             gsap.registerPlugin(ScrollTrigger, SplitText);
 
-            // --- LOGIKA AUTENTIKASI ---
             const navActions = document.getElementById('nav-actions');
             const ctaContainer = document.getElementById('cta-container');
+
+            // FUNGSI LOGIN GOOGLE LANGSUNG
+            async function handleGoogleLogin() {
+                try {
+                    const { error } = await supabase.auth.signInWithOAuth({
+                        provider: 'google',
+                        options: {
+                            redirectTo: window.location.origin
+                        }
+                    });
+                    if (error) throw error;
+                } catch (error: any) {
+                    console.error("Login Error:", error.message);
+                }
+            }
 
             function renderAuthUI(user: any) {
                 if (!navActions || !ctaContainer) return;
@@ -243,16 +257,20 @@ import '../styles/global.css';
                         </div>
                     `;
                     ctaContainer.innerHTML = `
-                        <a href="/dash" class="auth-btn bg-white text-[#1b509b] px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest">Dashboard</a>
-                        <a href="/apply" class="auth-btn bg-transparent border-2 border-white/30 text-white px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:border-white transition-colors">Daftar Intern</a>
+                        <a href="/dash" class="auth-btn bg-white text-[#1b509b] px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest no-underline">Dashboard</a>
+                        <a href="/apply" class="auth-btn bg-transparent border-2 border-white/30 text-white px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:border-white transition-colors no-underline">Daftar Intern</a>
                     `;
                 } else {
                     navActions.innerHTML = `
-                        <a href="/login" class="text-[10px] font-bold tracking-[0.4em] uppercase text-white hover:opacity-70 transition-opacity">Login Portal</a>
+                        <button id="login-nav" class="text-[10px] font-bold tracking-[0.4em] uppercase text-white hover:opacity-70 bg-transparent border-none cursor-pointer">Login Portal</button>
                     `;
                     ctaContainer.innerHTML = `
-                        <a href="/login" class="auth-btn bg-white text-[#1b509b] px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest">Mulai Sekarang</a>
+                        <button id="login-hero" class="auth-btn bg-white text-[#1b509b] px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest border-none">Mulai Sekarang</button>
                     `;
+
+                    // Tambahkan event listener ke tombol baru setelah dirender
+                    document.getElementById('login-nav')?.addEventListener('click', handleGoogleLogin);
+                    document.getElementById('login-hero')?.addEventListener('click', handleGoogleLogin);
                 }
                 
                 // Animasikan CTA setelah diisi
