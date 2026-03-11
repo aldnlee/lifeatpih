@@ -1,0 +1,141 @@
+---
+import '../../styles/global.css';
+---
+
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Life at PIH</title>
+    <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Funnel Display', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <nav class="bg-[#0f2854] text-white p-4 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex justify-between items-center text-sm font-bold">
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 bg-white rounded flex items-center justify-center text-[#0f2854]">P</div>
+                <span>LIFE AT PIH</span>
+            </div>
+            <button id="logout-btn" class="text-red-400">LOGOUT</button>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto py-12 px-6">
+        <div id="loading-state" class="text-center py-20">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900 mx-auto"></div>
+        </div>
+
+        <div id="dashboard-content" class="hidden">
+            <h1 class="text-4xl font-extrabold text-slate-900 mb-8">Halo, <span id="user-name" class="text-blue-700">-</span>!</h1>
+
+            <div class="glass-card p-8 rounded-[2rem] shadow-xl mb-6">
+                <div class="flex justify-between items-center mb-10 font-bold">
+                    <span>Status Rekrutmen</span>
+                    <span id="badge-status" class="px-3 py-1 rounded-full text-[10px] bg-slate-100 uppercase">-</span>
+                </div>
+                
+                <div class="relative px-4 pb-4">
+                    <div class="absolute top-5 left-8 right-8 h-1 bg-slate-200"></div>
+                    <div id="progress-bar" class="absolute top-5 left-8 h-1 bg-blue-700 transition-all duration-700" style="width: 0%"></div>
+
+                    <div class="flex justify-between relative">
+                        {['administrasi', 'interview', 'final'].map((step, i) => (
+                            <div class="step-item flex flex-col items-center w-20" data-step={step}>
+                                <div class="circle w-10 h-10 rounded-full bg-white border-4 border-slate-100 flex items-center justify-center font-bold text-slate-400 z-10 transition-all">
+                                    {i + 1}
+                                </div>
+                                <span class="mt-3 text-[10px] uppercase font-bold text-center leading-tight">{step}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            <div id="status-info-box" class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex gap-4 items-center">
+                <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-700">📋</div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Posisi dilamar</p>
+                    <p id="applied-role" class="font-bold text-slate-800">-</p>
+                </div>
+            </div>
+
+            <div id="no-application" class="hidden text-center py-16 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">
+                <p class="mb-6 font-bold text-slate-500">Belum ada lamaran terdaftar</p>
+                <a href="/apply" class="bg-blue-700 text-white px-8 py-3 rounded-xl font-bold">Daftar Sekarang</a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        import { supabase } from '../lib/supabase';
+
+        // Definisi tipe data agar tidak error "possibly null"
+        const loadingState = document.getElementById('loading-state') as HTMLElement;
+        const dashboardContent = document.getElementById('dashboard-content') as HTMLElement;
+        const userName = document.getElementById('user-name') as HTMLElement;
+        const badgeStatus = document.getElementById('badge-status') as HTMLElement;
+        const progressBar = document.getElementById('progress-bar') as HTMLElement;
+        const appliedRole = document.getElementById('applied-role') as HTMLElement;
+        const noApp = document.getElementById('no-application') as HTMLElement;
+        const statusBox = document.getElementById('status-info-box') as HTMLElement;
+        const logoutBtn = document.getElementById('logout-btn') as HTMLButtonElement;
+
+        async function init() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { window.location.href = '/login'; return; }
+
+            userName.innerText = user.user_metadata.full_name || user.email;
+
+            const { data: application } = await supabase
+                .from('applications')
+                .select('*')
+                .eq('user_id', user.id)
+                .maybeSingle();
+
+            loadingState.classList.add('hidden');
+            dashboardContent.classList.remove('hidden');
+
+            if (!application) {
+                noApp.classList.remove('hidden');
+                statusBox.classList.add('hidden');
+                return;
+            }
+
+            appliedRole.innerText = application.role_applied;
+            updateUI(application.status);
+        }
+
+        function updateUI(status: string) {
+            badgeStatus.innerText = status;
+            const steps = document.querySelectorAll('.step-item');
+            
+            let p = 0;
+            if (status === 'interview') p = 50;
+            if (status === 'accepted' || status === 'rejected') p = 100;
+            progressBar.style.width = `${p}%`;
+
+            steps.forEach((item) => {
+                const s = (item as HTMLElement).dataset.step;
+                const circle = item.querySelector('.circle') as HTMLElement;
+                
+                // Logika pewarnaan sederhana
+                if (status === 'administrasi' && s === 'administrasi') circle.classList.add('border-blue-700', 'text-blue-700');
+                if (status === 'interview' && (s === 'administrasi' || s === 'interview')) circle.classList.add('border-blue-700', 'text-blue-700');
+                if (status === 'accepted' || status === 'rejected') circle.classList.add('border-green-600', 'text-green-600');
+            });
+        }
+
+        logoutBtn?.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = '/login';
+        });
+
+        init();
+    </script>
+</body>
+</html>

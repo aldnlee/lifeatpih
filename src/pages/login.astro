@@ -1,0 +1,94 @@
+---
+import '../../styles/global.css';
+// Halaman Utama dengan pengecekan sesi autentikasi
+---
+
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Life at PIH | Welcome</title>
+    <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Funnel Display', sans-serif; }
+    </style>
+</head>
+<body class="bg-white min-h-screen">
+    <!-- Navbar Sederhana -->
+    <nav class="p-6 flex justify-between items-center max-w-6xl mx-auto">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-[#0f2854] rounded-lg"></div>
+            <span class="font-extrabold text-xl text-[#0f2854]">LIFE AT PIH</span>
+        </div>
+        <div id="nav-actions">
+            <!-- Akan diisi oleh JS berdasarkan status login -->
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="max-w-4xl mx-auto py-20 px-6 text-center">
+        <div id="welcome-content" class="opacity-0 transition-opacity duration-1000">
+            <h1 class="text-5xl md:text-7xl font-extrabold text-slate-900 leading-tight mb-6">
+                Selamat Datang di <br/> 
+                <span class="text-[#1b509b]">Life at PIH</span>
+            </h1>
+            <p class="text-lg text-slate-500 max-w-2xl mx-auto mb-10">
+                Temukan pengalaman magang yang transformatif di Pusat Informasi dan Humas UIN Syarif Hidayatullah Jakarta.
+            </p>
+
+            <div id="cta-group" class="flex flex-col md:flex-row gap-4 justify-center">
+                <!-- Tombol dinamis -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        import { supabase } from '../lib/supabase';
+
+        const welcomeContent = document.getElementById('welcome-content');
+        const ctaGroup = document.getElementById('cta-group');
+        const navActions = document.getElementById('nav-actions');
+
+        async function init() {
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (welcomeContent) welcomeContent.style.opacity = '1';
+
+            if (user && ctaGroup && navActions) {
+                // Tampilan jika sudah LOGIN
+                navActions.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <span class="text-sm font-bold text-slate-600 hidden md:block">${user.user_metadata.full_name}</span>
+                        <a href="/dashboard" class="bg-slate-100 p-2 rounded-full hover:bg-slate-200 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </a>
+                    </div>
+                `;
+
+                ctaGroup.innerHTML = `
+                    <a href="/dashboard" class="bg-[#1b509b] text-white px-10 py-4 rounded-2xl font-extrabold shadow-xl shadow-blue-900/20 hover:scale-105 transition-transform">
+                        Masuk ke Dashboard
+                    </a>
+                    <a href="/apply" class="bg-white border-2 border-slate-200 text-slate-700 px-10 py-4 rounded-2xl font-extrabold hover:bg-slate-50 transition-colors">
+                        Daftar Posisi Baru
+                    </a>
+                `;
+            } else if (ctaGroup && navActions) {
+                // Tampilan jika BELUM login
+                navActions.innerHTML = `
+                    <a href="/login" class="text-sm font-extrabold text-[#1b509b]">MASUK PORTAL</a>
+                `;
+
+                ctaGroup.innerHTML = `
+                    <a href="/login" class="bg-[#1b509b] text-white px-10 py-4 rounded-2xl font-extrabold shadow-xl shadow-blue-900/20 hover:scale-105 transition-transform">
+                        Mulai Sekarang
+                    </a>
+                `;
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
