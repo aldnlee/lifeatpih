@@ -7,13 +7,9 @@ backend:
   # JANGAN masukkan site_id: demo.decapcms.org di sini
 
 # --- TAMBAHKAN INI ---
-media_library:
-  name: cloudinary
-  config:
-    cloud_name: "drfdkdkik"
-    api_key: "754964683383539"
-    unsigned_upload_preset: "ml_default"
-    secure: true # Tambahkan ini untuk memaksa koneksi HTTPS
+# Pengaturan Penyimpanan Lokal
+media_folder: "public/images/uploads" # Folder fisik di GitHub
+public_folder: "/images/uploads"      # Jalur akses di website
 
 collections:
   - name: "teams"
