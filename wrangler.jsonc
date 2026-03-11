@@ -1,16 +1,20 @@
 {
-	"main": "dist/_worker.js/index.js",
-	"name": "life-at-pih",
+  "name": "lifeatpih",
+  "main": "dist/_worker.js/index.js",
   "compatibility_date": "2026-03-06",
   "compatibility_flags": [
     "nodejs_compat",
     "global_fetch_strictly_public"
   ],
-	"assets": {
-		"binding": "ASSETS",
-		"directory": "./dist"
-	},
-	"observability": {
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist"
+  },
+  "vars": {
+    "PUBLIC_SUPABASE_URL": "https://gxmmblywxlyuhluelkkb.supabase.co",
+    "PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_riZwBO6hkfeM2Z1T6ynIHQ_g2kl7JUQ"
+  },
+  "observability": {
     "enabled": true
   }
 }
