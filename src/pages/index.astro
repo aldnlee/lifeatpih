@@ -57,9 +57,56 @@ import '../styles/global.css';
             
             .auth-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
             .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
+            /* --- CUSTOM MODAL POPUP --- */
+            #auth-modal {
+                display: none;
+                position: fixed;
+                inset: 0;
+                z-index: 10001;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                background: rgba(15, 40, 84, 0.4);
+                backdrop-filter: blur(8px);
+            }
+            .modal-content {
+                background: rgba(255, 255, 255, 0.95);
+                color: #0f2854;
+                padding: 40px;
+                border-radius: 32px;
+                max-width: 400px;
+                width: 100%;
+                text-align: center;
+                box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+                transform: scale(0.9);
+                opacity: 0;
+                transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            #auth-modal.active { display: flex; }
+            #auth-modal.active .modal-content { transform: scale(1); opacity: 1; }
         </style>
     </head>
     <body class="antialiased">
+
+        <!-- Custom Auth Popup -->
+        <div id="auth-modal">
+            <div class="modal-content">
+                <div class="w-16 h-16 bg-[#1b509b] text-white rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl shadow-lg">
+                    🔒
+                </div>
+                <h3 class="text-2xl font-black uppercase tracking-tight mb-2">Akses Terbatas</h3>
+                <p class="text-slate-500 font-medium mb-8 leading-relaxed">Silakan Login atau Registrasi terlebih dahulu untuk mengakses halaman ini.</p>
+                <div class="flex flex-col gap-3">
+                    <button id="modal-login-btn" class="bg-[#1b509b] text-white py-4 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-blue-800 transition-colors">
+                        Login Sekarang
+                    </button>
+                    <button id="modal-close-btn" class="bg-slate-100 text-slate-400 py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-slate-200 transition-colors">
+                        Mungkin Nanti
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <div id="loader" class="fixed inset-0 z-[9999] flex items-center justify-center bg-[#1b509b]">
             <svg id="svg-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 248 248" class="w-48 h-48 opacity-0">
@@ -230,9 +277,13 @@ import '../styles/global.css';
 
             const navActions = document.getElementById('nav-actions');
             const ctaContainer = document.getElementById('cta-container');
+            const authModal = document.getElementById('auth-modal');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const modalLoginBtn = document.getElementById('modal-login-btn');
+            
             let currentUser: any = null;
 
-            // FUNGSI LOGIN GOOGLE LANGSUNG
+            // FUNGSI LOGIN GOOGLE
             async function handleGoogleLogin() {
                 try {
                     const { error } = await supabase.auth.signInWithOAuth({
@@ -246,6 +297,20 @@ import '../styles/global.css';
                     console.error("Login Error:", error.message);
                 }
             }
+
+            // MODAL CONTROL
+            function showModal() {
+                authModal?.classList.add('active');
+            }
+            function hideModal() {
+                authModal?.classList.remove('active');
+            }
+
+            modalCloseBtn?.addEventListener('click', hideModal);
+            modalLoginBtn?.addEventListener('click', () => {
+                hideModal();
+                handleGoogleLogin();
+            });
 
             function renderAuthUI(user: any) {
                 currentUser = user;
@@ -270,12 +335,10 @@ import '../styles/global.css';
                         <button id="login-hero" class="auth-btn bg-white text-[#1b509b] px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest border-none">Mulai Sekarang</button>
                     `;
 
-                    // Tambahkan event listener ke tombol baru setelah dirender
                     document.getElementById('login-nav')?.addEventListener('click', handleGoogleLogin);
                     document.getElementById('login-hero')?.addEventListener('click', handleGoogleLogin);
                 }
                 
-                // Animasikan CTA setelah diisi
                 gsap.to(ctaContainer, { opacity: 1, y: 0, duration: 1, delay: 0.5, ease: "power4.out" });
             }
 
@@ -289,10 +352,10 @@ import '../styles/global.css';
                 const target = e.target as HTMLElement;
                 const link = target.closest('.toolbarLink');
                 
-                // Jika user mengklik "Status" atau icon di dalamnya dan belum login
-                if (link && (link.getAttribute('href') === '/dash' || link.classList.contains('protected-link')) && !currentUser) {
-                    e.preventDefault(); // Batalkan navigasi ke page dash
-                    handleGoogleLogin(); // Munculkan popup login
+                // Cek jika link memiliki class 'protected-link' dan user belum login
+                if (link && link.classList.contains('protected-link') && !currentUser) {
+                    e.preventDefault(); 
+                    showModal(); // Tampilkan popup khusus
                 }
             });
 
