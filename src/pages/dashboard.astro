@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Halaman Dashboard untuk pelamar memantau status secara real-time
+// Dashboard pelamar dengan fitur Real-time Notification
 ---
 
 <html lang="id">
@@ -13,91 +13,117 @@ import '../styles/global.css';
     <style>
         body { font-family: 'Funnel Display', sans-serif; }
         .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        
+        /* Modal Animation */
+        #celebration-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 40, 84, 0.6);
+            backdrop-filter: blur(10px);
+        }
+        #celebration-modal.active { display: flex; animation: fadeIn 0.5s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .modal-box {
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #celebration-modal.active .modal-box { transform: translateY(0); opacity: 1; }
+
         .progress-dot { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
+
+    <!-- CELEBRATION MODAL -->
+    <div id="celebration-modal">
+        <div class="modal-box bg-white max-w-sm w-full p-10 rounded-[3rem] text-center shadow-2xl relative overflow-hidden border border-slate-100">
+            <!-- Dekorasi Latar Belakang -->
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-400/10 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-yellow-400/10 rounded-full blur-3xl"></div>
+            
+            <div id="modal-icon" class="text-6xl mb-6 scale-110">🎉</div>
+            <h2 id="modal-title" class="text-2xl font-black text-slate-900 uppercase italic mb-3 leading-tight tracking-tighter">Selamat!</h2>
+            <p id="modal-message" class="text-slate-500 text-sm leading-relaxed mb-8">Lamaran Anda telah disetujui untuk lanjut ke tahap berikutnya.</p>
+            
+            <button id="close-modal-btn" class="w-full bg-[#1b509b] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-900/30 hover:scale-[1.03] active:scale-95 transition-all">
+                Lanjutkan ke Dashboard
+            </button>
+        </div>
+    </div>
+
     <nav class="bg-[#0f2854] text-white p-4 sticky top-0 z-50">
         <div class="max-w-5xl mx-auto flex justify-between items-center text-sm font-bold">
             <div class="flex items-center gap-2">
                 <div class="w-6 h-6 bg-white rounded flex items-center justify-center text-[#0f2854]">P</div>
                 <span class="tracking-tighter">LIFE AT PIH</span>
             </div>
-            <button id="logout-btn" class="text-red-400 hover:text-red-300 transition-colors uppercase tracking-widest text-[10px]">Logout</button>
+            <button id="logout-btn" class="text-red-400 text-[10px] uppercase tracking-widest hover:text-red-300 transition-colors">Logout</button>
         </div>
     </nav>
 
     <main class="max-w-5xl mx-auto py-12 px-6">
-        <!-- 1. LOADING STATE -->
-        <div id="loading-state" class="text-center py-24">
+        <div id="loading-state" class="text-center py-20">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-900 mx-auto"></div>
-            <p class="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Sinkronisasi Data...</p>
+            <p class="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sinkronisasi Data...</p>
         </div>
 
-        <!-- 2. MAIN DASHBOARD CONTENT -->
         <div id="dashboard-content" class="hidden">
-            <header class="mb-10">
-                <h1 class="text-4xl font-extrabold text-slate-900 leading-tight italic">Halo, <span id="user-name" class="text-[#1b509b]">-</span>!</h1>
-                <p class="text-slate-400 font-medium mt-1">Pantau perkembangan aplikasi magang Anda di sini.</p>
-            </header>
+            <h1 class="text-4xl font-extrabold text-slate-900 mb-8 italic">Halo, <span id="user-name" class="text-[#1b509b]">-</span>!</h1>
 
-            <!-- TRACKING CARD -->
             <div class="glass-card p-10 rounded-[2.5rem] shadow-2xl shadow-blue-900/5 mb-8 overflow-hidden relative">
                 <div class="flex justify-between items-center mb-12 font-bold">
-                    <span class="text-slate-800 uppercase tracking-widest text-xs">Progress Tahapan</span>
-                    <span id="badge-status" class="px-4 py-1.5 rounded-full text-[9px] bg-slate-100 uppercase tracking-[0.2em] border border-slate-200 font-black">-</span>
+                    <span class="text-slate-500 uppercase text-[10px] tracking-widest">Status Rekrutmen Real-time</span>
+                    <span id="badge-status" class="px-4 py-1.5 rounded-full text-[9px] bg-slate-100 uppercase border border-slate-200 font-black tracking-widest">-</span>
                 </div>
                 
                 <div class="relative px-6 pb-6">
-                    <!-- Background Line -->
+                    <!-- Garis Dasar -->
                     <div class="absolute top-5 left-10 right-10 h-1.5 bg-slate-200/50 rounded-full"></div>
-                    <!-- Active Progress Line -->
-                    <div id="progress-bar" class="absolute top-5 left-10 h-1.5 bg-[#1b509b] transition-all duration-1000 ease-in-out rounded-full shadow-[0_0_15px_rgba(27,80,155,0.4)]" style="width: 0%"></div>
+                    <!-- Garis Progres -->
+                    <div id="progress-bar" class="absolute top-5 left-10 h-1.5 bg-[#1b509b] transition-all duration-1000 ease-in-out rounded-full shadow-[0_0_15px_rgba(27,80,155,0.3)]" style="width: 0%"></div>
 
                     <div class="flex justify-between relative">
-                        {['administrasi', 'interview', 'final'].map((step, i) => (
+                        {['administrasi', 'interview', 'accepted'].map((step, i) => (
                             <div class="step-item flex flex-col items-center w-24 group" data-step={step}>
-                                <div class="circle progress-dot w-12 h-12 rounded-2xl bg-white border-4 border-slate-100 flex items-center justify-center font-black text-slate-300 z-10 shadow-sm group-hover:scale-110 transition-transform">
+                                <div class="circle progress-dot w-12 h-12 rounded-2xl bg-white border-4 border-slate-100 flex items-center justify-center font-black text-slate-300 z-10 shadow-sm transition-all duration-500">
                                     {i + 1}
                                 </div>
-                                <span class="mt-4 text-[9px] uppercase font-black text-center leading-tight tracking-widest text-slate-400 group-data-[active=true]:text-[#1b509b]">{step}</span>
+                                <span class="mt-4 text-[9px] uppercase font-black text-center leading-tight tracking-widest text-slate-400">{step}</span>
                             </div>
                         ))}
                     </div>
                 </div>
             </div>
 
-            <!-- INFO BOXES -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Applied Role -->
                 <div id="status-info-box" class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex gap-6 items-center">
-                    <div class="w-16 h-16 bg-blue-50 rounded-3xl flex items-center justify-center text-3xl shadow-inner border border-blue-100/50 text-blue-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
-                    </div>
+                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl shadow-inner">📋</div>
                     <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Posisi Dilamar</p>
-                        <p id="applied-role" class="text-xl font-black text-slate-900 italic leading-tight">-</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Posisi dilamar</p>
+                        <p id="applied-role" class="text-xl font-black text-slate-800 italic leading-none">-</p>
                     </div>
                 </div>
 
-                <!-- Batch ID -->
                 <div id="batch-info-box" class="bg-[#0f2854] p-8 rounded-[2.5rem] shadow-lg flex gap-6 items-center">
-                    <div class="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center text-3xl border border-white/10 text-white italic font-black">
-                        #
-                    </div>
+                    <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-2xl border border-white/10 text-white italic font-black">#</div>
                     <div>
-                        <p class="text-[10px] font-black text-blue-200/40 uppercase tracking-widest mb-1">ID Angkatan</p>
-                        <p id="applied-batch" class="text-xl font-black text-white uppercase tracking-tighter leading-tight">-</p>
+                        <p class="text-[10px] font-bold text-blue-200/40 uppercase tracking-widest mb-1">ID Angkatan</p>
+                        <p id="applied-batch" class="text-xl font-black text-white uppercase tracking-tighter leading-none">-</p>
                     </div>
                 </div>
             </div>
 
-            <!-- EMPTY STATE -->
-            <div id="no-application" class="hidden text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-200">
-                <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">🚀</div>
-                <h3 class="text-xl font-black text-slate-800 uppercase tracking-tighter mb-2">Siap untuk Berkontribusi?</h3>
-                <p class="mb-10 font-medium text-slate-400 max-w-xs mx-auto text-sm leading-relaxed">Belum ada lamaran aktif yang terdaftar atas akun Anda di batch ini.</p>
-                <a href="/join" class="bg-[#1b509b] text-white px-12 py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-blue-900/30 hover:scale-105 transition-transform inline-block">Mulai Pendaftaran</a>
+            <div id="no-application" class="hidden text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-200">
+                <div class="text-4xl mb-4">🚀</div>
+                <p class="mb-8 font-bold text-slate-400 uppercase tracking-widest text-xs">Belum ada lamaran terdaftar</p>
+                <a href="/join" class="bg-[#1b509b] text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:scale-105 transition-transform inline-block">Daftar Sekarang</a>
             </div>
         </div>
     </main>
@@ -117,99 +143,131 @@ import '../styles/global.css';
         const batchBox = document.getElementById('batch-info-box') as HTMLElement;
         const logoutBtn = document.getElementById('logout-btn') as HTMLButtonElement;
 
+        // Modal Elements
+        const modal = document.getElementById('celebration-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMsg = document.getElementById('modal-message');
+        const modalIcon = document.getElementById('modal-icon');
+        const modalClose = document.getElementById('close-modal-btn');
+
+        let lastStatus = "";
+
         async function init() {
-            try {
-                // 1. Verifikasi Sesi
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) { 
-                    window.location.href = '/'; 
-                    return; 
-                }
+            // 1. Cek Sesi
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { window.location.href = '/'; return; }
 
-                userName.innerText = user.user_metadata.full_name || user.email?.split('@')[0] || "Intern";
+            userName.innerText = user.user_metadata.full_name || user.email?.split('@')[0] || "User";
 
-                // 2. Tarik Data Aplikasi Terbaru
-                const { data: application, error } = await supabase
-                    .from('applications')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .order('created_at', { ascending: false })
-                    .maybeSingle();
+            // 2. Load data awal
+            const { data: application } = await supabase
+                .from('applications')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .maybeSingle();
 
-                if (error) throw error;
+            loadingState.classList.add('hidden');
+            dashboardContent.classList.remove('hidden');
 
-                // Transisi Loading
-                loadingState.classList.add('hidden');
-                dashboardContent.classList.remove('hidden');
+            if (!application) {
+                noApp.classList.remove('hidden');
+                statusBox.classList.add('hidden');
+                batchBox.classList.add('hidden');
+                return;
+            }
 
-                if (!application) {
-                    noApp.classList.remove('hidden');
-                    statusBox.classList.add('hidden');
-                    batchBox.classList.add('hidden');
-                    return;
-                }
+            appliedRole.innerText = application.role_applied;
+            appliedBatch.innerText = application.batch_id || "B-Legacy";
+            lastStatus = application.status;
+            updateUI(application.status);
 
-                // 3. Render Data ke UI
-                appliedRole.innerText = application.role_applied || "General Position";
-                appliedBatch.innerText = application.batch_id || "Legacy Batch";
-                updateUI(application.status);
+            // --- 3. REALTIME SUBSCRIPTION ---
+            // Dengarkan perubahan pada tabel 'applications' khusus untuk user ini
+            supabase
+                .channel('dashboard-realtime')
+                .on(
+                    'postgres_changes',
+                    { 
+                        event: 'UPDATE', 
+                        schema: 'public', 
+                        table: 'applications',
+                        filter: `user_id=eq.${user.id}` 
+                    },
+                    (payload) => {
+                        const newStatus = payload.new.status;
+                        // Hanya munculkan notifikasi jika status benar-benar berubah
+                        if (newStatus !== lastStatus) {
+                            showNotification(newStatus);
+                            lastStatus = newStatus;
+                            updateUI(newStatus);
+                        }
+                    }
+                )
+                .subscribe();
+        }
 
-            } catch (e: any) {
-                console.error("Dashboard Error:", e.message);
-                if (loadingState) loadingState.innerHTML = `<p class="text-red-500 font-bold">Gagal memuat dashboard: ${e.message}</p>`;
+        function showNotification(status: string) {
+            if (!modal || !modalTitle || !modalMsg || !modalIcon) return;
+
+            if (status === 'interview') {
+                modalIcon.innerText = "📩";
+                modalTitle.innerText = "Tahap Wawancara!";
+                modalMsg.innerText = "Selamat! Berkas Anda lolos seleksi administrasi. Tim kami akan segera menghubungi Anda untuk jadwal wawancara.";
+                modal.classList.add('active');
+            } else if (status === 'accepted') {
+                modalIcon.innerText = "🎉";
+                modalTitle.innerText = "Anda Diterima!";
+                modalMsg.innerText = "Selamat bergabung dengan Squad PIH UIN Jakarta! Silakan cek email Anda untuk instruksi onboarding selanjutnya.";
+                modal.classList.add('active');
+            } else if (status === 'rejected') {
+                // Notifikasi penolakan bisa disesuaikan jika ingin muncul popup
+                updateUI(status);
             }
         }
 
         function updateUI(status: string) {
             if (!badgeStatus || !progressBar) return;
-            
             badgeStatus.innerText = status;
             const steps = document.querySelectorAll('.step-item');
             
             let p = 0;
-            // administrasi = 0%, interview = 50%, accepted/rejected = 100%
+            // administrasi (Titik 1) = 0%
+            // interview (Titik 2) = 50%
+            // accepted/rejected (Titik 3) = 100%
             if (status === 'interview') p = 50;
             if (status === 'accepted' || status === 'rejected') p = 100;
-            
             progressBar.style.width = `${p}%`;
 
             steps.forEach((item) => {
                 const s = (item as HTMLElement).dataset.step;
                 const circle = item.querySelector('.circle') as HTMLElement;
                 if (!circle) return;
-
-                // Reset Status
-                circle.classList.remove('bg-[#1b509b]', 'text-white', 'border-[#1b509b]', 'bg-emerald-500', 'bg-rose-500');
-                (item as HTMLElement).dataset.active = "false";
                 
-                if (status === 'administrasi') {
-                    if (s === 'administrasi') {
-                        circle.classList.add('bg-[#1b509b]', 'text-white', 'border-[#1b509b]');
-                        (item as HTMLElement).dataset.active = "true";
-                    }
-                } else if (status === 'interview') {
-                    if (s === 'administrasi' || s === 'interview') {
-                        circle.classList.add('bg-[#1b509b]', 'text-white', 'border-[#1b509b]');
-                        (item as HTMLElement).dataset.active = "true";
-                    }
+                // Reset warna
+                circle.classList.remove('border-[#1b509b]', 'bg-[#1b509b]', 'text-white', 'border-emerald-500', 'bg-emerald-500', 'border-rose-500', 'text-rose-500');
+
+                if (status === 'administrasi' && s === 'administrasi') {
+                    circle.classList.add('border-[#1b509b]', 'bg-[#1b509b]', 'text-white');
+                } else if (status === 'interview' && (s === 'administrasi' || s === 'interview')) {
+                    circle.classList.add('border-[#1b509b]', 'bg-[#1b509b]', 'text-white');
                 } else if (status === 'accepted') {
-                    circle.classList.add('bg-emerald-500', 'text-white', 'border-emerald-500');
-                    badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-emerald-50 text-emerald-600 border border-emerald-100 font-black uppercase tracking-[0.2em]";
-                    (item as HTMLElement).dataset.active = "true";
+                    circle.classList.add('border-emerald-500', 'bg-emerald-500', 'text-white');
+                    badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-emerald-50 text-emerald-600 border border-emerald-100 font-black uppercase tracking-widest";
                 } else if (status === 'rejected') {
-                    circle.classList.add('bg-rose-500', 'text-white', 'border-rose-500');
-                    badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-rose-50 text-rose-600 border border-rose-100 font-black uppercase tracking-[0.2em]";
-                    (item as HTMLElement).dataset.active = "true";
+                    circle.classList.add('border-rose-500', 'text-rose-500');
+                    badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-rose-50 text-rose-600 border border-rose-100 font-black uppercase tracking-widest";
                 }
             });
         }
+
+        modalClose?.addEventListener('click', () => modal?.classList.remove('active'));
 
         logoutBtn?.addEventListener('click', async () => {
             await supabase.auth.signOut();
             window.location.href = '/';
         });
 
-        // Jalankan Inisialisasi
         init();
     </script>
 </body>
