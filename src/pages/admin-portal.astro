@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 // Halaman internal Terproteksi untuk Admin PIH
-// Fitur: Filter, Search, Bulk Action, Auto-Reject, Export CSV, Stats
+// Fitur: Filter, Search, Bulk Action, Auto-Reject, Export CSV, Stats + Email Status Tracker
 ---
 
 <html lang="id">
@@ -14,9 +14,12 @@ import '../styles/global.css';
     <style>
         body { font-family: 'Funnel Display', sans-serif; }
         .admin-glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        input[type="checkbox"] { width: 1.1rem; hAeight: 1.1rem; cursor: pointer; border-radius: 4px; }
+        input[type="checkbox"] { width: 1.1rem; height: 1.1rem; cursor: pointer; border-radius: 4px; }
         .stats-card { transition: transform 0.3s ease; }
         .stats-card:hover { transform: translateY(-5px); }
+        .email-sent { color: #10b981; }    /* Hijau */
+        .email-pending { color: #94a3b8; }   /* Abu-abu */
+        .email-failed { color: #f43f5e; }    /* Merah */
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen">
@@ -30,7 +33,7 @@ import '../styles/global.css';
     <!-- 2. LOGIN SCREEN -->
     <div id="admin-login-screen" class="hidden fixed inset-0 bg-[#0f2854] z-[9998] flex items-center justify-center p-6">
         <div class="max-w-md w-full text-center text-white">
-            <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-8 text-3xl shadow-2xl">🛡️</div>
+            <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-8 text-3xl shadow-2xl shadow-blue-500/20">🛡️</div>
             <h1 class="text-3xl font-black uppercase italic mb-2 tracking-tighter">Admin Portal</h1>
             <p class="text-blue-200/60 text-sm mb-10 font-light italic">Pusat Informasi dan Humas UIN Jakarta.</p>
             <button id="admin-login-btn" class="w-full bg-white text-[#0f2854] font-black py-5 rounded-2xl flex items-center justify-center gap-4 hover:scale-[1.02] transition-transform shadow-xl uppercase tracking-widest text-xs">
@@ -39,7 +42,7 @@ import '../styles/global.css';
         </div>
     </div>
 
-    <!-- 3. MAIN PORTAL -->
+    <!-- 3. MAIN PORTAL CONTENT -->
     <div id="admin-content" class="hidden">
         <nav class="bg-[#0f2854] text-white p-6 shadow-lg sticky top-0 z-50">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
@@ -54,7 +57,7 @@ import '../styles/global.css';
             </div>
         </nav>
 
-        <main class="max-w-7xl mx-auto py-10 px-6">
+        <main class="max-w-7xl mx-auto py-10 px-6 pb-32">
             <!-- RINGKASAN STATS -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
                 <div class="stats-card bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
@@ -82,28 +85,29 @@ import '../styles/global.css';
                         <input type="text" id="search-input" placeholder="Cari Nama atau Email..." class="w-full bg-white border border-slate-200 px-6 py-4 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm">
                     </div>
                     <div class="relative">
-                        <select id="role-filter" class="bg-white border border-slate-200 px-6 py-4 rounded-2xl text-xs font-bold text-slate-600 outline-none appearance-none min-w-[200px] shadow-sm cursor-pointer">
+                        <select id="role-filter" class="bg-white border border-slate-200 px-6 py-4 rounded-2xl text-xs font-bold text-slate-600 outline-none appearance-none min-w-[200px] shadow-sm cursor-pointer transition-all hover:border-blue-300">
                             <option value="all">Semua Posisi</option>
                         </select>
+                        <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-40 text-[10px]">▼</div>
                     </div>
                 </div>
                 <div class="flex gap-2 w-full lg:w-auto">
                     <button id="export-csv-btn" class="flex-1 lg:flex-none bg-slate-800 text-white px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-700 transition-colors">📥 Export Excel</button>
-                    <button id="refresh-btn" class="bg-white border border-slate-200 p-4 rounded-2xl hover:bg-slate-50">🔄</button>
+                    <button id="refresh-btn" class="bg-white border border-slate-200 p-4 rounded-2xl hover:bg-slate-50 transition-colors shadow-sm">🔄</button>
                 </div>
             </div>
 
             <!-- FLOATING BULK PANEL -->
             <div id="bulk-action-panel" class="hidden mb-6 bg-[#1b509b] p-5 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between shadow-2xl animate-in fade-in slide-in-from-top duration-300 gap-4">
-                <div class="flex items-center gap-4 ml-4">
-                    <span class="text-white font-black text-xs uppercase tracking-widest">
+                <div class="flex items-center gap-4 ml-4 text-white">
+                    <span class="text-xs font-black uppercase tracking-widest">
                         <span id="selected-count" class="text-2xl text-yellow-300">0</span> Terpilih
                     </span>
                 </div>
                 <div class="flex flex-wrap justify-center gap-2">
                     <button id="bulk-interview-btn" class="bg-amber-400 text-slate-900 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-300">Interview Massal</button>
                     <button id="bulk-accept-btn" class="bg-emerald-500 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-400">Terima Massal</button>
-                    <button id="auto-reject-btn" class="bg-rose-500 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-400" title="Tolak sisa di filter saat ini">Tolak Sisanya</button>
+                    <button id="auto-reject-btn" class="bg-rose-500 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase hover:bg-rose-400" title="Tolak sisa pelamar yang tidak dicentang di kategori ini">Tolak Sisanya</button>
                     <button id="clear-selection-btn" class="bg-white/10 text-white border border-white/20 px-6 py-3 rounded-2xl text-[10px] font-black uppercase hover:bg-white/20">Batal</button>
                 </div>
             </div>
@@ -111,17 +115,17 @@ import '../styles/global.css';
             <!-- TABLE -->
             <div class="bg-white rounded-[3rem] shadow-xl border border-slate-200 overflow-hidden overflow-x-auto">
                 <table class="w-full text-left border-collapse min-w-[800px]">
-                    <thead class="bg-slate-50 border-b border-slate-200">
+                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-400 font-black uppercase text-[10px] tracking-widest">
                         <tr>
                             <th class="px-8 py-7 w-12 text-center"><input type="checkbox" id="master-checkbox"></th>
-                            <th class="px-6 py-7 text-[10px] font-black uppercase tracking-widest text-slate-400">Identitas</th>
-                            <th class="px-6 py-7 text-[10px] font-black uppercase tracking-widest text-slate-400">Posisi & Batch</th>
-                            <th class="px-6 py-7 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Status</th>
-                            <th class="px-6 py-7 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Aksi</th>
+                            <th class="px-6 py-7">Pelamar</th>
+                            <th class="px-6 py-7 text-center">Status Email</th>
+                            <th class="px-6 py-7 text-center">Status</th>
+                            <th class="px-6 py-7 text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="applicant-list" class="divide-y divide-slate-100">
-                        <!-- JS Loaded -->
+                        <!-- Data Baris Dimuat Dinamis -->
                     </tbody>
                 </table>
             </div>
@@ -134,7 +138,7 @@ import '../styles/global.css';
         interface Applicant {
             id: string; full_name: string; user_email: string; portfolio_url: string;
             role_applied: string; status: string; created_at: string; batch_id: string;
-            acknowledged: boolean;
+            email_status: string; acknowledged: boolean;
         }
 
         const ADMIN_EMAIL = "aldnlee.ale@gmail.com";
@@ -142,6 +146,7 @@ import '../styles/global.css';
         const loginScreen = document.getElementById('admin-login-screen');
         const content = document.getElementById('admin-content');
         const listContainer = document.getElementById('applicant-list');
+        const emailTag = document.getElementById('admin-email-tag');
         const roleFilter = document.getElementById('role-filter') as HTMLSelectElement;
         const searchInput = document.getElementById('search-input') as HTMLInputElement;
         const bulkPanel = document.getElementById('bulk-action-panel');
@@ -151,26 +156,26 @@ import '../styles/global.css';
         let allApplicants: Applicant[] = [];
         let selectedIds: string[] = [];
 
-        // 1. AUTH CHECK
+        // 1. OTENTIKASI & PROTEKSI
         async function checkAdminAccess() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) { loader?.classList.add('hidden'); loginScreen?.classList.remove('hidden'); return; }
             if (user.email !== ADMIN_EMAIL) { alert("Akses Ditolak!"); await supabase.auth.signOut(); window.location.href = "/"; return; }
             
-            document.getElementById('admin-email-tag')!.innerText = user.email;
+            if (emailTag) emailTag.innerText = user.email;
             loader?.classList.add('hidden');
             loginScreen?.classList.add('hidden');
             content?.classList.remove('hidden');
             loadApplicants();
         }
 
-        // 2. DATA LOADING
+        // 2. MANAJEMEN DATA
         async function loadApplicants() {
             if (!listContainer) return;
-            listContainer.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-300 animate-pulse uppercase text-xs font-black tracking-widest italic">Syncing Database...</td></tr>`;
+            listContainer.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-300 animate-pulse uppercase text-xs font-black tracking-widest italic">Sinkronisasi Database...</td></tr>`;
 
             const { data, error } = await supabase.from('applications').select('*').order('created_at', { ascending: false });
-            if (error) { alert(error.message); return; }
+            if (error) { alert("Database Error: " + error.message); return; }
 
             allApplicants = data as Applicant[];
             updateStats();
@@ -186,8 +191,8 @@ import '../styles/global.css';
         }
 
         function renderFilterOptions() {
-            const roles = [...new Set(allApplicants.map(a => a.role_applied))];
             const current = roleFilter.value;
+            const roles = [...new Set(allApplicants.map(a => a.role_applied))];
             roleFilter.innerHTML = `<option value="all">Semua Posisi (${allApplicants.length})</option>` + 
                 roles.map(r => `<option value="${r}">${r}</option>`).join('');
             roleFilter.value = current;
@@ -204,7 +209,7 @@ import '../styles/global.css';
             });
 
             if (filtered.length === 0) {
-                listContainer!.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-400 italic">Pencarian tidak ditemukan.</td></tr>`;
+                listContainer!.innerHTML = `<tr><td colspan="5" class="p-20 text-center text-slate-400 italic font-medium">Data pelamar tidak ditemukan.</td></tr>`;
                 return;
             }
 
@@ -214,21 +219,27 @@ import '../styles/global.css';
                         <input type="checkbox" class="applicant-checkbox" value="${app.id}" ${selectedIds.includes(app.id) ? 'checked' : ''}>
                     </td>
                     <td class="px-6 py-7">
-                        <div class="font-black text-slate-900 text-lg leading-tight">${app.full_name}</div>
-                        <div class="text-xs text-slate-400 font-bold mb-2">${app.user_email}</div>
-                        <a href="${app.portfolio_url}" target="_blank" class="text-[9px] text-blue-600 font-black uppercase tracking-tighter hover:underline bg-blue-50 px-2 py-0.5 rounded">Berkas Portofolio &rarr;</a>
-                    </td>
-                    <td class="px-6 py-7">
-                        <span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl text-[10px] font-black border border-blue-100 block mb-1 text-center">${app.role_applied}</span>
-                        <span class="text-[8px] text-slate-300 font-black uppercase block text-center tracking-widest">#${app.batch_id || 'LEGACY'}</span>
+                        <div class="font-black text-slate-900 text-lg leading-tight mb-1">${app.full_name}</div>
+                        <div class="text-xs text-slate-400 font-bold mb-3">${app.user_email}</div>
+                        <div class="flex items-center gap-2">
+                             <a href="${app.portfolio_url}" target="_blank" class="text-[9px] text-blue-600 font-black uppercase bg-blue-50 px-2 py-0.5 rounded hover:bg-blue-600 hover:text-white transition-all">Portfolio &rarr;</a>
+                             <span class="text-[9px] bg-slate-100 text-slate-400 px-2 py-0.5 rounded font-black uppercase tracking-widest">#${app.batch_id || '??'}</span>
+                        </div>
                     </td>
                     <td class="px-6 py-7 text-center">
-                        <span class="px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm ${getStatusClass(app.status)}">${app.status}</span>
+                        <div class="flex flex-col items-center gap-1 group/notif">
+                            <span class="text-xl ${getEmailIconClass(app.email_status)}">${getEmailIcon(app.email_status)}</span>
+                            <span class="text-[7px] font-black uppercase opacity-40 tracking-widest">${app.email_status || 'not_sent'}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-7 text-center">
+                        <span class="px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm border ${getStatusClass(app.status)}">${app.status}</span>
                     </td>
                     <td class="px-6 py-7 text-right">
-                        <div class="flex justify-end gap-2">
-                            <button onclick="updateStatus('${app.id}', 'interview')" class="p-3 bg-amber-100 text-amber-600 rounded-xl hover:bg-amber-500 hover:text-white transition-all">💬</button>
-                            <button onclick="updateStatus('${app.id}', 'accepted')" class="p-3 bg-emerald-100 text-emerald-600 rounded-xl hover:bg-emerald-500 hover:text-white transition-all">✅</button>
+                        <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="updateStatus('${app.id}', 'interview')" class="p-3 bg-amber-100 text-amber-600 rounded-xl hover:bg-amber-500 hover:text-white transition-all" title="Pindah ke Interview">💬</button>
+                            <button onclick="updateStatus('${app.id}', 'accepted')" class="p-3 bg-emerald-100 text-emerald-600 rounded-xl hover:bg-emerald-500 hover:text-white transition-all" title="Terima">✅</button>
+                            <button onclick="updateStatus('${app.id}', 'rejected')" class="p-3 bg-rose-100 text-rose-600 rounded-xl hover:bg-rose-500 hover:text-white transition-all" title="Tolak">❌</button>
                         </div>
                     </td>
                 </tr>
@@ -250,58 +261,84 @@ import '../styles/global.css';
         }
 
         function updateBulkUI() {
-            if (selectedIds.length > 0) { bulkPanel?.classList.replace('hidden', 'flex'); selectedCountText!.innerText = selectedIds.length.toString(); }
-            else { bulkPanel?.classList.replace('flex', 'hidden'); masterCheckbox.checked = false; }
+            if (selectedIds.length > 0) {
+                bulkPanel?.classList.replace('hidden', 'flex');
+                selectedCountText!.innerText = selectedIds.length.toString();
+            } else {
+                bulkPanel?.classList.replace('flex', 'hidden');
+                masterCheckbox.checked = false;
+            }
         }
 
         masterCheckbox.addEventListener('change', () => {
-            const search = searchInput.value.toLowerCase();
             const filter = roleFilter.value;
-            const visible = allApplicants.filter(a => (filter === 'all' || a.role_applied === filter) && (a.full_name.toLowerCase().includes(search) || a.user_email.toLowerCase().includes(search)));
+            const search = searchInput.value.toLowerCase();
+            const visible = allApplicants.filter(a => 
+                (filter === 'all' || a.role_applied === filter) && 
+                (a.full_name.toLowerCase().includes(search) || a.user_email.toLowerCase().includes(search))
+            );
             
-            if (masterCheckbox.checked) { visible.forEach(a => { if (!selectedIds.includes(a.id)) selectedIds.push(a.id); }); }
-            else { const vIds = visible.map(v => v.id); selectedIds = selectedIds.filter(id => !vIds.includes(id)); }
-            renderList(); updateBulkUI();
+            if (masterCheckbox.checked) {
+                visible.forEach(a => { if (!selectedIds.includes(a.id)) selectedIds.push(a.id); });
+            } else {
+                const vIds = visible.map(v => v.id);
+                selectedIds = selectedIds.filter(id => !vIds.includes(id));
+            }
+            renderList();
+            updateBulkUI();
         });
 
         // 4. ACTIONS
         (window as any).updateStatus = async (id: string, newStatus: string) => {
-            const { error } = await supabase.from('applications').update({ status: newStatus, acknowledged: false }).eq('id', id);
+            const { error } = await supabase.from('applications').update({ 
+                status: newStatus, 
+                acknowledged: false, 
+                email_status: 'pending' 
+            }).eq('id', id);
             if (!error) loadApplicants();
         };
 
         async function bulkUpdate(status: string) {
-            if (!confirm(`Ubah ${selectedIds.length} orang ke ${status.toUpperCase()}?`)) return;
-            const { error } = await supabase.from('applications').update({ status, acknowledged: false }).in('id', selectedIds);
+            if (!confirm(`Ubah ${selectedIds.length} orang ke status ${status.toUpperCase()}?`)) return;
+            const { error } = await supabase.from('applications').update({ 
+                status, 
+                acknowledged: false, 
+                email_status: 'pending' 
+            }).in('id', selectedIds);
+            
             if (!error) { selectedIds = []; loadApplicants(); updateBulkUI(); }
         }
 
         async function autoRejectOthers() {
             const filter = roleFilter.value;
-            if (filter === 'all') { alert("Pilih satu role spesifik!"); return; }
+            if (filter === 'all') { alert("Pilih satu role!"); return; }
             const toReject = allApplicants.filter(a => a.role_applied === filter && !selectedIds.includes(a.id) && a.status === 'administrasi').map(a => a.id);
             if (toReject.length === 0 || !confirm(`Tolak ${toReject.length} sisa pelamar?`)) return;
-            await supabase.from('applications').update({ status: 'rejected', acknowledged: false }).in('id', toReject);
+            await supabase.from('applications').update({ status: 'rejected', acknowledged: false, email_status: 'pending' }).in('id', toReject);
             loadApplicants();
         }
 
         function exportCSV() {
-            const headers = ["Nama", "Email", "Posisi", "Status", "Batch", "Portfolio"];
+            const headers = ["Nama Lengkap", "Email", "Posisi", "Status", "Batch ID", "Portfolio"];
             const rows = allApplicants.map(a => [a.full_name, a.user_email, a.role_applied, a.status, a.batch_id, a.portfolio_url]);
             const content = [headers, ...rows].map(e => e.join(",")).join("\n");
-            const blob = new Blob([content], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.setAttribute('href', url);
-            a.setAttribute('download', `pelamar-pih-${new Date().toLocaleDateString()}.csv`);
+            a.setAttribute('download', `Database_Pelamar_PIH_${new Date().toISOString().split('T')[0]}.csv`);
             a.click();
         }
 
+        // HELPER FUNCTIONS
+        function getEmailIcon(s: string) { return s === 'sent' ? '📧' : s === 'failed' ? '⚠️' : s === 'pending' ? '⏳' : '⚪'; }
+        function getEmailIconClass(s: string) { return s === 'sent' ? 'email-sent' : s === 'failed' ? 'email-failed' : 'email-pending'; }
+        
         function getStatusClass(s: string) {
-            if (s === 'interview') return 'bg-amber-50 text-amber-600 border border-amber-100';
-            if (s === 'accepted') return 'bg-emerald-50 text-emerald-600 border border-emerald-100';
-            if (s === 'rejected') return 'bg-rose-50 text-rose-600 border border-rose-100';
-            return 'bg-slate-100 text-slate-400 border border-slate-200';
+            if (s === 'interview') return 'bg-amber-50 text-amber-600 border-amber-100';
+            if (s === 'accepted') return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+            if (s === 'rejected') return 'bg-rose-50 text-rose-600 border-rose-100';
+            return 'bg-slate-50 text-slate-400 border-slate-200';
         }
 
         // EVENT LISTENERS
