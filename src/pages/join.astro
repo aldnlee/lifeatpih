@@ -9,21 +9,29 @@ interface Role {
 }
 
 // 1. Ambil data dari content collection vacancies
+// Astro akan memvalidasi data ini berdasarkan schema di src/content/config.ts
 const allBatches = await getCollection('vacancies' as any);
 
-// 2. Cari batch yang statusnya "Open" (Case-Insensitive & Trim untuk keamanan)
+/**
+ * 2. PENCARIAN BATCH AKTIF
+ * Mencari batch yang statusnya "Open" dengan toleransi penulisan (case-insensitive)
+ */
 const activeBatch = allBatches.find((b: any) => {
-    const status = (b.data.status || "").toLowerCase().trim();
+    // Cek apakah data ada di root atau di dalam objek 'map' (antisipasi bug CMS)
+    const d = b.data?.map ? b.data.map : b.data;
+    const status = (d?.status || "").toLowerCase().trim();
     return status === 'open';
 }) as any;
 
 // 3. Validasi: Apakah ada batch yang buka?
 const isAnyOpen = !!activeBatch;
 
-// 4. Ambil roles dan data batch dengan safety check
-const availableRoles: Role[] = activeBatch?.data?.roles || [];
-const currentBatchName = activeBatch?.data?.batch_name || "Join the Squad";
-const currentBatchId = activeBatch?.data?.batch_id || "unspecified";
+// 4. Ekstraksi Data Batch
+const finalData = activeBatch?.data?.map ? activeBatch.data.map : activeBatch?.data;
+
+const availableRoles: Role[] = finalData?.roles || [];
+const currentBatchName = finalData?.batch_name || "Join the Squad";
+const currentBatchId = finalData?.batch_id || "unspecified";
 
 // Format roles untuk Select Option
 const roleOptions = availableRoles.map((role: Role) => ({
@@ -132,6 +140,7 @@ const roleOptions = availableRoles.map((role: Role) => ({
                 <div class="status-badge status-open">Recruitment Open</div>
                 
                 <div class="registration-container">
+                    <!-- Simpan Batch ID dari CMS ke hidden input agar bisa dibaca JS -->
                     <input type="hidden" id="batch_id_val" value={currentBatchId} />
                     
                     <form id="apply-form" class="space-y-6">
@@ -184,11 +193,20 @@ const roleOptions = availableRoles.map((role: Role) => ({
                     Mohon maaf, saat ini sedang tidak ada lowongan magang yang tersedia. 
                     Pantau terus media sosial kami untuk informasi Batch selanjutnya.
                 </p>
-                {allBatches.length > 0 && (
-                    <p class="text-[9px] mt-10 text-white/10 uppercase tracking-widest">
-                        Debug: {allBatches.length} file terdeteksi di GitHub, tapi tidak ada yang berstatus 'Open'.
-                    </p>
-                )}
+                
+                <div class="mt-20 pt-10 border-t border-white/5 text-left">
+                   <h4 class="text-[9px] font-black uppercase tracking-widest text-white/20 mb-4">Diagnosa Konten</h4>
+                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                       <div class="bg-black/20 p-4 rounded-2xl">
+                           <p class="text-[8px] font-bold text-white/30 uppercase mb-1">Total File di /vacancies</p>
+                           <p class="text-xs font-mono text-white/60">{allBatches.length} File</p>
+                       </div>
+                       <div class="bg-black/20 p-4 rounded-2xl">
+                           <p class="text-[8px] font-bold text-white/30 uppercase mb-1">Status Sinkronisasi</p>
+                           <p class="text-[10px] font-mono text-amber-200/50 uppercase tracking-tighter">Menunggu Konfigurasi CMS</p>
+                       </div>
+                   </div>
+                </div>
             </div>
         )}
     </main>

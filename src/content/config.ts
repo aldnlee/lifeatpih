@@ -12,16 +12,22 @@ const teamsCollection = defineCollection({
 });
 // src/content/config.ts
 const vacancies = defineCollection({
-  type: 'content',
+  type: 'data', // PENTING: Gunakan 'data' untuk YAML/JSON
   schema: z.object({
+    batch_id: z.string(),
     batch_name: z.string(),
-    status: z.enum(["Open", "Closed"]),
+    status: z.string(),
     roles: z.array(z.object({
       role_title: z.string(),
-      description: z.string().optional(),
+      description: z.string().optional()
     })),
+    body: z.string().optional(),
+    // Tambahkan ini jika CMS membungkus data dalam 'map'
+    map: z.any().optional(), 
   }),
 });
+
+
 
 export const collections = {
   'teams': teamsCollection,
