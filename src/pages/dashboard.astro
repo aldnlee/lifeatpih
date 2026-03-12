@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Dashboard pelamar dengan fitur Notifikasi Persisten & Real-time
+// Dashboard pelamar dengan fitur Notifikasi Persisten (Termasuk Reject Popup)
 ---
 
 <html lang="id">
@@ -14,7 +14,6 @@ import '../styles/global.css';
         body { font-family: 'Funnel Display', sans-serif; }
         .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
         
-        /* Modal Animation */
         #celebration-modal {
             display: none;
             position: fixed;
@@ -35,21 +34,20 @@ import '../styles/global.css';
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         #celebration-modal.active .modal-box { transform: translateY(0); opacity: 1; }
-
         .progress-dot { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
 
-    <!-- CELEBRATION MODAL (PERSISTENT) -->
+    <!-- MODAL NOTIFIKASI PERSISTEN -->
     <div id="celebration-modal">
         <div class="modal-box bg-white max-w-sm w-full p-10 rounded-[3rem] text-center shadow-2xl relative overflow-hidden border border-slate-100">
             <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-400/10 rounded-full blur-3xl"></div>
-            <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-yellow-400/10 rounded-full blur-3xl"></div>
+            <div id="modal-bg-deco" class="absolute -bottom-10 -left-10 w-32 h-32 bg-yellow-400/10 rounded-full blur-3xl"></div>
             
             <div id="modal-icon" class="text-6xl mb-6 scale-110">🎉</div>
             <h2 id="modal-title" class="text-2xl font-black text-slate-900 uppercase italic mb-3 leading-tight tracking-tighter">Selamat!</h2>
-            <p id="modal-message" class="text-slate-500 text-sm leading-relaxed mb-8">Lamaran Anda telah disetujui untuk lanjut ke tahap berikutnya.</p>
+            <p id="modal-message" class="text-slate-500 text-sm leading-relaxed mb-8">Pesan status Anda akan muncul di sini.</p>
             
             <button id="close-modal-btn" class="w-full bg-[#1b509b] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-900/30 hover:scale-[1.03] active:scale-95 transition-all">
                 Lanjutkan ke Dashboard
@@ -78,7 +76,7 @@ import '../styles/global.css';
                 <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center text-lg shadow-md">✓</div>
                 <div>
                     <p class="text-xs font-black text-blue-900 uppercase tracking-widest">Pendaftaran Aktif</p>
-                    <p class="text-sm text-blue-700/80 font-medium">Anda sudah terdaftar untuk batch ini. Pantau terus progres Anda di bawah.</p>
+                    <p class="text-sm text-blue-700/80 font-medium">Anda sudah terdaftar. Pantau terus progres Anda di bawah.</p>
                 </div>
             </div>
 
@@ -92,10 +90,10 @@ import '../styles/global.css';
                 
                 <div class="relative px-6 pb-6">
                     <div class="absolute top-5 left-10 right-10 h-1.5 bg-slate-200/50 rounded-full"></div>
-                    <div id="progress-bar" class="absolute top-5 left-10 h-1.5 bg-[#1b509b] transition-all duration-1000 ease-in-out rounded-full shadow-[0_0_15px_rgba(27,80,155,0.3)]" style="width: 0%"></div>
+                    <div id="progress-bar" class="absolute top-5 left-10 h-1.5 bg-[#1b509b] transition-all duration-1000 ease-in-out rounded-full" style="width: 0%"></div>
 
                     <div class="flex justify-between relative">
-                        {['administrasi', 'interview', 'accepted'].map((step, i) => (
+                        {['administrasi', 'interview', 'final'].map((step, i) => (
                             <div class="step-item flex flex-col items-center w-24 group" data-step={step}>
                                 <div class="circle progress-dot w-12 h-12 rounded-2xl bg-white border-4 border-slate-100 flex items-center justify-center font-black text-slate-300 z-10 shadow-sm transition-all duration-500">
                                     {i + 1}
@@ -115,7 +113,6 @@ import '../styles/global.css';
                         <p id="applied-role" class="text-xl font-black text-slate-800 italic leading-none">-</p>
                     </div>
                 </div>
-
                 <div id="batch-info-box" class="bg-[#0f2854] p-8 rounded-[2.5rem] shadow-lg flex gap-6 items-center">
                     <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-2xl border border-white/10 text-white italic font-black">#</div>
                     <div>
@@ -149,24 +146,22 @@ import '../styles/global.css';
         const logoutBtn = document.getElementById('logout-btn') as HTMLButtonElement;
         const appliedBanner = document.getElementById('already-applied-banner') as HTMLElement;
 
-        // Modal Elements
         const modal = document.getElementById('celebration-modal');
         const modalTitle = document.getElementById('modal-title');
         const modalMsg = document.getElementById('modal-message');
         const modalIcon = document.getElementById('modal-icon');
         const modalClose = document.getElementById('close-modal-btn');
+        const modalDeco = document.getElementById('modal-bg-deco');
 
         let currentAppId = "";
         let lastStatus = "";
 
         async function init() {
-            // 1. Cek Sesi
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) { window.location.href = '/'; return; }
 
             userName.innerText = user.user_metadata.full_name || user.email?.split('@')[0] || "User";
 
-            // 2. Load data awal
             const { data: application } = await supabase
                 .from('applications')
                 .select('*')
@@ -181,7 +176,6 @@ import '../styles/global.css';
                 noApp.classList.remove('hidden');
                 statusBox.classList.add('hidden');
                 batchBox.classList.add('hidden');
-                appliedBanner.classList.add('hidden');
                 return;
             }
 
@@ -193,56 +187,47 @@ import '../styles/global.css';
             
             updateUI(application.status);
 
-            // LOGIKA PERSISTENSI: Munculkan modal jika status sudah berubah dan belum di-acknowledge
-            // (Kita menganggap 'administrasi' adalah status awal yang tidak perlu pop-up selamat saat baru daftar)
+            // Munculkan modal jika status sudah berubah dan belum di-klik "Lanjutkan"
             if (application.status !== 'administrasi' && !application.acknowledged) {
                 showNotification(application.status);
             }
 
-            // --- 3. REALTIME SUBSCRIPTION ---
+            // Realtime
             supabase
                 .channel('dashboard-realtime')
-                .on(
-                    'postgres_changes',
-                    { 
-                        event: 'UPDATE', 
-                        schema: 'public', 
-                        table: 'applications',
-                        filter: `user_id=eq.${user.id}` 
-                    },
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'applications', filter: `user_id=eq.${user.id}` },
                     async (payload) => {
                         const newStatus = payload.new.status;
                         if (newStatus !== lastStatus) {
-                            // Reset acknowledged di database saat status berubah (agar pop-up muncul lagi)
-                            await supabase
-                                .from('applications')
-                                .update({ acknowledged: false })
-                                .eq('id', currentAppId);
-                            
+                            // Reset acknowledged agar pop-up muncul lagi saat admin ubah status
+                            await supabase.from('applications').update({ acknowledged: false }).eq('id', currentAppId);
                             showNotification(newStatus);
                             lastStatus = newStatus;
                             updateUI(newStatus);
                         }
                     }
-                )
-                .subscribe();
+                ).subscribe();
         }
 
         function showNotification(status: string) {
             if (!modal || !modalTitle || !modalMsg || !modalIcon) return;
 
+            // Reset modal style default
+            modalIcon.innerText = "🎉";
+            modalTitle.innerText = "Selamat!";
+            modalTitle.className = "text-2xl font-black text-slate-900 uppercase italic mb-3 leading-tight tracking-tighter";
+            modalClose!.className = "w-full bg-[#1b509b] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-900/30 hover:scale-[1.03] active:scale-95 transition-all";
+            if (modalDeco) modalDeco.className = "absolute -bottom-10 -left-10 w-32 h-32 bg-yellow-400/10 rounded-full blur-3xl";
+
             if (status === 'interview') {
                 modalIcon.innerText = "📩";
                 modalTitle.innerText = "Tahap Wawancara!";
                 modalMsg.innerText = "Selamat! Berkas Anda lolos seleksi administrasi. Tim kami akan segera menghubungi Anda untuk jadwal wawancara.";
-                modal.classList.add('active');
             } else if (status === 'accepted') {
                 modalIcon.innerText = "🎉";
                 modalTitle.innerText = "Anda Diterima!";
                 modalMsg.innerText = "Selamat bergabung dengan Squad PIH UIN Jakarta! Silakan cek email Anda untuk instruksi onboarding selanjutnya.";
-                modal.classList.add('active');
             } else if (status === 'rejected') {
-                updateUI(status);
                 // Kustomisasi khusus untuk Reject (Merah/Netral)
                 modalIcon.innerText = "🤝"; 
                 modalTitle.innerText = "Terima Kasih";
@@ -250,32 +235,23 @@ import '../styles/global.css';
                 modalTitle.classList.add('text-rose-600');
                 modalMsg.innerText = "Terima kasih telah melamar di Squad PIH. Saat ini kami belum bisa melanjutkan aplikasi Anda ke tahap berikutnya. Jangan berkecil hati dan terus asah kemampuanmu!";
                 modalClose!.className = "w-full bg-slate-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg";
+                if (modalDeco) modalDeco.className = "absolute -bottom-10 -left-10 w-32 h-32 bg-rose-400/10 rounded-full blur-3xl";
             }
+            
+            modal.classList.add('active');
         }
 
         async function handleCloseModal() {
             if (!currentAppId) return;
-
-            // Update ke Supabase bahwa user sudah melihat (acknowledge) perubahan status ini
-            const { error } = await supabase
-                .from('applications')
-                .update({ acknowledged: true })
-                .eq('id', currentAppId);
-
-            if (!error) {
-                modal?.classList.remove('active');
-            } else {
-                console.error("Gagal update acknowledge status:", error.message);
-                // Tetap tutup modal agar tidak mengganggu user jika ada kendala koneksi
-                modal?.classList.remove('active');
-            }
+            // Tandai sudah dilihat agar tidak muncul lagi saat refresh
+            await supabase.from('applications').update({ acknowledged: true }).eq('id', currentAppId);
+            modal?.classList.remove('active');
         }
 
         function updateUI(status: string) {
             if (!badgeStatus || !progressBar) return;
             badgeStatus.innerText = status;
             const steps = document.querySelectorAll('.step-item');
-            
             let p = 0;
             if (status === 'interview') p = 50;
             if (status === 'accepted' || status === 'rejected') p = 100;
@@ -285,7 +261,6 @@ import '../styles/global.css';
                 const s = (item as HTMLElement).dataset.step;
                 const circle = item.querySelector('.circle') as HTMLElement;
                 if (!circle) return;
-                
                 circle.classList.remove('border-[#1b509b]', 'bg-[#1b509b]', 'text-white', 'border-emerald-500', 'bg-emerald-500', 'border-rose-500', 'text-rose-500');
 
                 if (status === 'administrasi' && s === 'administrasi') {
@@ -303,11 +278,7 @@ import '../styles/global.css';
         }
 
         modalClose?.addEventListener('click', handleCloseModal);
-
-        logoutBtn?.addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            window.location.href = '/';
-        });
+        logoutBtn?.addEventListener('click', async () => { await supabase.auth.signOut(); window.location.href = '/'; });
 
         init();
     </script>
