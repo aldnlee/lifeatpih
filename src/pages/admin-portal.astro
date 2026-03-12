@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Halaman internal Terproteksi untuk Admin PIH
+// Halaman internal Terproteksi untuk Admin PIH dengan Login Mandiri
 ---
 
 <html lang="id">
@@ -12,46 +12,73 @@ import '../styles/global.css';
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Funnel Display', sans-serif; }
-        [v-cloak] { display: none; }
+        .admin-glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen">
-    <!-- Loading State -->
+    
+    <!-- 1. LOADING STATE -->
     <div id="admin-loader" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0f2854] mb-4"></div>
-        <p class="text-[10px] font-bold tracking-[0.3em] uppercase text-slate-400">Memverifikasi Admin...</p>
+        <p class="text-[10px] font-bold tracking-[0.3em] uppercase text-slate-400">Menghubungkan ke Pusat Kontrol...</p>
     </div>
 
-    <!-- UI Terlarang (Hidden by default) -->
+    <!-- 2. LOGIN SCREEN (Muncul jika belum login) -->
+    <div id="admin-login-screen" class="hidden fixed inset-0 bg-[#0f2854] z-[9998] flex items-center justify-center p-6">
+        <div class="max-w-md w-full text-center">
+            <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-8 text-3xl shadow-2xl">
+                🛡️
+            </div>
+            <h1 class="text-3xl font-black text-white uppercase italic mb-2 tracking-tighter">Admin Portal</h1>
+            <p class="text-blue-200/60 text-sm mb-10 font-light">Sistem Manajemen Pelamar Pusat Informasi dan Humas UIN Jakarta.</p>
+            
+            <button id="admin-login-btn" class="w-full bg-white text-[#0f2854] font-black py-5 rounded-2xl flex items-center justify-center gap-4 hover:scale-[1.02] transition-transform shadow-xl uppercase tracking-widest text-xs">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083L43.595,20L42,20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+                Login Admin dengan Google
+            </button>
+            
+            <a href="/" class="block mt-8 text-[10px] font-bold text-blue-200/30 uppercase tracking-[0.4em] hover:text-white transition-colors">Kembali ke Beranda</a>
+        </div>
+    </div>
+
+    <!-- 3. MAIN CONTENT (Muncul jika email sesuai) -->
     <div id="admin-content" class="hidden">
         <nav class="bg-[#0f2854] text-white p-6 shadow-lg">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <h1 class="font-extrabold text-xl tracking-tighter">PIH ADMIN <span class="font-light opacity-50">Portal</span></h1>
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-[#0f2854] font-bold">A</div>
+                    <h1 class="font-extrabold text-xl tracking-tighter uppercase">Portal <span class="font-light opacity-50">Kontrol</span></h1>
+                </div>
                 <div class="flex items-center gap-4">
-                    <span id="admin-email-tag" class="text-[10px] bg-white/10 px-3 py-1 rounded-full border border-white/20 font-bold"></span>
-                    <a href="/" class="text-xs font-bold opacity-70 hover:opacity-100 transition-opacity">Keluar</a>
+                    <span id="admin-email-tag" class="text-[10px] bg-white/10 px-4 py-1.5 rounded-full border border-white/20 font-bold tracking-widest uppercase"></span>
+                    <button id="logout-admin-btn" class="text-xs bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white px-4 py-1.5 rounded-lg font-bold transition-all border border-red-500/20">LOGOUT</button>
                 </div>
             </div>
         </nav>
 
         <main class="max-w-7xl mx-auto py-12 px-6">
-            <div class="mb-10">
-                <h2 class="text-3xl font-black text-slate-900 uppercase italic">Manajemen Pelamar</h2>
-                <p class="text-slate-500">Akses khusus akun: <span class="font-bold text-blue-600">aldnlee.ale@gmail.com</span></p>
+            <div class="mb-10 flex justify-between items-end">
+                <div>
+                    <h2 class="text-4xl font-black text-slate-900 uppercase italic leading-none">Pendaftar Magang</h2>
+                    <p class="text-slate-500 mt-2">Daftar mahasiswa yang mengajukan aplikasi pada Batch terbaru.</p>
+                </div>
+                <button id="refresh-btn" class="bg-white border border-slate-200 text-slate-600 px-6 py-3 rounded-2xl text-xs font-bold hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
+                    🔄 Refresh Data
+                </button>
             </div>
 
-            <div class="bg-white rounded-[2rem] shadow-xl border border-slate-200 overflow-hidden">
+            <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-200 overflow-hidden">
                 <table class="w-full text-left">
                     <thead class="bg-slate-50 border-b border-slate-200">
                         <tr>
-                            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Pelamar</th>
-                            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Posisi</th>
-                            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Status Saat Ini</th>
-                            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Aksi Tahapan</th>
+                            <th class="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Identitas Pelamar</th>
+                            <th class="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Pilihan Posisi</th>
+                            <th class="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Status</th>
+                            <th class="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Aksi Tahapan</th>
                         </tr>
                     </thead>
-                    <tbody id="applicant-list">
-                        <!-- Data akan dimuat via JavaScript -->
+                    <tbody id="applicant-list" class="divide-y divide-slate-100">
+                        <!-- Data akan dimuat via JS -->
                     </tbody>
                 </table>
             </div>
@@ -61,33 +88,76 @@ import '../styles/global.css';
     <script>
         import { supabase } from '../lib/supabase';
 
+        // Definisi interface untuk data pelamar
+        interface Applicant {
+            id: string;
+            full_name: string;
+            user_email: string;
+            portfolio_url: string;
+            role_applied: string;
+            status: string;
+            created_at: string;
+        }
+
         const ADMIN_EMAIL = "aldnlee.ale@gmail.com";
         const loader = document.getElementById('admin-loader');
+        const loginScreen = document.getElementById('admin-login-screen');
         const content = document.getElementById('admin-content');
         const listContainer = document.getElementById('applicant-list');
         const emailTag = document.getElementById('admin-email-tag');
+        const loginBtn = document.getElementById('admin-login-btn');
+        const logoutBtn = document.getElementById('logout-admin-btn');
+        const refreshBtn = document.getElementById('refresh-btn');
 
+        // --- 1. PROTEKSI AKSES ---
         async function checkAdminAccess() {
             const { data: { user } } = await supabase.auth.getUser();
 
-            // 1. Cek apakah sudah login & apakah emailnya sesuai
-            if (!user || user.email !== ADMIN_EMAIL) {
-                alert("Akses Ditolak! Halaman ini hanya untuk Administrator.");
-                window.location.href = "/"; // Tendang ke home
+            if (!user) {
+                // Belum Login: Tampilkan layar login admin
+                loader?.classList.add('hidden');
+                loginScreen?.classList.remove('hidden');
                 return;
             }
 
-            // 2. Jika lolos, tampilkan konten
+            if (user.email !== ADMIN_EMAIL) {
+                // Login tapi bukan admin: Beri peringatan dan tendang ke home
+                alert("Akses Ditolak! Akun " + user.email + " tidak diizinkan masuk ke Portal Admin.");
+                await supabase.auth.signOut();
+                window.location.href = "/";
+                return;
+            }
+
+            // Sukses: Tampilkan Konten Admin
             if (emailTag) emailTag.innerText = user.email;
             loader?.classList.add('hidden');
+            loginScreen?.classList.add('hidden');
             content?.classList.remove('hidden');
             
-            // 3. Muat data
             loadApplicants();
         }
 
+        // --- 2. LOGIKA LOGIN & LOGOUT ---
+        loginBtn?.addEventListener('click', async () => {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.href // Kembali ke halaman ini setelah login
+                }
+            });
+            if (error) console.error("Login Error:", error.message);
+        });
+
+        logoutBtn?.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.reload();
+        });
+
+        // --- 3. MANAJEMEN DATA ---
         async function loadApplicants() {
             if (!listContainer) return;
+            
+            listContainer.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-400 font-bold uppercase text-[10px] tracking-widest animate-pulse italic">Menghubungkan ke Server Supabase...</td></tr>`;
 
             const { data, error } = await supabase
                 .from('applications')
@@ -95,39 +165,41 @@ import '../styles/global.css';
                 .order('created_at', { ascending: false });
 
             if (error) {
-                listContainer.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-red-500">${error.message}</td></tr>`;
+                listContainer.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-red-500 font-bold">ERROR: ${error.message}</td></tr>`;
                 return;
             }
 
-            if (data.length === 0) {
-                listContainer.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400 py-20 italic">Belum ada lamaran masuk.</td></tr>`;
+            if (!data || data.length === 0) {
+                listContainer.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-slate-300 italic font-medium">Belum ada lamaran masuk di database.</td></tr>`;
                 return;
             }
 
-            listContainer.innerHTML = data.map(app => `
-                <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+            listContainer.innerHTML = (data as Applicant[]).map(app => `
+                <tr class="hover:bg-slate-50/50 transition-colors">
                     <td class="px-8 py-6">
-                        <div class="font-bold text-slate-900 text-lg">${app.full_name}</div>
-                        <div class="text-xs text-slate-400">${app.user_email}</div>
-                        <a href="${app.portfolio_url}" target="_blank" class="text-[10px] text-blue-600 font-bold hover:underline">LIHAT PORTOFOLIO →</a>
+                        <div class="font-bold text-slate-900 text-lg leading-tight mb-1">${app.full_name}</div>
+                        <div class="text-xs text-slate-400 font-medium mb-2">${app.user_email}</div>
+                        <a href="${app.portfolio_url}" target="_blank" class="inline-flex items-center text-[10px] text-blue-600 font-black uppercase tracking-tighter hover:underline">
+                            Lihat Berkas Portofolio &rarr;
+                        </a>
                     </td>
                     <td class="px-8 py-6">
-                        <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-[11px] font-bold">${app.role_applied}</span>
+                        <span class="bg-blue-50 text-blue-700 px-4 py-1.5 rounded-xl text-[11px] font-bold border border-blue-100/50 italic">${app.role_applied}</span>
                     </td>
-                    <td class="px-8 py-6">
-                        <span class="status-badge px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${getStatusClass(app.status)}">
+                    <td class="px-8 py-6 text-center">
+                        <span class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${getStatusClass(app.status)}">
                             ${app.status}
                         </span>
                     </td>
                     <td class="px-8 py-6 text-right">
                         <div class="flex justify-end gap-2">
-                            <button onclick="updateStatus('${app.id}', 'interview')" class="bg-yellow-500 text-white p-2 rounded-lg hover:bg-yellow-600 shadow-sm" title="Lanjut Wawancara">
+                            <button onclick="updateStatus('${app.id}', 'interview')" class="bg-amber-400 text-white p-3 rounded-2xl hover:bg-amber-500 shadow-md transition-all active:scale-90" title="Kirim ke Tahap Interview">
                                 💬
                             </button>
-                            <button onclick="updateStatus('${app.id}', 'accepted')" class="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 shadow-sm" title="Terima Magang">
+                            <button onclick="updateStatus('${app.id}', 'accepted')" class="bg-emerald-500 text-white p-3 rounded-2xl hover:bg-emerald-600 shadow-md transition-all active:scale-90" title="Terima Sebagai Magang">
                                 ✅
                             </button>
-                            <button onclick="updateStatus('${app.id}', 'rejected')" class="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 shadow-sm" title="Tolak">
+                            <button onclick="updateStatus('${app.id}', 'rejected')" class="bg-rose-500 text-white p-3 rounded-2xl hover:bg-rose-600 shadow-md transition-all active:scale-90" title="Tolak Lamaran">
                                 ❌
                             </button>
                         </div>
@@ -136,16 +208,20 @@ import '../styles/global.css';
             `).join('');
         }
 
+        // Fix: Menambahkan tipe string pada parameter status
         function getStatusClass(status: string) {
             if (status === 'administrasi') return 'bg-slate-100 text-slate-500';
-            if (status === 'interview') return 'bg-yellow-100 text-yellow-700';
-            if (status === 'accepted') return 'bg-green-100 text-green-700';
-            if (status === 'rejected') return 'bg-red-100 text-red-700';
+            if (status === 'interview') return 'bg-amber-100 text-amber-700';
+            if (status === 'accepted') return 'bg-emerald-100 text-emerald-700';
+            if (status === 'rejected') return 'bg-rose-100 text-rose-700';
             return 'bg-slate-100 text-slate-500';
         }
 
+        refreshBtn?.addEventListener('click', loadApplicants);
+
+        // Fix: Menambahkan tipe string pada parameter id dan newStatus
         (window as any).updateStatus = async (id: string, newStatus: string) => {
-            const confirmAction = confirm(`Ubah status pelamar menjadi '${newStatus}'?`);
+            const confirmAction = confirm("Ubah tahapan pelamar menjadi '" + newStatus.toUpperCase() + "'?");
             if (!confirmAction) return;
 
             const { error } = await supabase
@@ -154,13 +230,13 @@ import '../styles/global.css';
                 .eq('id', id);
 
             if (error) {
-                alert("Gagal update: " + error.message);
+                alert("Gagal memperbarui status: " + error.message);
             } else {
                 loadApplicants();
             }
         };
 
-        // Jalankan proteksi saat halaman dibuka
+        // Jalankan Inisialisasi
         checkAdminAccess();
     </script>
 </body>
