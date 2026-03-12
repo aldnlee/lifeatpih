@@ -42,7 +42,7 @@ collections:
     label: "Lowongan Magang"
     folder: "src/content/vacancies"
     create: true
-    slug: "{{slug}}"
+    slug: "{{batch_id}}"
     extension: "yaml"
     format: "yaml"
     fields:

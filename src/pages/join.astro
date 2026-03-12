@@ -11,18 +11,19 @@ interface Role {
 // 1. Ambil data dari content collection vacancies
 const allBatches = await getCollection('vacancies' as any);
 
-// 2. Cari batch yang statusnya "Open" (Dibuat case-insensitive agar lebih aman)
-const activeBatch = allBatches.find((b: any) => 
-    b.data.status?.toLowerCase() === 'open'
-) as any;
+// 2. Cari batch yang statusnya "Open" (Case-Insensitive & Trim untuk keamanan)
+const activeBatch = allBatches.find((b: any) => {
+    const status = (b.data.status || "").toLowerCase().trim();
+    return status === 'open';
+}) as any;
 
 // 3. Validasi: Apakah ada batch yang buka?
 const isAnyOpen = !!activeBatch;
 
-// 4. Ambil roles, batch_name, dan batch_id dengan safety check
+// 4. Ambil roles dan data batch dengan safety check
 const availableRoles: Role[] = activeBatch?.data?.roles || [];
 const currentBatchName = activeBatch?.data?.batch_name || "Join the Squad";
-const currentBatchId = activeBatch?.data?.batch_id || "unspecified"; 
+const currentBatchId = activeBatch?.data?.batch_id || "unspecified";
 
 // Format roles untuk Select Option
 const roleOptions = availableRoles.map((role: Role) => ({
@@ -82,7 +83,6 @@ const roleOptions = availableRoles.map((role: Role) => ({
             backdrop-filter: blur(10px);
         }
 
-        /* Glassmorphism Form */
         .registration-container {
             border: 1px solid rgba(255,255,255,0.2);
             background: rgba(255,255,255,0.05);
@@ -132,7 +132,6 @@ const roleOptions = availableRoles.map((role: Role) => ({
                 <div class="status-badge status-open">Recruitment Open</div>
                 
                 <div class="registration-container">
-                    <!-- Simpan Batch ID dari CMS ke hidden input agar bisa dibaca JS -->
                     <input type="hidden" id="batch_id_val" value={currentBatchId} />
                     
                     <form id="apply-form" class="space-y-6">
@@ -185,6 +184,11 @@ const roleOptions = availableRoles.map((role: Role) => ({
                     Mohon maaf, saat ini sedang tidak ada lowongan magang yang tersedia. 
                     Pantau terus media sosial kami untuk informasi Batch selanjutnya.
                 </p>
+                {allBatches.length > 0 && (
+                    <p class="text-[9px] mt-10 text-white/10 uppercase tracking-widest">
+                        Debug: {allBatches.length} file terdeteksi di GitHub, tapi tidak ada yang berstatus 'Open'.
+                    </p>
+                )}
             </div>
         )}
     </main>
@@ -259,7 +263,6 @@ const roleOptions = availableRoles.map((role: Role) => ({
             submitBtn.disabled = true;
             submitBtn.innerHTML = `<span class="animate-pulse uppercase tracking-widest text-[10px]">Mengirim Lamaran...</span>`;
 
-            // Cek Sesi User
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
@@ -288,7 +291,6 @@ const roleOptions = availableRoles.map((role: Role) => ({
                 submitBtn.disabled = false;
                 submitBtn.innerText = "Kirim Lamaran Sekarang";
             } else {
-                // Berhasil: Langsung arahkan ke dashboard
                 window.location.href = '/dashboard';
             }
         });
