@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Halaman internal untuk Tim PIH mengelola status pelamar
+// Halaman internal Terproteksi untuk Admin PIH
 ---
 
 <html lang="id">
@@ -12,46 +12,79 @@ import '../styles/global.css';
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Funnel Display', sans-serif; }
+        [v-cloak] { display: none; }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen">
-    <nav class="bg-[#0f2854] text-white p-6 shadow-lg">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="font-extrabold text-xl tracking-tighter">PIH ADMIN <span class="font-light opacity-50">Portal</span></h1>
-            <a href="/" class="text-xs font-bold opacity-70 hover:opacity-100 transition-opacity">Keluar ke Website</a>
-        </div>
-    </nav>
+    <!-- Loading State -->
+    <div id="admin-loader" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0f2854] mb-4"></div>
+        <p class="text-[10px] font-bold tracking-[0.3em] uppercase text-slate-400">Memverifikasi Admin...</p>
+    </div>
 
-    <main class="max-w-7xl mx-auto py-12 px-6">
-        <div class="mb-10">
-            <h2 class="text-3xl font-black text-slate-900 uppercase italic">Manajemen Pelamar</h2>
-            <p class="text-slate-500">Daftar mahasiswa yang mengirimkan lamaran magang via portal.</p>
-        </div>
+    <!-- UI Terlarang (Hidden by default) -->
+    <div id="admin-content" class="hidden">
+        <nav class="bg-[#0f2854] text-white p-6 shadow-lg">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <h1 class="font-extrabold text-xl tracking-tighter">PIH ADMIN <span class="font-light opacity-50">Portal</span></h1>
+                <div class="flex items-center gap-4">
+                    <span id="admin-email-tag" class="text-[10px] bg-white/10 px-3 py-1 rounded-full border border-white/20 font-bold"></span>
+                    <a href="/" class="text-xs font-bold opacity-70 hover:opacity-100 transition-opacity">Keluar</a>
+                </div>
+            </div>
+        </nav>
 
-        <div class="bg-white rounded-[2rem] shadow-xl border border-slate-200 overflow-hidden">
-            <table class="w-full text-left">
-                <thead class="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                        <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Pelamar</th>
-                        <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Posisi</th>
-                        <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Status Saat Ini</th>
-                        <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Aksi Tahapan</th>
-                    </tr>
-                </thead>
-                <tbody id="applicant-list">
-                    <!-- Data akan dimuat via JavaScript -->
-                    <tr>
-                        <td colspan="4" class="px-8 py-20 text-center text-slate-400">Memuat data pelamar...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </main>
+        <main class="max-w-7xl mx-auto py-12 px-6">
+            <div class="mb-10">
+                <h2 class="text-3xl font-black text-slate-900 uppercase italic">Manajemen Pelamar</h2>
+                <p class="text-slate-500">Akses khusus akun: <span class="font-bold text-blue-600">aldnlee.ale@gmail.com</span></p>
+            </div>
+
+            <div class="bg-white rounded-[2rem] shadow-xl border border-slate-200 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Pelamar</th>
+                            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Posisi</th>
+                            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Status Saat Ini</th>
+                            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Aksi Tahapan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applicant-list">
+                        <!-- Data akan dimuat via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
 
     <script>
         import { supabase } from '../lib/supabase';
 
+        const ADMIN_EMAIL = "aldnlee.ale@gmail.com";
+        const loader = document.getElementById('admin-loader');
+        const content = document.getElementById('admin-content');
         const listContainer = document.getElementById('applicant-list');
+        const emailTag = document.getElementById('admin-email-tag');
+
+        async function checkAdminAccess() {
+            const { data: { user } } = await supabase.auth.getUser();
+
+            // 1. Cek apakah sudah login & apakah emailnya sesuai
+            if (!user || user.email !== ADMIN_EMAIL) {
+                alert("Akses Ditolak! Halaman ini hanya untuk Administrator.");
+                window.location.href = "/"; // Tendang ke home
+                return;
+            }
+
+            // 2. Jika lolos, tampilkan konten
+            if (emailTag) emailTag.innerText = user.email;
+            loader?.classList.add('hidden');
+            content?.classList.remove('hidden');
+            
+            // 3. Muat data
+            loadApplicants();
+        }
 
         async function loadApplicants() {
             if (!listContainer) return;
@@ -67,7 +100,7 @@ import '../styles/global.css';
             }
 
             if (data.length === 0) {
-                listContainer.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400">Belum ada lamaran masuk.</td></tr>`;
+                listContainer.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400 py-20 italic">Belum ada lamaran masuk.</td></tr>`;
                 return;
             }
 
@@ -111,7 +144,6 @@ import '../styles/global.css';
             return 'bg-slate-100 text-slate-500';
         }
 
-        // Fungsi Global untuk Update Status
         (window as any).updateStatus = async (id: string, newStatus: string) => {
             const confirmAction = confirm(`Ubah status pelamar menjadi '${newStatus}'?`);
             if (!confirmAction) return;
@@ -124,12 +156,12 @@ import '../styles/global.css';
             if (error) {
                 alert("Gagal update: " + error.message);
             } else {
-                loadApplicants(); // Refresh data
+                loadApplicants();
             }
         };
 
-        // Jalankan saat load
-        loadApplicants();
+        // Jalankan proteksi saat halaman dibuka
+        checkAdminAccess();
     </script>
 </body>
 </html>
