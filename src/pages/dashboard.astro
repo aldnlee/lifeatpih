@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Dashboard pelamar dengan fitur Real-time Notification
+// Dashboard pelamar dengan fitur Notifikasi Persisten & Real-time
 ---
 
 <html lang="id">
@@ -41,10 +41,9 @@ import '../styles/global.css';
 </head>
 <body class="bg-slate-50 min-h-screen">
 
-    <!-- CELEBRATION MODAL -->
+    <!-- CELEBRATION MODAL (PERSISTENT) -->
     <div id="celebration-modal">
         <div class="modal-box bg-white max-w-sm w-full p-10 rounded-[3rem] text-center shadow-2xl relative overflow-hidden border border-slate-100">
-            <!-- Dekorasi Latar Belakang -->
             <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-400/10 rounded-full blur-3xl"></div>
             <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-yellow-400/10 rounded-full blur-3xl"></div>
             
@@ -75,18 +74,24 @@ import '../styles/global.css';
         </div>
 
         <div id="dashboard-content" class="hidden">
+            <div id="already-applied-banner" class="hidden mb-8 bg-blue-50 border border-blue-100 p-6 rounded-[2rem] flex items-center gap-4">
+                <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center text-lg shadow-md">✓</div>
+                <div>
+                    <p class="text-xs font-black text-blue-900 uppercase tracking-widest">Pendaftaran Aktif</p>
+                    <p class="text-sm text-blue-700/80 font-medium">Anda sudah terdaftar untuk batch ini. Pantau terus progres Anda di bawah.</p>
+                </div>
+            </div>
+
             <h1 class="text-4xl font-extrabold text-slate-900 mb-8 italic">Halo, <span id="user-name" class="text-[#1b509b]">-</span>!</h1>
 
-            <div class="glass-card p-10 rounded-[2.5rem] shadow-2xl shadow-blue-900/5 mb-8 overflow-hidden relative">
+            <div class="glass-card p-10 rounded-[2.5rem] shadow-2xl shadow-blue-900/5 mb-8 overflow-hidden relative border-t-8 border-t-[#1b509b]">
                 <div class="flex justify-between items-center mb-12 font-bold">
                     <span class="text-slate-500 uppercase text-[10px] tracking-widest">Status Rekrutmen Real-time</span>
                     <span id="badge-status" class="px-4 py-1.5 rounded-full text-[9px] bg-slate-100 uppercase border border-slate-200 font-black tracking-widest">-</span>
                 </div>
                 
                 <div class="relative px-6 pb-6">
-                    <!-- Garis Dasar -->
                     <div class="absolute top-5 left-10 right-10 h-1.5 bg-slate-200/50 rounded-full"></div>
-                    <!-- Garis Progres -->
                     <div id="progress-bar" class="absolute top-5 left-10 h-1.5 bg-[#1b509b] transition-all duration-1000 ease-in-out rounded-full shadow-[0_0_15px_rgba(27,80,155,0.3)]" style="width: 0%"></div>
 
                     <div class="flex justify-between relative">
@@ -104,7 +109,7 @@ import '../styles/global.css';
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div id="status-info-box" class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex gap-6 items-center">
-                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl shadow-inner">📋</div>
+                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl shadow-inner text-blue-600">📋</div>
                     <div>
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Posisi dilamar</p>
                         <p id="applied-role" class="text-xl font-black text-slate-800 italic leading-none">-</p>
@@ -142,6 +147,7 @@ import '../styles/global.css';
         const statusBox = document.getElementById('status-info-box') as HTMLElement;
         const batchBox = document.getElementById('batch-info-box') as HTMLElement;
         const logoutBtn = document.getElementById('logout-btn') as HTMLButtonElement;
+        const appliedBanner = document.getElementById('already-applied-banner') as HTMLElement;
 
         // Modal Elements
         const modal = document.getElementById('celebration-modal');
@@ -150,6 +156,7 @@ import '../styles/global.css';
         const modalIcon = document.getElementById('modal-icon');
         const modalClose = document.getElementById('close-modal-btn');
 
+        let currentAppId = "";
         let lastStatus = "";
 
         async function init() {
@@ -174,16 +181,25 @@ import '../styles/global.css';
                 noApp.classList.remove('hidden');
                 statusBox.classList.add('hidden');
                 batchBox.classList.add('hidden');
+                appliedBanner.classList.add('hidden');
                 return;
             }
 
+            currentAppId = application.id;
+            appliedBanner.classList.remove('hidden');
             appliedRole.innerText = application.role_applied;
             appliedBatch.innerText = application.batch_id || "B-Legacy";
             lastStatus = application.status;
+            
             updateUI(application.status);
 
+            // LOGIKA PERSISTENSI: Munculkan modal jika status sudah berubah dan belum di-acknowledge
+            // (Kita menganggap 'administrasi' adalah status awal yang tidak perlu pop-up selamat saat baru daftar)
+            if (application.status !== 'administrasi' && !application.acknowledged) {
+                showNotification(application.status);
+            }
+
             // --- 3. REALTIME SUBSCRIPTION ---
-            // Dengarkan perubahan pada tabel 'applications' khusus untuk user ini
             supabase
                 .channel('dashboard-realtime')
                 .on(
@@ -194,10 +210,15 @@ import '../styles/global.css';
                         table: 'applications',
                         filter: `user_id=eq.${user.id}` 
                     },
-                    (payload) => {
+                    async (payload) => {
                         const newStatus = payload.new.status;
-                        // Hanya munculkan notifikasi jika status benar-benar berubah
                         if (newStatus !== lastStatus) {
+                            // Reset acknowledged di database saat status berubah (agar pop-up muncul lagi)
+                            await supabase
+                                .from('applications')
+                                .update({ acknowledged: false })
+                                .eq('id', currentAppId);
+                            
                             showNotification(newStatus);
                             lastStatus = newStatus;
                             updateUI(newStatus);
@@ -221,8 +242,25 @@ import '../styles/global.css';
                 modalMsg.innerText = "Selamat bergabung dengan Squad PIH UIN Jakarta! Silakan cek email Anda untuk instruksi onboarding selanjutnya.";
                 modal.classList.add('active');
             } else if (status === 'rejected') {
-                // Notifikasi penolakan bisa disesuaikan jika ingin muncul popup
                 updateUI(status);
+            }
+        }
+
+        async function handleCloseModal() {
+            if (!currentAppId) return;
+
+            // Update ke Supabase bahwa user sudah melihat (acknowledge) perubahan status ini
+            const { error } = await supabase
+                .from('applications')
+                .update({ acknowledged: true })
+                .eq('id', currentAppId);
+
+            if (!error) {
+                modal?.classList.remove('active');
+            } else {
+                console.error("Gagal update acknowledge status:", error.message);
+                // Tetap tutup modal agar tidak mengganggu user jika ada kendala koneksi
+                modal?.classList.remove('active');
             }
         }
 
@@ -232,9 +270,6 @@ import '../styles/global.css';
             const steps = document.querySelectorAll('.step-item');
             
             let p = 0;
-            // administrasi (Titik 1) = 0%
-            // interview (Titik 2) = 50%
-            // accepted/rejected (Titik 3) = 100%
             if (status === 'interview') p = 50;
             if (status === 'accepted' || status === 'rejected') p = 100;
             progressBar.style.width = `${p}%`;
@@ -244,7 +279,6 @@ import '../styles/global.css';
                 const circle = item.querySelector('.circle') as HTMLElement;
                 if (!circle) return;
                 
-                // Reset warna
                 circle.classList.remove('border-[#1b509b]', 'bg-[#1b509b]', 'text-white', 'border-emerald-500', 'bg-emerald-500', 'border-rose-500', 'text-rose-500');
 
                 if (status === 'administrasi' && s === 'administrasi') {
@@ -261,7 +295,7 @@ import '../styles/global.css';
             });
         }
 
-        modalClose?.addEventListener('click', () => modal?.classList.remove('active'));
+        modalClose?.addEventListener('click', handleCloseModal);
 
         logoutBtn?.addEventListener('click', async () => {
             await supabase.auth.signOut();
