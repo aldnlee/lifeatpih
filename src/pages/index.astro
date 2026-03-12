@@ -252,7 +252,7 @@ import '../styles/global.css';
                     </a>
                 </li>
                 <li class="toolbarItem">
-                    <a class="toolbarLink protected-link" href="/dashboard">
+                    <a class="toolbarLink protected-link" href="/dash">
                         <span class="tooltip">Status</span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                     </a>
@@ -298,6 +298,17 @@ import '../styles/global.css';
                 }
             }
 
+            // FUNGSI LOGOUT
+            async function handleLogout() {
+                try {
+                    const { error } = await supabase.auth.signOut();
+                    if (error) throw error;
+                    window.location.reload();
+                } catch (error: any) {
+                    console.error("Error logging out:", error.message);
+                }
+            }
+
             // MODAL CONTROL
             function showModal() {
                 authModal?.classList.add('active');
@@ -322,7 +333,12 @@ import '../styles/global.css';
                             <span class="text-[10px] font-bold tracking-widest uppercase opacity-70">${user.user_metadata.full_name || 'User'}</span>
                             <div class="w-1 h-1 bg-green-400 rounded-full animate-pulse"></div>
                         </div>
+                        <button id="logout-btn" class="text-[10px] font-bold tracking-[0.4em] uppercase text-red-400 hover:text-red-300 bg-transparent border-none cursor-pointer">
+                            Logout
+                        </button>
                     `;
+                    document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
+
                     ctaContainer.innerHTML = `
                         <a href="/dash" class="auth-btn bg-white text-[#1b509b] px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest no-underline">Dashboard</a>
                         <a href="/join" class="auth-btn bg-transparent border-2 border-white/30 text-white px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:border-white transition-colors no-underline">Daftar Intern</a>
@@ -352,10 +368,10 @@ import '../styles/global.css';
                 const target = e.target as HTMLElement;
                 const link = target.closest('.toolbarLink');
                 
-                // Cek jika link memiliki class 'protected-link' dan user belum login
+                // Cek jika link memiliki class 'protected-link' (Status, Hall of Fame, Guidelines) dan user belum login
                 if (link && link.classList.contains('protected-link') && !currentUser) {
                     e.preventDefault(); 
-                    showModal(); // Tampilkan popup khusus
+                    showModal(); 
                 }
             });
 
