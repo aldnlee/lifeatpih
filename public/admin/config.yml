@@ -4,21 +4,20 @@ backend:
   branch: main
   base_url: https://lifeatpih.denleerider354.workers.dev
   auth_endpoint: /auth
-  # JANGAN masukkan site_id: demo.decapcms.org di sini
 
-# --- TAMBAHKAN INI ---
-# Pengaturan Penyimpanan Lokal
-media_folder: "public/images/uploads" # Folder fisik di GitHub
-public_folder: "/images/uploads"      # Jalur akses di website
+# Pengaturan Media
+media_folder: "public/images/uploads" 
+public_folder: "/images/uploads"      
 
 collections:
   - name: "teams"
     label: "PIH Teams"
     folder: "src/content/teams"
     create: true
-    format: "json"
+    extension: "yaml" # Konsisten menggunakan YAML
+    format: "yaml"
     fields:
-      - { label: "Batch Name", name: "title", widget: "string" }
+      - { label: "Batch Name", name: "title", widget: "string", hint: "Contoh: Gen 9" }
       - label: "Roles"
         name: "roles"
         widget: "list"
@@ -27,17 +26,14 @@ collections:
           - label: "Photos"
             name: "photos"
             widget: "list"
-            # allow_multiple memungkigitnkan kamu pilih banyak foto sekaligus
-            field: 
-              label: "Image"
-              name: "url"
-              widget: "image"
-              allow_multiple: true
+            field: { label: "Image", name: "url", widget: "image" }
 
   - name: "internal_docs"
     label: "Dokumen Internal"
-    folder: "src/pages/internal" # Mengarah ke folder rahasia tadi
+    folder: "src/pages/internal"
     create: true
+    extension: "md" # Dokumentasi wajib Markdown
+    format: "frontmatter"
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Body", name: "body", widget: "markdown" }
@@ -47,18 +43,16 @@ collections:
     folder: "src/content/vacancies"
     create: true
     slug: "{{slug}}"
-    format: "yaml" # Menggunakan format YAML agar lebih mudah dibaca
+    extension: "yaml" # Data terstruktur wajib YAML
+    format: "yaml"
     fields:
-      - { label: "Nama Batch", name: "batch_name", widget: "string", hint: "Contoh: Magang PIH Batch 9" }
+      - { label: "Nama Batch", name: "batch_name", widget: "string", hint: "Contoh: Batch 9" }
       - { label: "Status Pendaftaran", name: "status", widget: "select", options: ["Open", "Closed"], default: "Open" }
-      
-      # --- BAGIAN LIST ROLE ---
       - label: "Daftar Role Tersedia"
         name: "roles"
         widget: "list"
-        summary: "{{fields.role_title}}" # Menampilkan nama role di ringkasan list
+        summary: "{{fields.role_title}}"
         fields:
-          - { label: "Nama Role/Posisi", name: "role_title", widget: "string", hint: "Contoh: Graphic Designer" }
-          - { label: "Deskripsi Singkat (Opsional)", name: "description", widget: "text", required: false }
-      
-      - { label: "Konten Pengumuman", name: "body", widget: "markdown", hint: "Tulis detail persyaratan umum di sini" }
+          - { label: "Nama Role/Posisi", name: "role_title", widget: "string" }
+          - { label: "Deskripsi Singkat", name: "description", widget: "text", required: false }
+      - { label: "Konten Pengumuman", name: "body", widget: "markdown" }

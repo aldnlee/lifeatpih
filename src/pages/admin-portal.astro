@@ -62,9 +62,15 @@ import '../styles/global.css';
                     <h2 class="text-4xl font-black text-slate-900 uppercase italic leading-none">Pendaftar Magang</h2>
                     <p class="text-slate-500 mt-2">Daftar mahasiswa yang mengajukan aplikasi pada Batch terbaru.</p>
                 </div>
-                <button id="refresh-btn" class="bg-white border border-slate-200 text-slate-600 px-6 py-3 rounded-2xl text-xs font-bold hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
-                    🔄 Refresh Data
-                </button>
+                <div class="flex gap-3">
+                    <!-- TOMBOL BARU KE CMS -->
+                    <a href="/admin" target="_blank" class="bg-blue-600 text-white px-6 py-3 rounded-2xl text-xs font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20 flex items-center gap-2">
+                        📂 Kelola Lowongan (CMS)
+                    </a>
+                    <button id="refresh-btn" class="bg-white border border-slate-200 text-slate-600 px-6 py-3 rounded-2xl text-xs font-bold hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
+                        🔄 Refresh Data
+                    </button>
+                </div>
             </div>
 
             <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-200 overflow-hidden">
