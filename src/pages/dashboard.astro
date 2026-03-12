@@ -243,6 +243,13 @@ import '../styles/global.css';
                 modal.classList.add('active');
             } else if (status === 'rejected') {
                 updateUI(status);
+                // Kustomisasi khusus untuk Reject (Merah/Netral)
+                modalIcon.innerText = "🤝"; 
+                modalTitle.innerText = "Terima Kasih";
+                modalTitle.classList.remove('text-slate-900');
+                modalTitle.classList.add('text-rose-600');
+                modalMsg.innerText = "Terima kasih telah melamar di Squad PIH. Saat ini kami belum bisa melanjutkan aplikasi Anda ke tahap berikutnya. Jangan berkecil hati dan terus asah kemampuanmu!";
+                modalClose!.className = "w-full bg-slate-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg";
             }
         }
 
