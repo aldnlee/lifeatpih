@@ -1,317 +1,308 @@
 ---
 import '../styles/global.css';
-import { getCollection } from 'astro:content';
-
-// 0. Definisi Interface untuk Type Safety
-interface Role {
-  role_title: string;
-  description?: string;
-}
-
-// 1. Ambil data dari content collection vacancies
-// Astro akan memvalidasi data ini berdasarkan schema di src/content/config.ts
-const allBatches = await getCollection('vacancies' as any);
-
-/**
- * 2. PENCARIAN BATCH AKTIF
- * Mencari batch yang statusnya "Open" dengan toleransi penulisan (case-insensitive)
- */
-const activeBatch = allBatches.find((b: any) => {
-    // Cek apakah data ada di root atau di dalam objek 'map' (antisipasi bug CMS)
-    const d = b.data?.map ? b.data.map : b.data;
-    const status = (d?.status || "").toLowerCase().trim();
-    return status === 'open';
-}) as any;
-
-// 3. Validasi: Apakah ada batch yang buka?
-const isAnyOpen = !!activeBatch;
-
-// 4. Ekstraksi Data Batch
-const finalData = activeBatch?.data?.map ? activeBatch.data.map : activeBatch?.data;
-
-const availableRoles: Role[] = finalData?.roles || [];
-const currentBatchName = finalData?.batch_name || "Join the Squad";
-const currentBatchId = finalData?.batch_id || "unspecified";
-
-// Format roles untuk Select Option
-const roleOptions = availableRoles.map((role: Role) => ({
-    display: `${role.role_title} (${currentBatchName})`,
-    value: `${role.role_title} - ${currentBatchName}`
-}));
+// Dashboard pelamar dengan fitur Notifikasi Persisten & Real-time
 ---
 
 <html lang="id">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{currentBatchName} | Life at PIH</title>
+    <title>Dashboard | Life at PIH</title>
     <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <style is:global>
-        :root { 
-            --pih-blue: #1b509b; 
-            --pih-dark: #0f2854; 
-            --white: #ffffff;
-        }
+    <style>
+        body { font-family: 'Funnel Display', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
         
-        body { 
-            font-family: 'Funnel Display', sans-serif; 
-            background: var(--pih-blue); 
-            color: white; 
-            margin: 0; 
-            overflow-x: hidden; 
-        }
-
-        header { padding: 60px 20px; text-align: center; }
-        .main-title { font-size: 8vw; font-weight: 800; line-height: 0.8; letter-spacing: -0.05em; margin: 0; text-transform: uppercase; }
-        .sub-title { font-size: 1.2rem; opacity: 0.6; margin-top: 10px; font-weight: 300; letter-spacing: 0.1em; }
-
-        .form-wrapper { max-width: 800px; margin: 0 auto; padding: 0 20px 180px 20px; }
-
-        .status-badge {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 100px;
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 24px;
-        }
-        .status-open { background: #4ade80; color: #064e3b; }
-        .status-closed { background: #f87171; color: #7f1d1d; }
-
-        .closed-state {
-            text-align: center;
-            padding: 80px 40px;
-            border: 1px dashed rgba(255,255,255,0.2);
-            border-radius: 32px;
-            background: rgba(255,255,255,0.02);
+        /* Modal Animation */
+        #celebration-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 40, 84, 0.6);
             backdrop-filter: blur(10px);
         }
-
-        .registration-container {
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(20px);
-            padding: 40px;
-            border-radius: 32px;
+        #celebration-modal.active { display: flex; animation: fadeIn 0.5s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .modal-box {
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+        #celebration-modal.active .modal-box { transform: translateY(0); opacity: 1; }
 
-        input, select {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            color: white !important;
-            transition: all 0.3s ease;
-        }
-
-        input:focus, select:focus {
-            background: rgba(255, 255, 255, 0.15) !important;
-            border-color: white !important;
-            outline: none;
-        }
-
-        option { background: var(--pih-dark); color: white; }
-
-        /* DOCK STYLES */
-        .dock-wrapper { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; justify-content: center; z-index: 1000; }
-        .toolbar { display: inline-flex; justify-content: center; align-items: center; height: 65px; border-radius: 22px; padding: 0 15px; background-color: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); list-style: none; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.3); margin: 0; }
-        .toolbarItem { width: 45px; height: 45px; margin: 0 6px; position: relative; display: flex; align-items: center; justify-content: center; }
-        .toolbarLink { display: flex; height: 100%; width: 100%; text-decoration: none; align-items: center; justify-content: center; background: white; border-radius: 12px; color: var(--pih-dark); transition: transform 0.3s ease, background 0.3s ease; }
-        .tooltip { position: absolute; top: -45px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; opacity: 0; transition: opacity 0.2s; white-space: nowrap; pointer-events: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .toolbarItem:hover .tooltip { opacity: 1; }
+        .progress-dot { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 min-h-screen">
 
-    <header>
-        <h1 class="main-title">Join The <br/><span style="font-style: italic; font-weight: 300;">Squad</span></h1>
-        <p class="sub-title">BE PART OF PIH UIN JAKARTA</p>
-    </header>
+    <!-- CELEBRATION MODAL (PERSISTENT) -->
+    <div id="celebration-modal">
+        <div class="modal-box bg-white max-w-sm w-full p-10 rounded-[3rem] text-center shadow-2xl relative overflow-hidden border border-slate-100">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-400/10 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-yellow-400/10 rounded-full blur-3xl"></div>
+            
+            <div id="modal-icon" class="text-6xl mb-6 scale-110">🎉</div>
+            <h2 id="modal-title" class="text-2xl font-black text-slate-900 uppercase italic mb-3 leading-tight tracking-tighter">Selamat!</h2>
+            <p id="modal-message" class="text-slate-500 text-sm leading-relaxed mb-8">Lamaran Anda telah disetujui untuk lanjut ke tahap berikutnya.</p>
+            
+            <button id="close-modal-btn" class="w-full bg-[#1b509b] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-900/30 hover:scale-[1.03] active:scale-95 transition-all">
+                Lanjutkan ke Dashboard
+            </button>
+        </div>
+    </div>
 
-    <main class="form-wrapper">
-        <a href="/" style="display: inline-block; color: white; text-decoration: none; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 30px; opacity: 0.5; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">
-            ← Back to Home
-        </a>
+    <nav class="bg-[#0f2854] text-white p-4 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex justify-between items-center text-sm font-bold">
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 bg-white rounded flex items-center justify-center text-[#0f2854]">P</div>
+                <span class="tracking-tighter">LIFE AT PIH</span>
+            </div>
+            <button id="logout-btn" class="text-red-400 text-[10px] uppercase tracking-widest hover:text-red-300 transition-colors">Logout</button>
+        </div>
+    </nav>
 
-        {isAnyOpen ? (
-            <div>
-                <div class="status-badge status-open">Recruitment Open</div>
-                
-                <div class="registration-container">
-                    <!-- Simpan Batch ID dari CMS ke hidden input agar bisa dibaca JS -->
-                    <input type="hidden" id="batch_id_val" value={currentBatchId} />
-                    
-                    <form id="apply-form" class="space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60">Nama Lengkap</label>
-                                <input type="text" id="full_name" required class="w-full px-5 py-4 rounded-2xl" placeholder="Sesuai KTP">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60">Jurusan</label>
-                                <input type="text" id="major" required class="w-full px-5 py-4 rounded-2xl" placeholder="Contoh: Informatika">
-                            </div>
-                        </div>
+    <main class="max-w-5xl mx-auto py-12 px-6">
+        <div id="loading-state" class="text-center py-20">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-900 mx-auto"></div>
+            <p class="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sinkronisasi Data...</p>
+        </div>
 
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60">Posisi Magang</label>
-                            <select id="role_applied" required class="w-full px-5 py-4 rounded-2xl appearance-none">
-                                <option value="" disabled selected>-- Pilih Posisi --</option>
-                                {roleOptions.map((role) => (
-                                    <option value={role.value}>{role.display}</option>
-                                ))}
-                            </select>
-                        </div>
+        <div id="dashboard-content" class="hidden">
+            <div id="already-applied-banner" class="hidden mb-8 bg-blue-50 border border-blue-100 p-6 rounded-[2rem] flex items-center gap-4">
+                <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center text-lg shadow-md">✓</div>
+                <div>
+                    <p class="text-xs font-black text-blue-900 uppercase tracking-widest">Pendaftaran Aktif</p>
+                    <p class="text-sm text-blue-700/80 font-medium">Anda sudah terdaftar untuk batch ini. Pantau terus progres Anda di bawah.</p>
+                </div>
+            </div>
 
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60">Link CV & Portofolio</label>
-                            <input type="url" id="portfolio_url" required class="w-full px-5 py-4 rounded-2xl" placeholder="https://drive.google.com/...">
-                        </div>
+            <h1 class="text-4xl font-extrabold text-slate-900 mb-8 italic">Halo, <span id="user-name" class="text-[#1b509b]">-</span>!</h1>
 
-                        <button type="submit" id="submit-btn" class="w-full bg-white text-[#1b509b] font-black py-5 rounded-2xl shadow-xl hover:scale-[1.02] transition-transform active:scale-95 uppercase tracking-widest text-sm">
-                            Kirim Lamaran Sekarang
-                        </button>
-                    </form>
+            <div class="glass-card p-10 rounded-[2.5rem] shadow-2xl shadow-blue-900/5 mb-8 overflow-hidden relative border-t-8 border-t-[#1b509b]">
+                <div class="flex justify-between items-center mb-12 font-bold">
+                    <span class="text-slate-500 uppercase text-[10px] tracking-widest">Status Rekrutmen Real-time</span>
+                    <span id="badge-status" class="px-4 py-1.5 rounded-full text-[9px] bg-slate-100 uppercase border border-slate-200 font-black tracking-widest">-</span>
                 </div>
                 
-                <div class="mt-12 text-center opacity-40">
-                    <p class="text-[10px] uppercase font-bold tracking-[0.3em] mb-4">Posisi Tersedia:</p>
-                    <div class="flex flex-wrap justify-center gap-3">
-                        {availableRoles.map((r: Role) => (
-                            <span class="text-[11px] border border-white/30 px-4 py-1.5 rounded-full">{r.role_title}</span>
+                <div class="relative px-6 pb-6">
+                    <div class="absolute top-5 left-10 right-10 h-1.5 bg-slate-200/50 rounded-full"></div>
+                    <div id="progress-bar" class="absolute top-5 left-10 h-1.5 bg-[#1b509b] transition-all duration-1000 ease-in-out rounded-full shadow-[0_0_15px_rgba(27,80,155,0.3)]" style="width: 0%"></div>
+
+                    <div class="flex justify-between relative">
+                        {['administrasi', 'interview', 'accepted'].map((step, i) => (
+                            <div class="step-item flex flex-col items-center w-24 group" data-step={step}>
+                                <div class="circle progress-dot w-12 h-12 rounded-2xl bg-white border-4 border-slate-100 flex items-center justify-center font-black text-slate-300 z-10 shadow-sm transition-all duration-500">
+                                    {i + 1}
+                                </div>
+                                <span class="mt-4 text-[9px] uppercase font-black text-center leading-tight tracking-widest text-slate-400">{step}</span>
+                            </div>
                         ))}
                     </div>
                 </div>
             </div>
-        ) : (
-            <div class="closed-state">
-                <div class="status-badge status-closed">Registration Closed</div>
-                <h2 class="text-3xl font-black uppercase tracking-tighter mb-4">Pendaftaran Ditutup</h2>
-                <p class="text-white/50 text-sm max-w-md mx-auto leading-relaxed font-light">
-                    Mohon maaf, saat ini sedang tidak ada lowongan magang yang tersedia. 
-                    Pantau terus media sosial kami untuk informasi Batch selanjutnya.
-                </p>
-                
-                <div class="mt-20 pt-10 border-t border-white/5 text-left">
-                   <h4 class="text-[9px] font-black uppercase tracking-widest text-white/20 mb-4">Diagnosa Konten</h4>
-                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                       <div class="bg-black/20 p-4 rounded-2xl">
-                           <p class="text-[8px] font-bold text-white/30 uppercase mb-1">Total File di /vacancies</p>
-                           <p class="text-xs font-mono text-white/60">{allBatches.length} File</p>
-                       </div>
-                       <div class="bg-black/20 p-4 rounded-2xl">
-                           <p class="text-[8px] font-bold text-white/30 uppercase mb-1">Status Sinkronisasi</p>
-                           <p class="text-[10px] font-mono text-amber-200/50 uppercase tracking-tighter">Menunggu Konfigurasi CMS</p>
-                       </div>
-                   </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div id="status-info-box" class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex gap-6 items-center">
+                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl shadow-inner text-blue-600">📋</div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Posisi dilamar</p>
+                        <p id="applied-role" class="text-xl font-black text-slate-800 italic leading-none">-</p>
+                    </div>
+                </div>
+
+                <div id="batch-info-box" class="bg-[#0f2854] p-8 rounded-[2.5rem] shadow-lg flex gap-6 items-center">
+                    <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-2xl border border-white/10 text-white italic font-black">#</div>
+                    <div>
+                        <p class="text-[10px] font-bold text-blue-200/40 uppercase tracking-widest mb-1">ID Angkatan</p>
+                        <p id="applied-batch" class="text-xl font-black text-white uppercase tracking-tighter leading-none">-</p>
+                    </div>
                 </div>
             </div>
-        )}
+
+            <div id="no-application" class="hidden text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-200">
+                <div class="text-4xl mb-4">🚀</div>
+                <p class="mb-8 font-bold text-slate-400 uppercase tracking-widest text-xs">Belum ada lamaran terdaftar</p>
+                <a href="/join" class="bg-[#1b509b] text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:scale-105 transition-transform inline-block">Daftar Sekarang</a>
+            </div>
+        </div>
     </main>
 
-    <nav class="dock-wrapper">
-        <ul class="toolbar">
-            <li class="toolbarItem">
-                <a class="toolbarLink" href="/">
-                    <span class="tooltip">Home</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                </a>
-            </li>
-            <li class="toolbarItem">
-                <a class="toolbarLink" href="/teams">
-                    <span class="tooltip">Hall of Fame</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                </a>
-            </li>
-            <li class="toolbarItem">
-                <a class="toolbarLink" href="/join" style="background: var(--pih-dark); color: white;">
-                    <span class="tooltip">Register</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
-                </a>
-            </li>
-            <li class="toolbarItem">
-                <a class="toolbarLink" href="/internal">
-                    <span class="tooltip">Guidelines</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><circle cx="12" cy="12" r="4"/></svg>
-                </a>
-            </li>
-        </ul>
-    </nav>
-
     <script>
-        import { gsap } from "gsap";
         import { supabase } from '../lib/supabase';
 
-        // --- 1. DOCK ANIMATION ---
-        const dock = document.querySelector(".toolbar") as HTMLElement;
-        const icons = document.querySelectorAll(".toolbarItem");
-        if (dock && icons.length > 0) {
-            const firstIcon = icons[0] as HTMLElement;
-            const min = 48; const max = 100; const bound = min * Math.PI;
-            gsap.set(icons, { transformOrigin: "50% 120%", height: 40 });
-            dock.addEventListener("mousemove", (event: MouseEvent) => {
-                const rect = dock.getBoundingClientRect();
-                const offset = rect.left + firstIcon.offsetLeft;
-                const pointer = event.clientX - offset;
-                icons.forEach((icon, i) => {
-                    const distance = (i * min + min / 2) - pointer;
-                    let x = 0, scale = 1;
-                    if (Math.abs(distance) < bound) {
-                        const rad = distance / min * 0.5;
-                        scale = 1 + (max / min - 1) * Math.cos(rad);
-                        x = 2 * (max - min) * Math.sin(rad);
-                    } else { x = (distance < 0 ? 2 : -2) * (max - min); }
-                    gsap.to(icon, { duration: 0.3, x: x, scale: scale, ease: "power3.out" });
-                });
-            });
-            dock.addEventListener("mouseleave", () => gsap.to(icons, { duration: 0.3, scale: 1, x: 0 }));
-        }
+        const loadingState = document.getElementById('loading-state') as HTMLElement;
+        const dashboardContent = document.getElementById('dashboard-content') as HTMLElement;
+        const userName = document.getElementById('user-name') as HTMLElement;
+        const badgeStatus = document.getElementById('badge-status') as HTMLElement;
+        const progressBar = document.getElementById('progress-bar') as HTMLElement;
+        const appliedRole = document.getElementById('applied-role') as HTMLElement;
+        const appliedBatch = document.getElementById('applied-batch') as HTMLElement;
+        const noApp = document.getElementById('no-application') as HTMLElement;
+        const statusBox = document.getElementById('status-info-box') as HTMLElement;
+        const batchBox = document.getElementById('batch-info-box') as HTMLElement;
+        const logoutBtn = document.getElementById('logout-btn') as HTMLButtonElement;
+        const appliedBanner = document.getElementById('already-applied-banner') as HTMLElement;
 
-        // --- 2. SUPABASE SUBMISSION LOGIC ---
-        const form = document.getElementById('apply-form') as HTMLFormElement | null;
-        const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
-        const batchIdInput = document.getElementById('batch_id_val') as HTMLInputElement | null;
+        // Modal Elements
+        const modal = document.getElementById('celebration-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMsg = document.getElementById('modal-message');
+        const modalIcon = document.getElementById('modal-icon');
+        const modalClose = document.getElementById('close-modal-btn');
 
-        form?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!submitBtn) return;
+        let currentAppId = "";
+        let lastStatus = "";
 
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<span class="animate-pulse uppercase tracking-widest text-[10px]">Mengirim Lamaran...</span>`;
-
+        async function init() {
+            // 1. Cek Sesi
             const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { window.location.href = '/'; return; }
 
-            if (!user) {
-                alert("Sesi berakhir. Silakan login kembali melalui halaman utama.");
-                window.location.href = '/';
+            userName.innerText = user.user_metadata.full_name || user.email?.split('@')[0] || "User";
+
+            // 2. Load data awal
+            const { data: application } = await supabase
+                .from('applications')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .maybeSingle();
+
+            loadingState.classList.add('hidden');
+            dashboardContent.classList.remove('hidden');
+
+            if (!application) {
+                noApp.classList.remove('hidden');
+                statusBox.classList.add('hidden');
+                batchBox.classList.add('hidden');
+                appliedBanner.classList.add('hidden');
                 return;
             }
 
-            const formData = {
-                user_id: user.id,
-                user_email: user.email,
-                full_name: (document.getElementById('full_name') as HTMLInputElement).value,
-                major: (document.getElementById('major') as HTMLInputElement).value,
-                role_applied: (document.getElementById('role_applied') as HTMLSelectElement).value,
-                portfolio_url: (document.getElementById('portfolio_url') as HTMLInputElement).value,
-                batch_id: batchIdInput?.value || "unspecified", 
-                status: 'administrasi'
-            };
+            currentAppId = application.id;
+            appliedBanner.classList.remove('hidden');
+            appliedRole.innerText = application.role_applied;
+            appliedBatch.innerText = application.batch_id || "B-Legacy";
+            lastStatus = application.status;
+            
+            updateUI(application.status);
 
+            // LOGIKA PERSISTENSI: Munculkan modal jika status sudah berubah dan belum di-acknowledge
+            // (Kita menganggap 'administrasi' adalah status awal yang tidak perlu pop-up selamat saat baru daftar)
+            if (application.status !== 'administrasi' && !application.acknowledged) {
+                showNotification(application.status);
+            }
+
+            // --- 3. REALTIME SUBSCRIPTION ---
+            supabase
+                .channel('dashboard-realtime')
+                .on(
+                    'postgres_changes',
+                    { 
+                        event: 'UPDATE', 
+                        schema: 'public', 
+                        table: 'applications',
+                        filter: `user_id=eq.${user.id}` 
+                    },
+                    async (payload) => {
+                        const newStatus = payload.new.status;
+                        if (newStatus !== lastStatus) {
+                            // Reset acknowledged di database saat status berubah (agar pop-up muncul lagi)
+                            await supabase
+                                .from('applications')
+                                .update({ acknowledged: false })
+                                .eq('id', currentAppId);
+                            
+                            showNotification(newStatus);
+                            lastStatus = newStatus;
+                            updateUI(newStatus);
+                        }
+                    }
+                )
+                .subscribe();
+        }
+
+        function showNotification(status: string) {
+            if (!modal || !modalTitle || !modalMsg || !modalIcon) return;
+
+            if (status === 'interview') {
+                modalIcon.innerText = "📩";
+                modalTitle.innerText = "Tahap Wawancara!";
+                modalMsg.innerText = "Selamat! Berkas Anda lolos seleksi administrasi. Tim kami akan segera menghubungi Anda untuk jadwal wawancara.";
+                modal.classList.add('active');
+            } else if (status === 'accepted') {
+                modalIcon.innerText = "🎉";
+                modalTitle.innerText = "Anda Diterima!";
+                modalMsg.innerText = "Selamat bergabung dengan Squad PIH UIN Jakarta! Silakan cek email Anda untuk instruksi onboarding selanjutnya.";
+                modal.classList.add('active');
+            } else if (status === 'rejected') {
+                updateUI(status);
+            }
+        }
+
+        async function handleCloseModal() {
+            if (!currentAppId) return;
+
+            // Update ke Supabase bahwa user sudah melihat (acknowledge) perubahan status ini
             const { error } = await supabase
                 .from('applications')
-                .insert([formData]);
+                .update({ acknowledged: true })
+                .eq('id', currentAppId);
 
-            if (error) {
-                alert("Terjadi kesalahan database: " + error.message);
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Kirim Lamaran Sekarang";
+            if (!error) {
+                modal?.classList.remove('active');
             } else {
-                window.location.href = '/dashboard';
+                console.error("Gagal update acknowledge status:", error.message);
+                // Tetap tutup modal agar tidak mengganggu user jika ada kendala koneksi
+                modal?.classList.remove('active');
             }
+        }
+
+        function updateUI(status: string) {
+            if (!badgeStatus || !progressBar) return;
+            badgeStatus.innerText = status;
+            const steps = document.querySelectorAll('.step-item');
+            
+            let p = 0;
+            if (status === 'interview') p = 50;
+            if (status === 'accepted' || status === 'rejected') p = 100;
+            progressBar.style.width = `${p}%`;
+
+            steps.forEach((item) => {
+                const s = (item as HTMLElement).dataset.step;
+                const circle = item.querySelector('.circle') as HTMLElement;
+                if (!circle) return;
+                
+                circle.classList.remove('border-[#1b509b]', 'bg-[#1b509b]', 'text-white', 'border-emerald-500', 'bg-emerald-500', 'border-rose-500', 'text-rose-500');
+
+                if (status === 'administrasi' && s === 'administrasi') {
+                    circle.classList.add('border-[#1b509b]', 'bg-[#1b509b]', 'text-white');
+                } else if (status === 'interview' && (s === 'administrasi' || s === 'interview')) {
+                    circle.classList.add('border-[#1b509b]', 'bg-[#1b509b]', 'text-white');
+                } else if (status === 'accepted') {
+                    circle.classList.add('border-emerald-500', 'bg-emerald-500', 'text-white');
+                    badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-emerald-50 text-emerald-600 border border-emerald-100 font-black uppercase tracking-widest";
+                } else if (status === 'rejected') {
+                    circle.classList.add('border-rose-500', 'text-rose-500');
+                    badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-rose-50 text-rose-600 border border-rose-100 font-black uppercase tracking-widest";
+                }
+            });
+        }
+
+        modalClose?.addEventListener('click', handleCloseModal);
+
+        logoutBtn?.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = '/';
         });
+
+        init();
     </script>
 </body>
 </html>
