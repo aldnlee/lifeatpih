@@ -14,7 +14,7 @@ collections:
     label: "PIH Teams"
     folder: "src/content/teams"
     create: true
-    extension: "yaml" # Konsisten menggunakan YAML
+    extension: "yaml"
     format: "yaml"
     fields:
       - { label: "Batch Name", name: "title", widget: "string", hint: "Contoh: Gen 9" }
@@ -32,7 +32,7 @@ collections:
     label: "Dokumen Internal"
     folder: "src/pages/internal"
     create: true
-    extension: "md" # Dokumentasi wajib Markdown
+    extension: "md"
     format: "frontmatter"
     fields:
       - { label: "Title", name: "title", widget: "string" }
@@ -43,9 +43,11 @@ collections:
     folder: "src/content/vacancies"
     create: true
     slug: "{{slug}}"
-    extension: "yaml" # Data terstruktur wajib YAML
+    extension: "yaml"
     format: "yaml"
     fields:
+      # --- FIELD UNTUK DATABASE SYNC ---
+      - { label: "ID Batch (Unik)", name: "batch_id", widget: "string", hint: "Gunakan kode unik tanpa spasi, misal: pih-b1. JANGAN diubah jika sudah ada pelamar." }
       - { label: "Nama Batch", name: "batch_name", widget: "string", hint: "Contoh: Batch 9" }
       - { label: "Status Pendaftaran", name: "status", widget: "select", options: ["Open", "Closed"], default: "Open" }
       - label: "Daftar Role Tersedia"

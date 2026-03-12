@@ -17,9 +17,10 @@ const activeBatch = allBatches.find((b: any) => b.data.status === 'Open') as any
 // 3. Validasi: Apakah ada batch yang buka?
 const isAnyOpen = !!activeBatch;
 
-// 4. Ambil roles dan batch_name dengan safety check
+// 4. Ambil roles, batch_name, dan batch_id dengan safety check
 const availableRoles: Role[] = activeBatch?.data?.roles || [];
 const currentBatchName = activeBatch?.data?.batch_name || "Join the Squad";
+const currentBatchId = activeBatch?.data?.batch_id || "unspecified"; // Diambil dari CMS
 
 // Format roles untuk Select Option dengan tipe eksplisit
 const roleOptions = availableRoles.map((role: Role) => ({
@@ -129,6 +130,9 @@ const roleOptions = availableRoles.map((role: Role) => ({
                 <div class="status-badge status-open">Recruitment Open</div>
                 
                 <div class="registration-container">
+                    <!-- Hidden field to pass Batch ID to JS -->
+                    <input type="hidden" id="batch_id_val" value={currentBatchId} />
+                    
                     <form id="apply-form" class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
@@ -244,13 +248,14 @@ const roleOptions = availableRoles.map((role: Role) => ({
         // --- 2. SUPABASE SUBMISSION LOGIC ---
         const form = document.getElementById('apply-form') as HTMLFormElement | null;
         const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+        const batchIdInput = document.getElementById('batch_id_val') as HTMLInputElement | null;
 
         form?.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!submitBtn) return;
 
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<span class="animate-pulse">Mengirim...</span>`;
+            submitBtn.innerHTML = `<span class="animate-pulse uppercase tracking-widest text-[10px]">Mengirim Lamaran...</span>`;
 
             // Cek Sesi User
             const { data: { user } } = await supabase.auth.getUser();
@@ -268,6 +273,7 @@ const roleOptions = availableRoles.map((role: Role) => ({
                 major: (document.getElementById('major') as HTMLInputElement).value,
                 role_applied: (document.getElementById('role_applied') as HTMLSelectElement).value,
                 portfolio_url: (document.getElementById('portfolio_url') as HTMLInputElement).value,
+                batch_id: batchIdInput?.value || "unspecified", // Tambahkan batch_id untuk archiving
                 status: 'administrasi'
             };
 
@@ -280,7 +286,7 @@ const roleOptions = availableRoles.map((role: Role) => ({
                 submitBtn.disabled = false;
                 submitBtn.innerText = "Kirim Lamaran Sekarang";
             } else {
-                // Berhasil: Langsung arahkan ke dash
+                // Berhasil: Langsung arahkan ke dashboard
                 window.location.href = '/dashboard';
             }
         });
