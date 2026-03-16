@@ -59,7 +59,7 @@ collections:
           - { label: "Deskripsi Singkat", name: "description", widget: "text", required: false }
       - { label: "Konten Pengumuman", name: "body", widget: "markdown" }
 
-      - name: "role_details"
+  - name: "role_details"
     label: "Detail Role/Posisi"
     folder: "src/content/roles" # Folder penyimpanan file markdown/yaml
     create: true
