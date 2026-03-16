@@ -3,7 +3,7 @@ import '../styles/global.css';
 import { getCollection } from 'astro:content';
 
 // 1. Ambil data dari Decap CMS
-// Melakukan cast ke any[] untuk menghindari error tipe data pada environment development
+// Melakukan cast ke any untuk fleksibilitas schema yang sering berubah di CMS
 const allBatches = await getCollection('vacancies' as any) as any[];
 const rolesFromCMS = await getCollection('roles' as any) as any[];
 
@@ -57,7 +57,7 @@ if (isOpen && activeBatchData) {
             .italic-text { font-style: italic; font-weight: 300; text-transform: lowercase; color: #ffffff; }
 
             /* --- 2. ROLES --- */
-            .role-list-item { border-bottom: 1px solid var(--border-white) !important; cursor: none; transition: background-color 0.3s ease; }
+            .role-list-item { border-bottom: 1px solid var(--border-white) !important; cursor: pointer; transition: background-color 0.3s ease; }
             .role-list-item:hover { background-color: rgba(255, 255, 255, 0.05); }
             
             .swipe-image {
@@ -243,6 +243,11 @@ if (isOpen && activeBatchData) {
                             </li>
                         </a>
                     ))}
+                    {rolesFromCMS.length === 0 && (
+                        <div class="col-span-full p-20 text-center opacity-30 italic">
+                            Belum ada data roles di CMS...
+                        </div>
+                    )}
                 </ul>
                 
                 <div class="px-8 md:px-24 mb-20 mt-10 text-center md:text-left">
