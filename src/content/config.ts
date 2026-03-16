@@ -27,9 +27,18 @@ const vacancies = defineCollection({
   }),
 });
 
-
+const rolesCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    category: z.string(),
+    icon: z.string(),
+    description: z.string(),
+  }),
+});
 
 export const collections = {
   'teams': teamsCollection,
   'vacancies': vacancies,
+  'roles': rolesCollection,
 };

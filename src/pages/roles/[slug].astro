@@ -1,0 +1,42 @@
+---
+import { getCollection } from 'astro:content';
+import '../../styles/global.css';
+
+export async function getStaticPaths() {
+  const roles = await getCollection('roles');
+  return roles.map(entry => ({
+    params: { slug: entry.slug }, props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <title>{entry.data.title} | Life at PIH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0f2854] text-white font-['Funnel_Display']">
+    <main class="max-w-4xl mx-auto py-20 px-8">
+        <a href="/" class="text-white/50 no-underline text-xs font-black uppercase tracking-widest hover:text-white transition-colors">← Kembali</a>
+        
+        <div class="mt-12">
+            <span class="text-6xl mb-6 block">{entry.data.icon}</span>
+            <span class="text-blue-400 font-bold uppercase tracking-[0.3em] text-xs">{entry.data.category}</span>
+            <h1 class="text-6xl font-black italic uppercase tracking-tighter mt-2">{entry.data.title}</h1>
+            <p class="text-xl text-white/70 mt-6 leading-relaxed italic">"{entry.data.description}"</p>
+        </div>
+
+        <div class="mt-16 prose prose-invert prose-blue max-w-none border-t border-white/10 pt-16">
+            <Content />
+        </div>
+
+        <div class="mt-20">
+            <a href="/join" class="inline-block bg-white text-[#0f2854] px-10 py-5 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-transform">Daftar Posisi Ini</a>
+        </div>
+    </main>
+</body>
+</html>

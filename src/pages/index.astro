@@ -1,5 +1,30 @@
 ---
 import '../styles/global.css';
+import { getCollection } from 'astro:content';
+
+// 1. Ambil data dari Decap CMS
+// Melakukan cast ke any[] untuk menghindari error tipe data pada environment development
+const allBatches = await getCollection('vacancies' as any) as any[];
+const rolesFromCMS = await getCollection('roles' as any) as any[];
+
+// 2. Cari batch yang sedang "Open"
+const activeBatch = allBatches.find((b: any) => {
+    const d = b.data?.map ? b.data.map : b.data;
+    return (d?.status || "").toLowerCase().trim() === 'open';
+}) as any;
+
+const isOpen = !!activeBatch;
+const activeBatchData = activeBatch?.data?.map ? activeBatch.data.map : activeBatch?.data;
+
+// Menentukan nama batch yang akan ditampilkan di broadcast bar
+let displayBatchName = "Internship";
+if (isOpen && activeBatchData) {
+    displayBatchName = activeBatchData.batch_name;
+} else if (allBatches.length > 0) {
+    const firstBatch = allBatches[0] as any;
+    const firstData = firstBatch.data?.map ? firstBatch.data.map : firstBatch.data;
+    displayBatchName = firstData?.batch_name || "Internship";
+}
 ---
 
 <html lang="id">
@@ -33,6 +58,8 @@ import '../styles/global.css';
 
             /* --- 2. ROLES --- */
             .role-list-item { border-bottom: 1px solid var(--border-white) !important; cursor: none; transition: background-color 0.3s ease; }
+            .role-list-item:hover { background-color: rgba(255, 255, 255, 0.05); }
+            
             .swipe-image {
                 position: fixed; top: 0; left: 0; width: 150px; height: 150px;
                 z-index: 50; pointer-events: none; opacity: 0; visibility: hidden;
@@ -137,13 +164,32 @@ import '../styles/global.css';
                 <img src="/images/letermark-uin.png" class="ml-auto w-32" alt="Logo PIH" />
             </navbar>
 
-            <section id="home" class="relative h-screen flex flex-col justify-start pt-32 mt-10 px-8 md:px-24 overflow-hidden">
+            <section id="home" class="relative h-screen flex flex-col justify-start pt-20 mt-1 px-8 md:px-24 overflow-hidden">
                 <div id="cursor-trail-container" class="pointer-events-none absolute inset-0 z-0">
                     {Array.from({ length: 6 }).map((_, i) => (
                         <div class="trail-dot w-4 h-4 bg-yellow-500/30 rounded-full blur-sm"></div>
                     ))}
                 </div>
                 
+                <!-- BROADCAST INFORMATION BAR -->
+                <div id="broadcast-bar" class="mb-8 z-20 opacity-0 -translate-y-4">
+                    <div class="inline-flex items-center gap-3 bg-white/10 backdrop-blur-xl px-10 py-4 rounded-full border border-white/20 shadow-2xl">
+                        <div class={`w-2 h-2 rounded-full ${isOpen ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'} shadow-[0_0_10px_rgba(52,211,153,0.5)]`}></div>
+                        <span class="text-[14px] font-black tracking-[0.2em] uppercase text-white/90">
+                            Application for {displayBatchName} is {isOpen ? 'Open' : 'Closed'}
+                        </span>
+                        {isOpen && (
+                            <a 
+                                id="broadcast-apply-link"
+                                href="/join" 
+                                class="ml-2 text-[12px] bg-white text-[#1b509b] px-4 py-1 rounded-full font-black hover:scale-105 transition-transform no-underline"
+                            >
+                                Apply Now
+                            </a>
+                        )}
+                    </div>
+                </div>
+
                 <h1 class="text-[9.5vw] font-[900] leading-[0.85] tracking-tighter pointer-events-none z-10 text-white">
                     <div class="overflow-hidden">
                         <span id="line-1" class="block">Welcome<span class="italic-text ml-2">to</span></span>
@@ -181,31 +227,26 @@ import '../styles/global.css';
                     </h2>
                     <div class="w-20 h-2 bg-white mt-8"></div>
                 </div>
+                
                 <ul class="w-full m-0 p-0 border-t border-white/20 grid grid-cols-1 md:grid-cols-2">
-                    {[
-                        { role: "Project Manager", cat: "Strategic", icon: "📈" },
-                        { role: "Videografer", cat: "Production", icon: "🎬" },
-                        { role: "Photografer", cat: "Production", icon: "📸" },
-                        { role: "Graphic Designer", cat: "Creative", icon: "🎨" },
-                        { role: "Journalist", cat: "Content", icon: "✍️" },
-                        { role: "Public Relation", cat: "Communication", icon: "📢" },
-                        { role: "Social Media Optimization", cat: "Communication", icon: "📱" },
-                        { role: "Editorial and Publish Management", cat: "Operational", icon: "📅" },
-                        { role: "Finance", cat: "Operational", icon: "💰" },
-                    ].map((item) => (
-                        <li class="role-list-item px-8 md:px-24 py-5 relative flex items-center justify-between group md:border-r border-white/20">
-                            <div class="swipe-image">{item.icon}</div>
-                            <div class="z-10">
-                                <span class="text-[10px] font-bold tracking-[0.4em] text-white/60 uppercase">{item.cat}</span>
-                                <h2 class="role-title text-3xl md:text-4xl font-light tracking-tight uppercase mt-2 text-white leading-tight">{item.role}</h2>
-                            </div>
-                        </li>
+                    {rolesFromCMS.map((role: any) => (
+                        <a href={`/roles/${role.slug}`} class="no-underline group">
+                            <li class="role-list-item px-8 md:px-24 py-12 relative flex items-center justify-between group md:border-r border-white/20">
+                                <div class="swipe-image">{role.data.icon}</div>
+                                <div class="z-10">
+                                    <span class="text-[10px] font-bold tracking-[0.4em] text-white/60 uppercase">{role.data.category}</span>
+                                    <h2 class="role-title text-3xl md:text-4xl font-light tracking-tight uppercase mt-2 text-white leading-tight group-hover:italic transition-all">
+                                        {role.data.title}
+                                    </h2>
+                                </div>
+                                <div class="text-white/20 group-hover:text-white transition-colors text-2xl">→</div>
+                            </li>
+                        </a>
                     ))}
                 </ul>
-                <div class="px-8 md:px-24 mb-20 mt-10">
-                    <a href="/teams" class="text-2xl text-white hover:text-white/70 transition-colors duration-300 border-b border-white/20 pb-1">
-                        Find out more about roles &rarr;
-                    </a>
+                
+                <div class="px-8 md:px-24 mb-20 mt-10 text-center md:text-left">
+                    <p class="text-white/30 text-[10px] font-bold uppercase tracking-widest italic">*Data roles dikelola dinamis melalui Decap CMS</p>
                 </div>
             </section>
             
@@ -277,6 +318,7 @@ import '../styles/global.css';
 
             const navActions = document.getElementById('nav-actions');
             const ctaContainer = document.getElementById('cta-container');
+            const broadcastBar = document.getElementById('broadcast-bar');
             const authModal = document.getElementById('auth-modal');
             const modalCloseBtn = document.getElementById('modal-close-btn');
             const modalLoginBtn = document.getElementById('modal-login-btn');
@@ -340,7 +382,7 @@ import '../styles/global.css';
                     document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
 
                     ctaContainer.innerHTML = `
-                        <a href="/dash" class="auth-btn bg-white text-[#1b509b] px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest no-underline">Dashboard</a>
+                        <a href="/dashboard" class="auth-btn bg-white text-[#1b509b] px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest no-underline">Dashboard</a>
                         <a href="/join" class="auth-btn bg-transparent border-2 border-white/30 text-white px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:border-white transition-colors no-underline">Daftar Intern</a>
                     `;
                 } else {
@@ -355,7 +397,9 @@ import '../styles/global.css';
                     document.getElementById('login-hero')?.addEventListener('click', handleGoogleLogin);
                 }
                 
+                // Animate entry elements
                 gsap.to(ctaContainer, { opacity: 1, y: 0, duration: 1, delay: 0.5, ease: "power4.out" });
+                gsap.to(broadcastBar, { opacity: 1, y: 0, duration: 1.2, delay: 0.3, ease: "power4.out" });
             }
 
             // Monitor status login
@@ -363,15 +407,24 @@ import '../styles/global.css';
                 renderAuthUI(session?.user ?? null);
             });
 
-            // INTERCEPTOR UNTUK TOOLBAR
-            document.querySelector('.toolbar')?.addEventListener('click', (e) => {
+            // INTERCEPTOR UNTUK TOOLBAR & BROADCAST BAR
+            document.addEventListener('click', (e) => {
                 const target = e.target as HTMLElement;
-                const link = target.closest('.toolbarLink');
                 
-                // Cek jika link memiliki class 'protected-link' (Status, Hall of Fame, Guidelines) dan user belum login
-                if (link && link.classList.contains('protected-link') && !currentUser) {
+                // Logic for Toolbar
+                const toolbarLink = target.closest('.toolbarLink');
+                if (toolbarLink && toolbarLink.classList.contains('protected-link') && !currentUser) {
                     e.preventDefault(); 
                     showModal(); 
+                    return;
+                }
+
+                // Logic for Broadcast Bar Apply Now link
+                const applyLink = target.closest('#broadcast-apply-link');
+                if (applyLink && !currentUser) {
+                    e.preventDefault();
+                    showModal();
+                    return;
                 }
             });
 
@@ -415,6 +468,7 @@ import '../styles/global.css';
                 const scrollTl = gsap.timeline({ scrollTrigger: { trigger: "#home", start: "top top", end: "+=120%", scrub: 1, pin: true } });
                 scrollTl.to("#line-1", { y: 100, opacity: 0 })
                         .to("#line-2", { y: 200, opacity: 0 }, "-=0.6")
+                        .to("#broadcast-bar", { y: 50, opacity: 0 }, "-=0.8")
                         .to("#cta-container", { y: 50, opacity: 0 }, "-=0.8")
                         .to("#scroll-hint", { opacity: 0, y: 20 }, "-=0.8");
 

@@ -58,3 +58,17 @@ collections:
           - { label: "Nama Role/Posisi", name: "role_title", widget: "string" }
           - { label: "Deskripsi Singkat", name: "description", widget: "text", required: false }
       - { label: "Konten Pengumuman", name: "body", widget: "markdown" }
+
+      - name: "role_details"
+    label: "Detail Role/Posisi"
+    folder: "src/content/roles" # Folder penyimpanan file markdown/yaml
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    format: "frontmatter"
+    fields:
+      - { label: "Nama Role", name: "title", widget: "string" }
+      - { label: "Kategori", name: "category", widget: "string", hint: "Contoh: Creative, Production" }
+      - { label: "Icon Emoji", name: "icon", widget: "string" }
+      - { label: "Deskripsi Singkat", name: "description", widget: "text" }
+      - { label: "Tanggung Jawab", name: "body", widget: "markdown" }
