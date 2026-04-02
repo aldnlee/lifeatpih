@@ -13,29 +13,24 @@ const allBatches = await getCollection('vacancies' as any);
 
 /**
  * 2. PENCARIAN BATCH AKTIF
- * Mencari batch yang statusnya "Open" dengan toleransi penulisan (case-insensitive)
  */
 const activeBatch = allBatches.find((b: any) => {
-    // Cek apakah data ada di root atau di dalam objek 'map' (antisipasi bug CMS)
     const d = b.data?.map ? b.data.map : b.data;
     const status = (d?.status || "").toLowerCase().trim();
     return status === 'open';
 }) as any;
 
-// 3. Validasi: Apakah ada batch yang buka?
 const isAnyOpen = !!activeBatch;
-
-// 4. Ekstraksi Data Batch
 const finalData = activeBatch?.data?.map ? activeBatch.data.map : activeBatch?.data;
 
 const availableRoles: Role[] = finalData?.roles || [];
-const currentBatchName = finalData?.batch_name || "Join the Squad";
+const currentBatchName = finalData?.batch_name || "Mahardhika Internship";
 const currentBatchId = finalData?.batch_id || "unspecified";
 
 // Format roles untuk Select Option
 const roleOptions = availableRoles.map((role: Role) => ({
-    display: `${role.role_title} (${currentBatchName})`,
-    value: `${role.role_title} - ${currentBatchName}`
+    display: role.role_title,
+    value: role.role_title
 }));
 ---
 
@@ -43,7 +38,7 @@ const roleOptions = availableRoles.map((role: Role) => ({
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{currentBatchName} | Life at PIH</title>
+    <title>Daftar {currentBatchName} | Life at PIH</title>
     <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -62,62 +57,80 @@ const roleOptions = availableRoles.map((role: Role) => ({
             overflow-x: hidden; 
         }
 
-        header { padding: 60px 20px; text-align: center; }
+        header { padding: 80px 20px 40px 20px; text-align: center; }
         .main-title { font-size: 8vw; font-weight: 800; line-height: 0.8; letter-spacing: -0.05em; margin: 0; text-transform: uppercase; }
-        .sub-title { font-size: 1.2rem; opacity: 0.6; margin-top: 10px; font-weight: 300; letter-spacing: 0.1em; }
-
-        .form-wrapper { max-width: 800px; margin: 0 auto; padding: 0 20px 180px 20px; }
-
-        .status-badge {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 100px;
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 24px;
-        }
-        .status-open { background: #4ade80; color: #064e3b; }
-        .status-closed { background: #f87171; color: #7f1d1d; }
-
-        .closed-state {
-            text-align: center;
-            padding: 80px 40px;
-            border: 1px dashed rgba(255,255,255,0.2);
-            border-radius: 32px;
-            background: rgba(255,255,255,0.02);
-            backdrop-filter: blur(10px);
-        }
+        
+        .form-wrapper { max-width: 900px; margin: 0 auto; padding: 0 20px 180px 20px; }
 
         .registration-container {
             border: 1px solid rgba(255,255,255,0.2);
             background: rgba(255,255,255,0.05);
             backdrop-filter: blur(20px);
             padding: 40px;
-            border-radius: 32px;
+            border-radius: 40px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.2);
         }
 
-        input, select {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        .form-section-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            color: #facc15;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-section-title::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+
+        label { display: block; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; opacity: 0.6; }
+
+        input, select, textarea {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
             color: white !important;
-            transition: all 0.3s ease;
+            width: 100%;
+            padding: 18px 24px;
+            border-radius: 18px;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        input:focus, select:focus {
-            background: rgba(255, 255, 255, 0.15) !important;
-            border-color: white !important;
+        input:focus, select:focus, textarea:focus {
+            background: rgba(255, 255, 255, 0.12) !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+            box-shadow: 0 0 0 4px rgba(255,255,255,0.05);
             outline: none;
         }
 
         option { background: var(--pih-dark); color: white; }
+
+        .btn-submit {
+            background: white;
+            color: var(--pih-blue);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            padding: 24px;
+            border-radius: 20px;
+            width: 100%;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            border: none;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .btn-submit:hover { transform: translateY(-5px); box-shadow: 0 25px 50px rgba(0,0,0,0.2); background: #f8fafc; }
+        .btn-submit:active { transform: scale(0.98); }
+        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
         /* DOCK STYLES */
         .dock-wrapper { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; justify-content: center; z-index: 1000; }
         .toolbar { display: inline-flex; justify-content: center; align-items: center; height: 65px; border-radius: 22px; padding: 0 15px; background-color: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); list-style: none; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.3); margin: 0; }
         .toolbarItem { width: 45px; height: 45px; margin: 0 6px; position: relative; display: flex; align-items: center; justify-content: center; }
         .toolbarLink { display: flex; height: 100%; width: 100%; text-decoration: none; align-items: center; justify-content: center; background: white; border-radius: 12px; color: var(--pih-dark); transition: transform 0.3s ease, background 0.3s ease; }
+        .toolbarLink:hover { transform: translateY(-5px); background: #f0f0f0; }
         .tooltip { position: absolute; top: -45px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; opacity: 0; transition: opacity 0.2s; white-space: nowrap; pointer-events: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .toolbarItem:hover .tooltip { opacity: 1; }
     </style>
@@ -125,8 +138,8 @@ const roleOptions = availableRoles.map((role: Role) => ({
 <body>
 
     <header>
-        <h1 class="main-title">Join The <br/><span style="font-style: italic; font-weight: 300;">Squad</span></h1>
-        <p class="sub-title">BE PART OF PIH UIN JAKARTA</p>
+        <h1 class="main-title">Apply <br/><span style="font-style: italic; font-weight: 300;">Now</span></h1>
+        <p style="opacity: 0.6; margin-top: 15px; letter-spacing: 0.2em; font-weight: 300; text-transform: uppercase;">{currentBatchName}</p>
     </header>
 
     <main class="form-wrapper">
@@ -135,62 +148,114 @@ const roleOptions = availableRoles.map((role: Role) => ({
         </a>
 
         {isAnyOpen ? (
-            <div>
-                <div class="status-badge status-open">Recruitment Open</div>
+            <div class="registration-container">
+                <input type="hidden" id="batch_id_val" value={currentBatchId} />
                 
-                <div class="registration-container">
-                    <!-- Simpan Batch ID dari CMS ke hidden input agar bisa dibaca JS -->
-                    <input type="hidden" id="batch_id_val" value={currentBatchId} />
+                <form id="apply-form" class="space-y-8">
                     
-                    <form id="apply-form" class="space-y-6">
+                    <!-- SECTION 1: DATA DIRI -->
+                    <div>
+                        <div class="form-section-title">Identitas Mahasiswa</div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60">Nama Lengkap</label>
-                                <input type="text" id="full_name" required class="w-full px-5 py-4 rounded-2xl" placeholder="Sesuai KTP">
+                                <label>Nama Lengkap</label>
+                                <input type="text" id="full_name" required placeholder="Sesuai KTP">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60">Jurusan</label>
-                                <input type="text" id="major" required class="w-full px-5 py-4 rounded-2xl" placeholder="Contoh: Informatika">
+                                <label>Nomor Telp / WhatsApp</label>
+                                <input type="tel" id="phone" required placeholder="0812xxxx">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <label>Fakultas</label>
+                                <input type="text" id="faculty" required placeholder="Contoh: Sains dan Teknologi">
+                            </div>
+                            <div>
+                                <label>Program Studi</label>
+                                <input type="text" id="study_program" required placeholder="Contoh: Teknik Informatika">
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60">Posisi Magang</label>
-                            <select id="role_applied" required class="w-full px-5 py-4 rounded-2xl appearance-none">
-                                <option value="" disabled selected>-- Pilih Posisi --</option>
-                                {roleOptions.map((role) => (
-                                    <option value={role.value}>{role.display}</option>
-                                ))}
-                            </select>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <label>NIM</label>
+                                <input type="text" id="nim" required placeholder="Nomor Induk Mahasiswa">
+                            </div>
+                            <div>
+                                <label>Semester</label>
+                                <input type="number" id="semester" required min="1" max="14" placeholder="Contoh: 6">
+                            </div>
                         </div>
-
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60">Link CV & Portofolio</label>
-                            <input type="url" id="portfolio_url" required class="w-full px-5 py-4 rounded-2xl" placeholder="https://drive.google.com/...">
-                        </div>
-
-                        <button type="submit" id="submit-btn" class="w-full bg-white text-[#1b509b] font-black py-5 rounded-2xl shadow-xl hover:scale-[1.02] transition-transform active:scale-95 uppercase tracking-widest text-sm">
-                            Kirim Lamaran Sekarang
-                        </button>
-                    </form>
-                </div>
-                
-                <div class="mt-12 text-center opacity-40">
-                    <p class="text-[10px] uppercase font-bold tracking-[0.3em] mb-4">Posisi Tersedia:</p>
-                    <div class="flex flex-wrap justify-center gap-3">
-                        {availableRoles.map((r: Role) => (
-                            <span class="text-[11px] border border-white/30 px-4 py-1.5 rounded-full">{r.role_title}</span>
-                        ))}
                     </div>
-                </div>
+
+                    <!-- SECTION 2: KEGIATAN & MINAT -->
+                    <div>
+                        <div class="form-section-title">Preferensi & Pengalaman</div>
+                        <div class="mb-6">
+                            <label>Apakah kamu memiliki kegiatan di tempat lain saat ini?</label>
+                            <textarea id="other_activities" required rows="3" placeholder="Sebutkan organisasi, magang lain, atau kerja sampingan jika ada..."></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 bg-white/5 rounded-[30px] border border-white/10">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="text-yellow-400">Posisi yang Diminati 1</label>
+                                    <select id="role_1" required>
+                                        <option value="" disabled selected>-- Pilih Posisi Utama --</option>
+                                        {roleOptions.map(r => <option value={r.value}>{r.display}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Alasan Memilih Posisi Tersebut</label>
+                                    <textarea id="reason_1" required rows="4" placeholder="Jelaskan ketertarikanmu..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="text-blue-300">Posisi yang Diminati 2</label>
+                                    <select id="role_2" required>
+                                        <option value="" disabled selected>-- Pilih Posisi Cadangan --</option>
+                                        {roleOptions.map(r => <option value={r.value}>{r.display}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Alasan Memilih Posisi Tersebut</label>
+                                    <textarea id="reason_2" required rows="4" placeholder="Jelaskan ketertarikanmu..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 3: PORTOFOLIO -->
+                    <div>
+                        <div class="form-section-title">Dokumen Pendukung</div>
+                        <label>Lampirkan Tautan CV dan Portfolio</label>
+                        <input type="url" id="portfolio_url" required placeholder="https://drive.google.com/share-link-kamu">
+                        <p class="text-[10px] opacity-40 mt-2 font-bold uppercase tracking-wider italic">*Pastikan link dapat diakses secara publik</p>
+                    </div>
+
+                    <!-- DECLARATION -->
+                    <div class="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-2xl flex items-start gap-4">
+                        <input type="checkbox" id="declaration" required class="!w-6 !h-6 mt-1 cursor-pointer accent-emerald-500">
+                        <label for="declaration" class="!m-0 !opacity-100 normal-case text-sm leading-relaxed cursor-pointer font-medium">
+                            Dengan ini, saya menyatakan data yang saya lampirkan dan saya isi telah sesuai dan benar. Saya bersedia mengikuti seluruh rangkaian seleksi <span class="text-emerald-400 font-bold">{currentBatchName}</span>.
+                        </label>
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="btn-submit">
+                        Kirim Lamaran Sekarang
+                    </button>
+                </form>
             </div>
         ) : (
-            <div class="closed-state">
-                <div class="status-badge status-closed">Registration Closed</div>
-                <h2 class="text-3xl font-black uppercase tracking-tighter mb-4">Pendaftaran Ditutup</h2>
-                <p class="text-white/50 text-sm max-w-md mx-auto leading-relaxed font-light">
-                    Mohon maaf, saat ini sedang tidak ada lowongan magang yang tersedia. 
-                    Pantau terus media sosial kami untuk informasi Batch selanjutnya.
+            <div class="text-center py-20 px-10 border border-dashed border-white/20 rounded-[40px] bg-white/5 backdrop-blur-xl">
+                <div class="text-4xl mb-4">📢</div>
+                <h2 class="text-2xl font-black uppercase tracking-tighter">Pendaftaran Belum Dibuka</h2>
+                <p class="opacity-50 font-light mt-2 max-w-sm mx-auto leading-relaxed">
+                    Mohon maaf, saat ini sedang tidak ada Batch pendaftaran yang aktif. Silakan kembali lagi nanti atau pantau media sosial PIH UIN Jakarta.
                 </p>
             </div>
         )}
@@ -232,6 +297,7 @@ const roleOptions = availableRoles.map((role: Role) => ({
             gsap.set(icons, { transformOrigin: "50% 120%", height: 40 });
             dock.addEventListener("mousemove", (event: MouseEvent) => {
                 const rect = dock.getBoundingClientRect();
+                const firstIcon = icons[0] as HTMLElement;
                 const offset = rect.left + firstIcon.offsetLeft;
                 const pointer = event.clientX - offset;
                 icons.forEach((icon, i) => {
@@ -258,7 +324,7 @@ const roleOptions = availableRoles.map((role: Role) => ({
             if (!submitBtn) return;
 
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<span class="animate-pulse uppercase tracking-widest text-[10px]">Memverifikasi Data...</span>`;
+            submitBtn.innerHTML = `<span>MENYIMPAN...</span>`;
 
             // Cek Sesi User
             const { data: { user } } = await supabase.auth.getUser();
@@ -271,10 +337,7 @@ const roleOptions = availableRoles.map((role: Role) => ({
 
             const activeBatchId = batchIdInput?.value || "unspecified";
 
-            /**
-             * VALIDASI DUPLIKASI (EMAIL & BATCH)
-             * Mengecek apakah email ini sudah pernah melamar di batch_id yang sama
-             */
+            // Validasi Duplikasi
             const { data: existingEntry, error: checkError } = await supabase
                 .from('applications')
                 .select('id')
@@ -283,25 +346,30 @@ const roleOptions = availableRoles.map((role: Role) => ({
                 .maybeSingle();
 
             if (checkError) {
-                alert("Gagal memvalidasi status: " + checkError.message);
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Kirim Lamaran Sekarang";
-                return;
+                console.error("Check error:", checkError);
             }
 
             if (existingEntry) {
-                alert("Akses Ditolak: Anda sudah melamar untuk batch ini (" + activeBatchId + "). Satu akun hanya diperbolehkan mengirim satu lamaran per batch.");
+                alert("Anda sudah terdaftar di Batch ini. Silakan cek progres Anda di Dashboard.");
                 window.location.href = '/dashboard';
                 return;
             }
 
-            // Jika belum ada, proses pendaftaran
+            // Konstruksi Payload Data (Sesuai Struktur Baru)
             const formData = {
                 user_id: user.id,
                 user_email: user.email,
                 full_name: (document.getElementById('full_name') as HTMLInputElement).value,
-                major: (document.getElementById('major') as HTMLInputElement).value,
-                role_applied: (document.getElementById('role_applied') as HTMLSelectElement).value,
+                phone: (document.getElementById('phone') as HTMLInputElement).value,
+                faculty: (document.getElementById('faculty') as HTMLInputElement).value,
+                study_program: (document.getElementById('study_program') as HTMLInputElement).value,
+                nim: (document.getElementById('nim') as HTMLInputElement).value,
+                semester: parseInt((document.getElementById('semester') as HTMLInputElement).value),
+                other_activities: (document.getElementById('other_activities') as HTMLTextAreaElement).value,
+                role_applied: (document.getElementById('role_1') as HTMLSelectElement).value,
+                role_2: (document.getElementById('role_2') as HTMLSelectElement).value,
+                reason_1: (document.getElementById('reason_1') as HTMLTextAreaElement).value,
+                reason_2: (document.getElementById('reason_2') as HTMLTextAreaElement).value,
                 portfolio_url: (document.getElementById('portfolio_url') as HTMLInputElement).value,
                 batch_id: activeBatchId, 
                 status: 'administrasi',
@@ -317,7 +385,6 @@ const roleOptions = availableRoles.map((role: Role) => ({
                 submitBtn.disabled = false;
                 submitBtn.innerText = "Kirim Lamaran Sekarang";
             } else {
-                // Berhasil: Langsung arahkan ke dashboard
                 window.location.href = '/dashboard';
             }
         });

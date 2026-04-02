@@ -1,13 +1,13 @@
 ---
 import '../styles/global.css';
-// Dashboard pelamar dengan fitur Notifikasi Persisten (Termasuk Reject Popup)
+// Dashboard pelamar Mahardhika: Life at PIH dengan sinkronisasi data detail
 ---
 
 <html lang="id">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard | Life at PIH</title>
+    <title>Dashboard Pelamar | Life at PIH</title>
     <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -37,7 +37,7 @@ import '../styles/global.css';
         .progress-dot { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="bg-slate-50 min-h-screen pb-20">
 
     <!-- MODAL NOTIFIKASI PERSISTEN -->
     <div id="celebration-modal">
@@ -56,35 +56,36 @@ import '../styles/global.css';
     </div>
 
     <nav class="bg-[#0f2854] text-white p-4 sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto flex justify-between items-center text-sm font-bold">
+        <div class="max-w-6xl mx-auto flex justify-between items-center text-sm font-bold">
             <div class="flex items-center gap-2">
-                <div class="w-6 h-6 bg-white rounded flex items-center justify-center text-[#0f2854]">P</div>
-                <span class="tracking-tighter">LIFE AT PIH</span>
+                <div class="w-6 h-6 bg-white rounded flex items-center justify-center text-[#0f2854]">M</div>
+                <span class="tracking-tighter uppercase">Mahardhika Dashboard</span>
             </div>
             <button id="logout-btn" class="text-red-400 text-[10px] uppercase tracking-widest hover:text-red-300 transition-colors">Logout</button>
         </div>
     </nav>
 
-    <main class="max-w-5xl mx-auto py-12 px-6">
+    <main class="max-w-6xl mx-auto py-12 px-6">
         <div id="loading-state" class="text-center py-20">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-900 mx-auto"></div>
-            <p class="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sinkronisasi Data...</p>
+            <p class="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sinkronisasi Data Mahardhika...</p>
         </div>
 
         <div id="dashboard-content" class="hidden">
-            <div id="already-applied-banner" class="hidden mb-8 bg-blue-50 border border-blue-100 p-6 rounded-[2rem] flex items-center gap-4">
+            <div id="active-banner" class="hidden mb-8 bg-blue-50 border border-blue-100 p-6 rounded-[2rem] flex items-center gap-4">
                 <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center text-lg shadow-md">✓</div>
                 <div>
-                    <p class="text-xs font-black text-blue-900 uppercase tracking-widest">Pendaftaran Aktif</p>
-                    <p class="text-sm text-blue-700/80 font-medium">Anda sudah terdaftar. Pantau terus progres Anda di bawah.</p>
+                    <p class="text-xs font-black text-blue-900 uppercase tracking-widest">Aplikasi Terkirim</p>
+                    <p class="text-sm text-blue-700/80 font-medium">Data Anda sedang dalam proses tinjauan administratif oleh tim PIH UIN Jakarta.</p>
                 </div>
             </div>
 
-            <h1 class="text-4xl font-extrabold text-slate-900 mb-8 italic">Halo, <span id="user-name" class="text-[#1b509b]">-</span>!</h1>
+            <h1 class="text-4xl font-extrabold text-slate-900 mb-8 italic uppercase tracking-tighter">Halo, <span id="user-name" class="text-[#1b509b]">-</span>!</h1>
 
-            <div class="glass-card p-10 rounded-[2.5rem] shadow-2xl shadow-blue-900/5 mb-8 overflow-hidden relative border-t-8 border-t-[#1b509b]">
+            <!-- PROGRESS CARD -->
+            <div class="glass-card p-10 rounded-[3rem] shadow-2xl shadow-blue-900/5 mb-10 overflow-hidden relative border-t-8 border-t-[#1b509b]">
                 <div class="flex justify-between items-center mb-12 font-bold">
-                    <span class="text-slate-500 uppercase text-[10px] tracking-widest">Status Rekrutmen Real-time</span>
+                    <span class="text-slate-500 uppercase text-[10px] tracking-[0.2em]">Tahapan Rekrutmen</span>
                     <span id="badge-status" class="px-4 py-1.5 rounded-full text-[9px] bg-slate-100 uppercase border border-slate-200 font-black tracking-widest">-</span>
                 </div>
                 
@@ -105,27 +106,75 @@ import '../styles/global.css';
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div id="status-info-box" class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex gap-6 items-center">
-                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl shadow-inner text-blue-600">📋</div>
-                    <div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Posisi dilamar</p>
-                        <p id="applied-role" class="text-xl font-black text-slate-800 italic leading-none">-</p>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- DATA DETAIL LAMARAN -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+                        <h3 class="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-2">
+                            <span class="w-8 h-px bg-slate-200"></span> Detail Aplikasi
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Posisi Pilihan 1 (Utama)</p>
+                                <p id="role-1-val" class="text-lg font-black text-slate-800 italic leading-tight">-</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Posisi Pilihan 2 (Cadangan)</p>
+                                <p id="role-2-val" class="text-lg font-black text-blue-600 italic leading-tight">-</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Fakultas / Program Studi</p>
+                                <p id="academic-val" class="text-sm font-bold text-slate-700 leading-tight">-</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">NIM / Semester</p>
+                                <p id="nim-val" class="text-sm font-bold text-slate-700 leading-tight">-</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8 pt-8 border-t border-slate-50">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Tautan Portofolio</p>
+                            <a id="portfolio-link" href="#" target="_blank" class="text-xs font-black text-[#1b509b] underline truncate block">Belum ada link</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 p-8 rounded-[3rem] text-white shadow-xl">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-blue-300 mb-4">Informasi Batch</h3>
+                        <div class="flex items-center gap-4">
+                            <div class="text-4xl">🏛️</div>
+                            <div>
+                                <p id="batch-name-val" class="text-xl font-black italic">Mahardhika Internship</p>
+                                <p id="batch-id-val" class="text-[10px] opacity-50 font-bold uppercase tracking-widest">-</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div id="batch-info-box" class="bg-[#0f2854] p-8 rounded-[2.5rem] shadow-lg flex gap-6 items-center">
-                    <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-2xl border border-white/10 text-white italic font-black">#</div>
-                    <div>
-                        <p class="text-[10px] font-bold text-blue-200/40 uppercase tracking-widest mb-1">ID Angkatan</p>
-                        <p id="applied-batch" class="text-xl font-black text-white uppercase tracking-tighter leading-none">-</p>
+
+                <!-- SIDEBAR / TIMELINE -->
+                <div class="space-y-6">
+                    <div class="bg-[#1b509b] p-8 rounded-[3rem] text-white shadow-lg relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🗓️</div>
+                        <h3 class="text-[10px] font-black uppercase tracking-widest mb-6 border-b border-white/10 pb-4">Timeline Seleksi</h3>
+                        <ul class="space-y-4 text-[11px]">
+                            <li class="flex justify-between opacity-50"><span>Pendaftaran</span> <span>11-25 Mar</span></li>
+                            <li class="flex justify-between opacity-50"><span>Seleksi Berkas</span> <span>25-30 Mar</span></li>
+                            <li class="flex justify-between font-bold text-yellow-400"><span>Wawancara</span> <span>1-2 Apr</span></li>
+                            <li class="flex justify-between opacity-50"><span>Onboarding</span> <span>10 Apr</span></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="p-8 border-2 border-dashed border-slate-200 rounded-[3rem] text-center">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Butuh Bantuan?</p>
+                        <a href="https://wa.me/xxx" class="text-xs font-black text-[#1b509b] hover:underline">Hubungi Admin PIH</a>
                     </div>
                 </div>
             </div>
 
-            <div id="no-application" class="hidden text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-200">
-                <div class="text-4xl mb-4">🚀</div>
-                <p class="mb-8 font-bold text-slate-400 uppercase tracking-widest text-xs">Belum ada lamaran terdaftar</p>
-                <a href="/join" class="bg-[#1b509b] text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:scale-105 transition-transform inline-block">Daftar Sekarang</a>
+            <div id="no-application" class="hidden text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-200 shadow-inner">
+                <div class="text-6xl mb-6">🚀</div>
+                <h2 class="text-2xl font-black text-slate-800 uppercase italic mb-2">Mulai Langkahmu!</h2>
+                <p class="mb-10 font-medium text-slate-400 text-sm max-w-xs mx-auto">Kamu belum mengirimkan lamaran untuk program Mahardhika Batch 9.</p>
+                <a href="/join" class="bg-[#1b509b] text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:scale-105 transition-transform inline-block">Daftar Sekarang</a>
             </div>
         </div>
     </main>
@@ -138,14 +187,20 @@ import '../styles/global.css';
         const userName = document.getElementById('user-name') as HTMLElement;
         const badgeStatus = document.getElementById('badge-status') as HTMLElement;
         const progressBar = document.getElementById('progress-bar') as HTMLElement;
-        const appliedRole = document.getElementById('applied-role') as HTMLElement;
-        const appliedBatch = document.getElementById('applied-batch') as HTMLElement;
-        const noApp = document.getElementById('no-application') as HTMLElement;
-        const statusBox = document.getElementById('status-info-box') as HTMLElement;
-        const batchBox = document.getElementById('batch-info-box') as HTMLElement;
-        const logoutBtn = document.getElementById('logout-btn') as HTMLButtonElement;
-        const appliedBanner = document.getElementById('already-applied-banner') as HTMLElement;
+        
+        // Value Fields
+        const role1Val = document.getElementById('role-1-val') as HTMLElement;
+        const role2Val = document.getElementById('role-2-val') as HTMLElement;
+        const academicVal = document.getElementById('academic-val') as HTMLElement;
+        const nimVal = document.getElementById('nim-val') as HTMLElement;
+        const portfolioLink = document.getElementById('portfolio-link') as HTMLAnchorElement;
+        const batchNameVal = document.getElementById('batch-name-val') as HTMLElement;
+        const batchIdVal = document.getElementById('batch-id-val') as HTMLElement;
 
+        const noApp = document.getElementById('no-application') as HTMLElement;
+        const appliedBanner = document.getElementById('active-banner') as HTMLElement;
+
+        // Modal
         const modal = document.getElementById('celebration-modal');
         const modalTitle = document.getElementById('modal-title');
         const modalMsg = document.getElementById('modal-message');
@@ -160,9 +215,9 @@ import '../styles/global.css';
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) { window.location.href = '/'; return; }
 
-            userName.innerText = user.user_metadata.full_name || user.email?.split('@')[0] || "User";
+            userName.innerText = user.user_metadata.full_name || "User";
 
-            const { data: application } = await supabase
+            const { data: application, error } = await supabase
                 .from('applications')
                 .select('*')
                 .eq('user_id', user.id)
@@ -174,33 +229,38 @@ import '../styles/global.css';
 
             if (!application) {
                 noApp.classList.remove('hidden');
-                statusBox.classList.add('hidden');
-                batchBox.classList.add('hidden');
+                document.querySelector('.grid')?.classList.add('hidden');
+                document.querySelector('.glass-card')?.classList.add('hidden');
                 return;
             }
 
+            // Fill Data
             currentAppId = application.id;
-            appliedBanner.classList.remove('hidden');
-            appliedRole.innerText = application.role_applied;
-            appliedBatch.innerText = application.batch_id || "B-Legacy";
             lastStatus = application.status;
             
+            role1Val.innerText = application.role_applied;
+            role2Val.innerText = application.role_2 || "Tidak ada pilihan ke-2";
+            academicVal.innerText = `${application.faculty} / ${application.study_program}`;
+            nimVal.innerText = `${application.nim} (Semester ${application.semester})`;
+            portfolioLink.href = application.portfolio_url;
+            portfolioLink.innerText = application.portfolio_url;
+            batchIdVal.innerText = `ID: ${application.batch_id}`;
+
+            appliedBanner.classList.remove('hidden');
             updateUI(application.status);
 
-            // Munculkan modal jika status sudah berubah dan belum di-klik "Lanjutkan"
             if (application.status !== 'administrasi' && !application.acknowledged) {
                 showNotification(application.status);
             }
 
-            // Realtime
+            // Realtime Update
             supabase
-                .channel('dashboard-realtime')
-                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'applications', filter: `user_id=eq.${user.id}` },
+                .channel('applicant-status')
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'applications', filter: `id=eq.${application.id}` },
                     async (payload) => {
                         const newStatus = payload.new.status;
                         if (newStatus !== lastStatus) {
-                            // Reset acknowledged agar pop-up muncul lagi saat admin ubah status
-                            await supabase.from('applications').update({ acknowledged: false }).eq('id', currentAppId);
+                            await supabase.from('applications').update({ acknowledged: false }).eq('id', application.id);
                             showNotification(newStatus);
                             lastStatus = newStatus;
                             updateUI(newStatus);
@@ -212,29 +272,26 @@ import '../styles/global.css';
         function showNotification(status: string) {
             if (!modal || !modalTitle || !modalMsg || !modalIcon) return;
 
-            // Reset modal style default
             modalIcon.innerText = "🎉";
             modalTitle.innerText = "Selamat!";
-            modalTitle.className = "text-2xl font-black text-slate-900 uppercase italic mb-3 leading-tight tracking-tighter";
+            modalTitle.className = "text-2xl font-black text-slate-900 uppercase italic mb-3 tracking-tighter";
             modalClose!.className = "w-full bg-[#1b509b] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-900/30 hover:scale-[1.03] active:scale-95 transition-all";
             if (modalDeco) modalDeco.className = "absolute -bottom-10 -left-10 w-32 h-32 bg-yellow-400/10 rounded-full blur-3xl";
 
             if (status === 'interview') {
                 modalIcon.innerText = "📩";
-                modalTitle.innerText = "Tahap Wawancara!";
-                modalMsg.innerText = "Selamat! Berkas Anda lolos seleksi administrasi. Tim kami akan segera menghubungi Anda untuk jadwal wawancara.";
+                modalTitle.innerText = "Lolos Berkas!";
+                modalMsg.innerText = "Selamat! Kamu diundang untuk tahap wawancara Mahardhika Batch 9. Mohon tunggu informasi jadwal selanjutnya.";
             } else if (status === 'accepted') {
                 modalIcon.innerText = "🎉";
-                modalTitle.innerText = "Anda Diterima!";
-                modalMsg.innerText = "Selamat bergabung dengan Squad PIH UIN Jakarta! Silakan cek email Anda untuk instruksi onboarding selanjutnya.";
+                modalTitle.innerText = "Diterima Magang!";
+                modalMsg.innerText = "Selamat bergabung dengan Squad PIH UIN Jakarta! Cek email kamu untuk surat pengantar dan jadwal Onboarding.";
             } else if (status === 'rejected') {
-                // Kustomisasi khusus untuk Reject (Merah/Netral)
                 modalIcon.innerText = "🤝"; 
-                modalTitle.innerText = "Terima Kasih";
-                modalTitle.classList.remove('text-slate-900');
-                modalTitle.classList.add('text-rose-600');
-                modalMsg.innerText = "Terima kasih telah melamar di Squad PIH. Saat ini kami belum bisa melanjutkan aplikasi Anda ke tahap berikutnya. Jangan berkecil hati dan terus asah kemampuanmu!";
-                modalClose!.className = "w-full bg-slate-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg";
+                modalTitle.innerText = "Belum Berhasil";
+                modalTitle.classList.replace('text-slate-900', 'text-rose-600');
+                modalMsg.innerText = "Terima kasih atas minatmu di Mahardhika PIH. Tetap semangat dan jangan berhenti berkarya di lain kesempatan!";
+                modalClose!.className = "w-full bg-slate-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px]";
                 if (modalDeco) modalDeco.className = "absolute -bottom-10 -left-10 w-32 h-32 bg-rose-400/10 rounded-full blur-3xl";
             }
             
@@ -243,13 +300,11 @@ import '../styles/global.css';
 
         async function handleCloseModal() {
             if (!currentAppId) return;
-            // Tandai sudah dilihat agar tidak muncul lagi saat refresh
             await supabase.from('applications').update({ acknowledged: true }).eq('id', currentAppId);
             modal?.classList.remove('active');
         }
 
         function updateUI(status: string) {
-            if (!badgeStatus || !progressBar) return;
             badgeStatus.innerText = status;
             const steps = document.querySelectorAll('.step-item');
             let p = 0;
@@ -260,7 +315,6 @@ import '../styles/global.css';
             steps.forEach((item) => {
                 const s = (item as HTMLElement).dataset.step;
                 const circle = item.querySelector('.circle') as HTMLElement;
-                if (!circle) return;
                 circle.classList.remove('border-[#1b509b]', 'bg-[#1b509b]', 'text-white', 'border-emerald-500', 'bg-emerald-500', 'border-rose-500', 'text-rose-500');
 
                 if (status === 'administrasi' && s === 'administrasi') {
@@ -278,7 +332,7 @@ import '../styles/global.css';
         }
 
         modalClose?.addEventListener('click', handleCloseModal);
-        logoutBtn?.addEventListener('click', async () => { await supabase.auth.signOut(); window.location.href = '/'; });
+        document.getElementById('logout-btn')?.addEventListener('click', async () => { await supabase.auth.signOut(); window.location.href = '/'; });
 
         init();
     </script>
