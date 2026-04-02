@@ -50,6 +50,11 @@ collections:
       - { label: "ID Batch (Unik)", name: "batch_id", widget: "string", hint: "Gunakan kode unik tanpa spasi, misal: pih-b1. JANGAN diubah jika sudah ada pelamar." }
       - { label: "Nama Batch", name: "batch_name", widget: "string", hint: "Contoh: Batch 9" }
       - { label: "Status Pendaftaran", name: "status", widget: "select", options: ["Open", "Closed"], default: "Open" }
+      - { label: "Timeline Seleksi", name: "timeline", widget: "list", fields: [
+        { label: "Kegiatan", name: "label", widget: "string" },
+        { label: "Tanggal/Durasi", name: "date", widget: "string" },
+        { label: "Sedang Berlangsung?", name: "is_active", widget: "boolean", default: false }
+        ]}
       - label: "Daftar Role Tersedia"
         name: "roles"
         widget: "list"

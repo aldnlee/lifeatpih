@@ -1,6 +1,17 @@
 ---
 import '../styles/global.css';
-// Dashboard pelamar Mahardhika: Life at PIH dengan sinkronisasi data detail
+import { getCollection } from 'astro:content';
+
+// 1. Ambil data Batch Aktif dari Decap CMS untuk Timeline
+const allBatches = await getCollection('vacancies' as any) as any[];
+const activeBatchFromCMS = allBatches.find((b: any) => {
+    const d = b.data?.map ? b.data.map : b.data;
+    return (d?.status || "").toLowerCase().trim() === 'open';
+});
+
+const cmsData = activeBatchFromCMS?.data?.map ? activeBatchFromCMS.data.map : activeBatchFromCMS?.data;
+const cmsTimeline = cmsData?.timeline || [];
+const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
 ---
 
 <html lang="id">
@@ -143,23 +154,33 @@ import '../styles/global.css';
                         <div class="flex items-center gap-4">
                             <div class="text-4xl">🏛️</div>
                             <div>
-                                <p id="batch-name-val" class="text-xl font-black italic">Mahardhika Internship</p>
+                                <p id="batch-name-val" class="text-xl font-black italic">{cmsBatchName}</p>
                                 <p id="batch-id-val" class="text-[10px] opacity-50 font-bold uppercase tracking-widest">-</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- SIDEBAR / TIMELINE -->
+                <!-- SIDEBAR / TIMELINE (DINAMIS DARI CMS) -->
                 <div class="space-y-6">
                     <div class="bg-[#1b509b] p-8 rounded-[3rem] text-white shadow-lg relative overflow-hidden">
                         <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🗓️</div>
                         <h3 class="text-[10px] font-black uppercase tracking-widest mb-6 border-b border-white/10 pb-4">Timeline Seleksi</h3>
+                        
                         <ul class="space-y-4 text-[11px]">
-                            <li class="flex justify-between opacity-50"><span>Pendaftaran</span> <span>11-25 Mar</span></li>
-                            <li class="flex justify-between opacity-50"><span>Seleksi Berkas</span> <span>25-30 Mar</span></li>
-                            <li class="flex justify-between font-bold text-yellow-400"><span>Wawancara</span> <span>1-2 Apr</span></li>
-                            <li class="flex justify-between opacity-50"><span>Onboarding</span> <span>10 Apr</span></li>
+                            {cmsTimeline.length > 0 ? (
+                                cmsTimeline.map((item: any) => (
+                                    <li class={`flex justify-between items-center ${item.is_active ? 'font-bold text-yellow-400' : 'opacity-50'}`}>
+                                        <div class="flex items-center gap-2">
+                                            {item.is_active && <div class="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>}
+                                            <span>{item.label}</span>
+                                        </div>
+                                        <span class="text-[9px] font-black uppercase tracking-tighter bg-white/10 px-2 py-0.5 rounded">{item.date}</span>
+                                    </li>
+                                ))
+                            ) : (
+                                <li class="italic opacity-30">Belum ada timeline yang diatur di CMS.</li>
+                            )}
                         </ul>
                     </div>
                     
@@ -173,7 +194,7 @@ import '../styles/global.css';
             <div id="no-application" class="hidden text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-200 shadow-inner">
                 <div class="text-6xl mb-6">🚀</div>
                 <h2 class="text-2xl font-black text-slate-800 uppercase italic mb-2">Mulai Langkahmu!</h2>
-                <p class="mb-10 font-medium text-slate-400 text-sm max-w-xs mx-auto">Kamu belum mengirimkan lamaran untuk program Mahardhika Batch 9.</p>
+                <p class="mb-10 font-medium text-slate-400 text-sm max-w-xs mx-auto">Kamu belum mengirimkan lamaran untuk program Mahardhika.</p>
                 <a href="/join" class="bg-[#1b509b] text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-900/20 hover:scale-105 transition-transform inline-block">Daftar Sekarang</a>
             </div>
         </div>
@@ -194,7 +215,6 @@ import '../styles/global.css';
         const academicVal = document.getElementById('academic-val') as HTMLElement;
         const nimVal = document.getElementById('nim-val') as HTMLElement;
         const portfolioLink = document.getElementById('portfolio-link') as HTMLAnchorElement;
-        const batchNameVal = document.getElementById('batch-name-val') as HTMLElement;
         const batchIdVal = document.getElementById('batch-id-val') as HTMLElement;
 
         const noApp = document.getElementById('no-application') as HTMLElement;
@@ -281,7 +301,7 @@ import '../styles/global.css';
             if (status === 'interview') {
                 modalIcon.innerText = "📩";
                 modalTitle.innerText = "Lolos Berkas!";
-                modalMsg.innerText = "Selamat! Kamu diundang untuk tahap wawancara Mahardhika Batch 9. Mohon tunggu informasi jadwal selanjutnya.";
+                modalMsg.innerText = "Selamat! Kamu diundang untuk tahap wawancara Mahardhika. Mohon tunggu informasi jadwal selanjutnya.";
             } else if (status === 'accepted') {
                 modalIcon.innerText = "🎉";
                 modalTitle.innerText = "Diterima Magang!";
