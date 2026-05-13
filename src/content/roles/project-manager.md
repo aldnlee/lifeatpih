@@ -17,4 +17,14 @@ description: Sebagai Project Manager, peran ini mendukung tim project management
   yang baik, kepemimpinan, serta keterampilan komunikasi yang efektif guna
   menjaga kelancaran pelaksanaan proyek.
 ---
-test
+Membantu perencanaan kegiatan/project, termasuk mengidentifikasi kebutuhan sumber daya, timeline, dan tujuan kegiatan/project.
+
+Berkoordinasi dengan tim untuk memastikan kelancaran pelaksanaan kegiatan/project.
+
+Melacak perkembangan kegiatan/project dan menyampaikan status kepada User atau stakeholder terkait secara berkala.
+
+Mengidentifikasi risiko yang mungkin muncul selama pelaksanaan kegiatan/project dan membantu dalam menyusun mitigasinya.
+
+Mendukung komunikasi dengan stakeholder internal dan eksternal untuk memastikan kesesuaian kebutuhan mereka dengan hasil kegiatan/project.
+
+Menggunakan tools project management seperti Trello, Asana, Spreadsheet atau Microsoft Project untuk mendokumentasikan tugas dan timeline kegiatan/project.
