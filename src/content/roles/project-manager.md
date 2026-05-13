@@ -17,6 +17,7 @@ description: Sebagai Project Manager, peran ini mendukung tim project management
   yang baik, kepemimpinan, serta keterampilan komunikasi yang efektif guna
   menjaga kelancaran pelaksanaan proyek.
 ---
+**TUGAS DAN TANGGUNG JAWAB**\
 Membantu perencanaan kegiatan/project, termasuk mengidentifikasi kebutuhan sumber daya, timeline, dan tujuan kegiatan/project.
 
 Berkoordinasi dengan tim untuk memastikan kelancaran pelaksanaan kegiatan/project.
