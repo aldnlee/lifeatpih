@@ -1,6 +1,6 @@
 ---
 title: Project Manager
-category: Manaejrial
+category: Manajerial
 icon: 🚧
 description: Sebagai Project Manager, peran ini mendukung tim project management
   dalam merencanakan, melaksanakan, mengawasi, dan menyelesaikan proyek secara
