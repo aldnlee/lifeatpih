@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v3.2 (LinkedIn HR Preview Hotfix Edition)
+// Admin Portal v3.3 (LinkedIn HR Preview - Race Condition Fix)
 ---
 
 <html lang="id">
@@ -108,7 +108,7 @@ import '../styles/global.css';
                 <!-- SPLIT VIEW BOX -->
                 <div class="flex-1 flex gap-6 overflow-hidden">
                     
-                    <!-- LEFT SIDE: APPLICANTS LIST PANEL -->
+                    <!-- LEFT SIDE: APPLICANTS LIST PANEL [source: 1] -->
                     <div class="w-full md:w-[420px] flex-shrink-0 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                         <div class="bg-slate-50 border-b border-slate-200 p-4 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             <div class="flex items-center gap-3">
@@ -122,12 +122,12 @@ import '../styles/global.css';
                         </div>
                     </div>
 
-                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL -->
+                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL [source: 1] -->
                     <div class="hidden md:flex flex-1 flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v3.2</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v3.3</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
@@ -238,33 +238,38 @@ import '../styles/global.css';
             const { data, error } = await supabase.from('applications').select('*').order('created_at', { ascending: false });
             if (!error) {
                 allApplicants = data;
-                renderList();
+                renderFilterOptions(); // Mengisi opsi dropdown filter LEBIH DULU [source: 1]
+                renderList();          // Baru render data kandidat
                 updateStats();
-                renderFilterOptions();
                 
-                // Hotfix: Auto preview pelamar pertama dengan casting dynamic
+                // Auto preview pelamar pertama dengan casting global
                 if (data && data.length > 0 && !activeApplicantId) {
                     (window as any).selectApplicantForPreview(data[0].id);
                 }
             }
         }
 
-        // HOTFIX: Memperbaiki pencocokan properti database agar data 5 orang muncul di list kiri
         function renderList() {
-            const filter = (document.getElementById('role-filter') as HTMLSelectElement).value;
-            const search = (document.getElementById('search-input') as HTMLInputElement).value.toLowerCase();
+            const filterElement = document.getElementById('role-filter') as HTMLSelectElement;
+            // Hotfix: Jika elemen belum terisi opsi, beri nilai default "all" agar tidak memicu pencarian kosong [source: 1]
+            const filter = filterElement && filterElement.value ? filterElement.value : 'all';
+            const search = (document.getElementById('search-input') as HTMLInputElement).value.toLowerCase().trim();
             const listContainer = document.getElementById('applicant-list');
 
             const filtered = allApplicants.filter(a => {
-                const applicantRole = a.position || a.role_applied || '';
-                const applicantEmail = a.email || a.user_email || '';
+                if (!a) return false;
                 
+                // Normalisasi Key Database secara aman (Aman dari null/undefined) [source: 2]
+                const fullName = (a.full_name || '').toString().toLowerCase();
+                const applicantRole = (a.position || a.role_applied || '').toString();
+                const applicantEmail = (a.email || a.user_email || '').toString().toLowerCase();
+                const applicantNim = (a.nim || '').toString();
+
                 const matchFilter = (filter === 'all' || applicantRole === filter);
-                const matchSearch = (
-                    (a.full_name?.toLowerCase().includes(search)) || 
-                    (a.nim?.includes(search)) || 
-                    (applicantEmail.toLowerCase().includes(search))
-                );
+                const matchSearch = search === "" || 
+                    fullName.includes(search) || 
+                    applicantNim.includes(search) || 
+                    applicantEmail.includes(search);
                 
                 return matchFilter && matchSearch;
             });
@@ -278,8 +283,11 @@ import '../styles/global.css';
             }
 
             listContainer!.innerHTML = filtered.map(app => {
-                const displayRole = app.position || app.role_applied || '-';
-                const displayEmail = app.email || app.user_email || '-';
+                const finalName = app.full_name || "Tanpa Nama";
+                const finalRole = app.position || app.role_applied || "-";
+                const finalNim = app.nim || "-";
+                const finalSem = app.semester || "-";
+                const emailStatus = app.email_status || "pending";
                 
                 return `
                     <div class="applicant-card p-4 flex items-start gap-3 cursor-pointer hover:bg-slate-50 transition-all ${activeApplicantId === app.id ? 'active' : ''}" data-id="${app.id}">
@@ -288,13 +296,13 @@ import '../styles/global.css';
                         </div>
                         <div class="flex-1 min-w-0" onclick="(window).selectApplicantForPreview('${app.id}')">
                             <div class="flex justify-between items-start gap-2">
-                                <h4 class="font-black text-slate-900 text-sm truncate leading-tight">${app.full_name}</h4>
-                                <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 bg-white flex-shrink-0">${app.status}</span>
+                                <h4 class="font-black text-slate-900 text-sm truncate leading-tight">${finalName}</h4>
+                                <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 bg-white flex-shrink-0">${app.status || 'Pending'}</span>
                             </div>
-                            <p class="text-[10px] text-[#1b509b] font-black uppercase tracking-wider mt-0.5">${displayRole}</p>
+                            <p class="text-[10px] text-[#1b509b] font-black uppercase tracking-wider mt-0.5">${finalRole}</p>
                             <div class="flex items-center justify-between mt-2 text-[9px] text-slate-400 font-medium">
-                                <span>NIM: ${app.nim || '-'} • Sem: ${app.semester || '-'}</span>
-                                <span class="text-xs" title="${app.email_status}">${app.email_status === 'sent' ? '📧' : '⚪'}</span>
+                                <span>NIM: ${finalNim} • Sem: ${finalSem}</span>
+                                <span class="text-xs" title="${emailStatus}">${emailStatus === 'sent' ? '📧' : '⚪'}</span>
                             </div>
                         </div>
                     </div>
@@ -304,7 +312,7 @@ import '../styles/global.css';
             attachCheckboxListeners();
         }
 
-        // PREVIEW GENERATION LOGIC - Casting global window
+        // PREVIEW GENERATION LOGIC - Menggunakan casting global window
         (window as any).selectApplicantForPreview = (id: string) => {
             activeApplicantId = id;
             
@@ -320,19 +328,19 @@ import '../styles/global.css';
             const previewArea = document.getElementById('detail-preview-area');
             previewArea?.classList.remove('opacity-0', 'pointer-events-none');
 
-            // Inject Data Content
-            document.getElementById('preview-name')!.innerText = app.full_name;
+            // Inject Data Content [source: 2]
+            document.getElementById('preview-name')!.innerText = app.full_name || "Tanpa Nama";
             document.getElementById('preview-meta')!.innerText = `${app.faculty || app.major || '-'} • Semester ${app.semester || '-'}`;
-            document.getElementById('preview-status-badge')!.innerText = app.status;
+            document.getElementById('preview-status-badge')!.innerText = app.status || 'Pending';
             document.getElementById('preview-email-status')!.innerText = app.email_status === 'sent' ? '📧 Sent' : '⚪ Pending';
             document.getElementById('preview-pos-1')!.innerText = app.position || app.role_applied || '-';
             document.getElementById('preview-nim')!.innerText = app.nim || '-';
             document.getElementById('preview-activities')!.innerText = app.other_activities || 'Tidak ada kegiatan khusus yang diisi.';
             document.getElementById('preview-reason')!.innerText = app.reason_1 || 'Tidak ada alasan khusus yang dijabarkan.';
 
-            // Setup Link Footer Actions
+            // Setup Link Footer Actions [source: 2]
             (document.getElementById('preview-link-portfolio') as HTMLAnchorElement).href = app.portfolio_url || '#';
-            (document.getElementById('preview-link-wa') as HTMLAnchorElement).href = `https://wa.me/${app.phone?.replace(/[^0-9]/g, '')}`;
+            (document.getElementById('preview-link-wa') as HTMLAnchorElement).href = app.phone ? `https://wa.me/${app.phone.toString().replace(/[^0-9]/g, '')}` : '#';
 
             // Action Header Buttons
             document.getElementById('preview-action-buttons')!.innerHTML = `
@@ -462,6 +470,7 @@ import '../styles/global.css';
 
         function renderFilterOptions() {
             const rf = document.getElementById('role-filter') as HTMLSelectElement;
+            if (!rf) return;
             const roles = [...new Set(allApplicants.map(a => a.position || a.role_applied).filter(Boolean))];
             rf.innerHTML = `<option value="all">Semua Posisi (${allApplicants.length})</option>` + roles.map(r => `<option value="${r}">${r}</option>`).join('');
         }
