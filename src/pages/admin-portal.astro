@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v3.1 (LinkedIn HR Preview Clean Edition)
+// Admin Portal v3.2 (LinkedIn HR Preview Hotfix Edition)
 ---
 
 <html lang="id">
@@ -108,7 +108,7 @@ import '../styles/global.css';
                 <!-- SPLIT VIEW BOX -->
                 <div class="flex-1 flex gap-6 overflow-hidden">
                     
-                    <!-- LEFT SIDE: APPLICANTS LIST PANEL [source: 1] -->
+                    <!-- LEFT SIDE: APPLICANTS LIST PANEL -->
                     <div class="w-full md:w-[420px] flex-shrink-0 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                         <div class="bg-slate-50 border-b border-slate-200 p-4 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             <div class="flex items-center gap-3">
@@ -122,12 +122,12 @@ import '../styles/global.css';
                         </div>
                     </div>
 
-                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL [source: 1] -->
+                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL -->
                     <div class="hidden md:flex flex-1 flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v3.1</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v3.2</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
@@ -242,22 +242,32 @@ import '../styles/global.css';
                 updateStats();
                 renderFilterOptions();
                 
-                // Auto preview first applicant on load if available [source: 1]
+                // Hotfix: Auto preview pelamar pertama dengan casting dynamic
                 if (data && data.length > 0 && !activeApplicantId) {
                     (window as any).selectApplicantForPreview(data[0].id);
                 }
             }
         }
 
+        // HOTFIX: Memperbaiki pencocokan properti database agar data 5 orang muncul di list kiri
         function renderList() {
             const filter = (document.getElementById('role-filter') as HTMLSelectElement).value;
             const search = (document.getElementById('search-input') as HTMLInputElement).value.toLowerCase();
             const listContainer = document.getElementById('applicant-list');
 
-            const filtered = allApplicants.filter(a => 
-                (filter === 'all' || a.role_applied === filter) && 
-                (a.full_name.toLowerCase().includes(search) || a.nim?.includes(search) || a.user_email.toLowerCase().includes(search))
-            );
+            const filtered = allApplicants.filter(a => {
+                const applicantRole = a.position || a.role_applied || '';
+                const applicantEmail = a.email || a.user_email || '';
+                
+                const matchFilter = (filter === 'all' || applicantRole === filter);
+                const matchSearch = (
+                    (a.full_name?.toLowerCase().includes(search)) || 
+                    (a.nim?.includes(search)) || 
+                    (applicantEmail.toLowerCase().includes(search))
+                );
+                
+                return matchFilter && matchSearch;
+            });
 
             document.getElementById('list-count-badge')!.innerText = filtered.length.toString();
 
@@ -267,33 +277,37 @@ import '../styles/global.css';
                 return;
             }
 
-            listContainer!.innerHTML = filtered.map(app => `
-                <div class="applicant-card p-4 flex items-start gap-3 cursor-pointer hover:bg-slate-50 transition-all ${activeApplicantId === app.id ? 'active' : ''}" data-id="${app.id}">
-                    <div class="pt-1" onclick="event.stopPropagation();">
-                        <input type="checkbox" class="applicant-checkbox" value="${app.id}" ${selectedIds.includes(app.id) ? 'checked' : ''}>
-                    </div>
-                    <div class="flex-1 min-w-0" onclick="(window).selectApplicantForPreview('${app.id}')">
-                        <div class="flex justify-between items-start gap-2">
-                            <h4 class="font-black text-slate-900 text-sm truncate leading-tight">${app.full_name}</h4>
-                            <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 bg-white flex-shrink-0">${app.status}</span>
+            listContainer!.innerHTML = filtered.map(app => {
+                const displayRole = app.position || app.role_applied || '-';
+                const displayEmail = app.email || app.user_email || '-';
+                
+                return `
+                    <div class="applicant-card p-4 flex items-start gap-3 cursor-pointer hover:bg-slate-50 transition-all ${activeApplicantId === app.id ? 'active' : ''}" data-id="${app.id}">
+                        <div class="pt-1" onclick="event.stopPropagation();">
+                            <input type="checkbox" class="applicant-checkbox" value="${app.id}" ${selectedIds.includes(app.id) ? 'checked' : ''}>
                         </div>
-                        <p class="text-[10px] text-[#1b509b] font-black uppercase tracking-wider mt-0.5">${app.role_applied}</p>
-                        <div class="flex items-center justify-between mt-2 text-[9px] text-slate-400 font-medium">
-                            <span>NIM: ${app.nim || '-'} • Sem: ${app.semester || '-'}</span>
-                            <span class="text-xs" title="${app.email_status}">${app.email_status === 'sent' ? '📧' : '⚪'}</span>
+                        <div class="flex-1 min-w-0" onclick="(window).selectApplicantForPreview('${app.id}')">
+                            <div class="flex justify-between items-start gap-2">
+                                <h4 class="font-black text-slate-900 text-sm truncate leading-tight">${app.full_name}</h4>
+                                <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 bg-white flex-shrink-0">${app.status}</span>
+                            </div>
+                            <p class="text-[10px] text-[#1b509b] font-black uppercase tracking-wider mt-0.5">${displayRole}</p>
+                            <div class="flex items-center justify-between mt-2 text-[9px] text-slate-400 font-medium">
+                                <span>NIM: ${app.nim || '-'} • Sem: ${app.semester || '-'}</span>
+                                <span class="text-xs" title="${app.email_status}">${app.email_status === 'sent' ? '📧' : '⚪'}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
             attachCheckboxListeners();
         }
 
-        // PREVIEW GENERATION LOGIC - Mapped via dynamic assignment to bypass strict global interfaces [source: 1]
+        // PREVIEW GENERATION LOGIC - Casting global window
         (window as any).selectApplicantForPreview = (id: string) => {
             activeApplicantId = id;
             
-            // Update active visually on list items
             document.querySelectorAll('.applicant-card').forEach(card => {
                 if (card.getAttribute('data-id') === id) card.classList.add('active');
                 else card.classList.remove('active');
@@ -306,12 +320,12 @@ import '../styles/global.css';
             const previewArea = document.getElementById('detail-preview-area');
             previewArea?.classList.remove('opacity-0', 'pointer-events-none');
 
-            // Inject Data Content [source: 1]
+            // Inject Data Content
             document.getElementById('preview-name')!.innerText = app.full_name;
-            document.getElementById('preview-meta')!.innerText = `${app.faculty || '-'} • Semester ${app.semester || '-'}`;
+            document.getElementById('preview-meta')!.innerText = `${app.faculty || app.major || '-'} • Semester ${app.semester || '-'}`;
             document.getElementById('preview-status-badge')!.innerText = app.status;
             document.getElementById('preview-email-status')!.innerText = app.email_status === 'sent' ? '📧 Sent' : '⚪ Pending';
-            document.getElementById('preview-pos-1')!.innerText = app.role_applied;
+            document.getElementById('preview-pos-1')!.innerText = app.position || app.role_applied || '-';
             document.getElementById('preview-nim')!.innerText = app.nim || '-';
             document.getElementById('preview-activities')!.innerText = app.other_activities || 'Tidak ada kegiatan khusus yang diisi.';
             document.getElementById('preview-reason')!.innerText = app.reason_1 || 'Tidak ada alasan khusus yang dijabarkan.';
@@ -448,7 +462,7 @@ import '../styles/global.css';
 
         function renderFilterOptions() {
             const rf = document.getElementById('role-filter') as HTMLSelectElement;
-            const roles = [...new Set(allApplicants.map(a => a.role_applied))];
+            const roles = [...new Set(allApplicants.map(a => a.position || a.role_applied).filter(Boolean))];
             rf.innerHTML = `<option value="all">Semua Posisi (${allApplicants.length})</option>` + roles.map(r => `<option value="${r}">${r}</option>`).join('');
         }
 
