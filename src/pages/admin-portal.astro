@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v2.5 (Mahardhika Edition): Manajemen Detail Pelamar & Kolaborasi Tim
+// Admin Portal v3.1 (LinkedIn HR Preview Clean Edition)
 ---
 
 <html lang="id">
@@ -14,46 +14,19 @@ import '../styles/global.css';
         body { font-family: 'Funnel Display', sans-serif; }
         input[type="checkbox"] { width: 1.1rem; height: 1.1rem; cursor: pointer; border-radius: 4px; }
         .stats-card { transition: all 0.3s ease; }
-        .stats-card:hover { transform: translateY(-5px); }
+        .stats-card:hover { transform: translateY(-3px); }
         .nav-tab.active { background: white; color: #0f2854; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         
-        /* Modal Detail Style */
-        #detail-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 10001;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: rgba(15, 40, 84, 0.7);
-            backdrop-filter: blur(8px);
-        }
-        #detail-modal.active { display: flex; }
-        .detail-box {
-            background: white;
-            width: 100%;
-            max-width: 700px;
-            max-height: 90vh;
-            border-radius: 32px;
-            overflow-y: auto;
-            padding: 40px;
-            position: relative;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.4);
-        }
+        /* Custom Scrollbar for LinkedIn View */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* Active State Card */
+        .applicant-card.active { border-color: #1b509b; background-color: #f8fafc; box-shadow: inset 4px 0 0 0 #1b509b; }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen">
-    
-    <!-- DETAIL MODAL -->
-    <div id="detail-modal">
-        <div class="detail-box">
-            <button onclick="closeDetail()" class="absolute top-6 right-6 text-slate-300 hover:text-slate-900 text-2xl">✕</button>
-            <div id="modal-content-area">
-                <!-- Data dimuat via JS -->
-            </div>
-        </div>
-    </div>
+<body class="bg-slate-100 min-h-screen flex flex-col overflow-hidden">
 
     <!-- LOADER -->
     <div id="admin-loader" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center">
@@ -73,14 +46,14 @@ import '../styles/global.css';
         </div>
     </div>
 
-    <!-- MAIN APP -->
-    <div id="admin-content" class="hidden">
-        <nav class="bg-[#0f2854] text-white p-6 shadow-lg sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
+    <!-- MAIN APP WRAPPER -->
+    <div id="admin-content" class="hidden flex flex-col h-screen overflow-hidden">
+        <!-- TOP NAVIGATION -->
+        <nav class="bg-[#0f2854] text-white p-4 shadow-lg flex-shrink-0 z-50">
+            <div class="max-w-[1600px] mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-6">
                     <h1 class="font-extrabold text-xl tracking-tighter uppercase italic">PIH <span class="font-light opacity-50">Admin</span></h1>
-                    
-                    <div class="hidden md:flex bg-black/20 p-1 rounded-xl">
+                    <div class="flex bg-black/20 p-1 rounded-xl">
                         <button onclick="switchTab('applicants')" id="tab-applicants" class="nav-tab active px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all">Manajemen Pelamar</button>
                         <button onclick="switchTab('team')" id="tab-team" class="nav-tab px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all">Tim Penyeleksi</button>
                     </div>
@@ -92,71 +65,130 @@ import '../styles/global.css';
             </div>
         </nav>
 
-        <main class="max-w-7xl mx-auto py-10 px-6 pb-32">
+        <!-- MAIN WORKSPACE CONTAINER -->
+        <div class="flex-1 flex flex-col overflow-hidden max-w-[1600px] w-full mx-auto px-4 py-6">
             
-            <!-- SECTION 1: APPLICANTS -->
-            <section id="view-applicants" class="tab-content">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
-                    <div class="stats-card bg-white p-7 rounded-[2.5rem] border border-slate-200 shadow-sm">
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Pendaftar</p>
-                        <p id="stat-total" class="text-4xl font-black text-slate-900">0</p>
+            <!-- VIEW: APPLICANTS (LINKEDIN HR SPLIT STYLE) -->
+            <section id="view-applicants" class="tab-content flex-1 flex flex-col overflow-hidden">
+                <!-- Top Toolbar & Stats -->
+                <div class="flex-shrink-0 mb-6">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="stats-card bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
+                            <div><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total</p><p id="stat-total" class="text-2xl font-black text-slate-900">0</p></div>
+                        </div>
+                        <div class="stats-card bg-amber-50 p-4 rounded-2xl border border-amber-100 flex justify-between items-center">
+                            <div><p class="text-[9px] font-black text-amber-600 uppercase">Wawancara</p><p id="stat-interview" class="text-2xl font-black text-amber-700">0</p></div>
+                        </div>
+                        <div class="stats-card bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex justify-between items-center">
+                            <div><p class="text-[9px] font-black text-emerald-600 uppercase">Diterima</p><p id="stat-accepted" class="text-2xl font-black text-emerald-700">0</p></div>
+                        </div>
+                        <div class="stats-card bg-rose-50 p-4 rounded-2xl border border-rose-100 flex justify-between items-center">
+                            <div><p class="text-[9px] font-black text-rose-600 uppercase">Ditolak</p><p id="stat-rejected" class="text-2xl font-black text-rose-700">0</p></div>
+                        </div>
                     </div>
-                    <div class="stats-card bg-amber-50 p-7 rounded-[2.5rem] border border-amber-100"><p id="stat-interview" class="text-4xl font-black text-amber-700">0</p><p class="text-[9px] font-black text-amber-600 uppercase">Tahap Wawancara</p></div>
-                    <div class="stats-card bg-emerald-50 p-7 rounded-[2.5rem] border border-emerald-100"><p id="stat-accepted" class="text-4xl font-black text-emerald-700">0</p><p class="text-[9px] font-black text-emerald-600 uppercase">Diterima</p></div>
-                    <div class="stats-card bg-rose-50 p-7 rounded-[2.5rem] border border-rose-100"><p id="stat-rejected" class="text-4xl font-black text-rose-700">0</p><p class="text-[9px] font-black text-rose-600 uppercase">Ditolak</p></div>
-                </div>
 
-                <div class="mb-8 flex flex-col lg:flex-row gap-4">
-                    <input type="text" id="search-input" placeholder="Cari Nama/NIM/Email..." class="flex-1 bg-white border border-slate-200 px-6 py-4 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm">
-                    <select id="role-filter" class="bg-white border border-slate-200 px-6 py-4 rounded-2xl text-xs font-bold text-slate-600 outline-none appearance-none min-w-[200px] shadow-sm"><option value="all">Semua Posisi</option></select>
-                    <button id="export-csv-btn" class="bg-slate-800 text-white px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest">📥 Export CSV</button>
-                    <button id="refresh-btn" class="bg-white border border-slate-200 p-4 rounded-2xl hover:bg-slate-50 transition-colors">🔄</button>
-                </div>
+                    <div class="flex flex-col lg:flex-row gap-3">
+                        <input type="text" id="search-input" placeholder="Cari Nama/NIM/Email..." class="flex-1 bg-white border border-slate-200 px-5 py-3 rounded-xl text-sm outline-none shadow-sm focus:ring-1 focus:ring-blue-500">
+                        <select id="role-filter" class="bg-white border border-slate-200 px-5 py-3 rounded-xl text-xs font-bold text-slate-600 outline-none shadow-sm min-w-[180px]"></select>
+                        <button id="export-csv-btn" class="bg-slate-800 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest">📥 Export</button>
+                        <button id="refresh-btn" class="bg-white border border-slate-200 px-4 rounded-xl hover:bg-slate-50">🔄</button>
+                    </div>
 
-                <!-- Bulk Action Panel -->
-                <div id="bulk-action-panel" class="hidden mb-8 bg-[#1b509b] p-5 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between shadow-2xl gap-4">
-                    <div class="flex items-center gap-4 ml-4"><span class="text-white font-black text-xs uppercase"><span id="selected-count" class="text-2xl text-yellow-300">0</span> Item Terpilih</span></div>
-                    <div class="flex flex-wrap gap-2">
-                        <button id="bulk-interview-btn" class="bg-amber-400 text-slate-900 px-6 py-3 rounded-2xl text-[10px] font-black uppercase">Wawancara Massal</button>
-                        <button id="bulk-accept-btn" class="bg-emerald-500 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase">Terima Massal</button>
-                        <button id="auto-reject-btn" class="bg-rose-500 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase">Tolak Sisanya</button>
-                        <button id="clear-selection-btn" class="bg-white/10 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase">Batal</button>
+                    <!-- Bulk Action Panel Integration -->
+                    <div id="bulk-action-panel" class="hidden mt-4 bg-[#1b509b] p-3 rounded-xl items-center justify-between shadow-lg gap-4">
+                        <div class="flex items-center gap-2 ml-2"><span class="text-white font-black text-xs uppercase"><span id="selected-count" class="text-xl text-yellow-300">0</span> Terpilih</span></div>
+                        <div class="flex gap-2">
+                            <button id="bulk-interview-btn" class="bg-amber-400 text-slate-900 px-4 py-2 rounded-lg text-[9px] font-black uppercase">Wawancara</button>
+                            <button id="bulk-accept-btn" class="bg-emerald-500 text-white px-4 py-2 rounded-lg text-[9px] font-black uppercase">Terima</button>
+                            <button id="clear-selection-btn" class="bg-white/10 text-white px-4 py-2 rounded-lg text-[9px] font-black uppercase">Batal</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-[3rem] shadow-2xl border border-slate-200 overflow-hidden overflow-x-auto">
-                    <table class="w-full text-left min-w-[1000px]">
-                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                            <tr>
-                                <th class="px-8 py-8 w-12 text-center"><input type="checkbox" id="master-checkbox"></th>
-                                <th class="px-6 py-8">Informasi Pelamar</th>
-                                <th class="px-6 py-8">Akademik</th>
-                                <th class="px-6 py-8 text-center">Notifikasi</th>
-                                <th class="px-6 py-8 text-center">Status</th>
-                                <th class="px-6 py-8 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="applicant-list" class="divide-y divide-slate-100"></tbody>
-                    </table>
+                <!-- SPLIT VIEW BOX -->
+                <div class="flex-1 flex gap-6 overflow-hidden">
+                    
+                    <!-- LEFT SIDE: APPLICANTS LIST PANEL [source: 1] -->
+                    <div class="w-full md:w-[420px] flex-shrink-0 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="bg-slate-50 border-b border-slate-200 p-4 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="master-checkbox">
+                                <span>Daftar Kandidat</span>
+                            </div>
+                            <span id="list-count-badge" class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-[9px]">0</span>
+                        </div>
+                        <div id="applicant-list" class="flex-1 overflow-y-auto custom-scroll divide-y divide-slate-100">
+                            <!-- Data dimuat via JS -->
+                        </div>
+                    </div>
+
+                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL [source: 1] -->
+                    <div class="hidden md:flex flex-1 flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
+                        <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
+                            <span class="text-4xl mb-3">👤</span>
+                            <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v3.1</p>
+                        </div>
+                        
+                        <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
+                            <!-- Header Info -->
+                            <div class="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-start">
+                                <div>
+                                    <h2 id="preview-name" class="text-2xl font-black text-slate-900 italic uppercase leading-tight mb-1">-</h2>
+                                    <p id="preview-meta" class="text-blue-600 font-bold text-xs uppercase tracking-widest">-</p>
+                                    <div class="mt-3 flex items-center gap-2">
+                                        <span id="preview-status-badge" class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-white border border-slate-200">-</span>
+                                        <span id="preview-email-status" class="text-xs" title="Status Notifikasi Email">⚪</span>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2" id="preview-action-buttons">
+                                    <!-- Diisi Dinamis -->
+                                </div>
+                            </div>
+                            
+                            <!-- Body Info Content -->
+                            <div class="flex-1 overflow-y-auto p-8 space-y-6 custom-scroll">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Pilihan Posisi Utama</label><p id="preview-pos-1" class="font-bold text-sm text-slate-800">-</p></div>
+                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Nomor Induk Mahasiswa</label><p id="preview-nim" class="font-bold text-sm text-slate-800">-</p></div>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[#1b509b] mb-2 block">Kegiatan Saat Ini</label>
+                                    <p id="preview-activities" class="text-sm text-slate-600 bg-slate-50/50 p-4 rounded-xl border border-slate-100 italic">-</p>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black uppercase tracking-widest text-[#1b509b] mb-2 block">Alasan Memilih Posisi</label>
+                                    <p id="preview-reason" class="text-sm text-slate-600 bg-slate-50/50 p-4 rounded-xl border border-slate-100 italic">-</p>
+                                </div>
+                            </div>
+
+                            <!-- Footer Actions -->
+                            <div class="p-6 border-t border-slate-100 bg-slate-50 flex gap-4 flex-shrink-0">
+                                <a id="preview-link-portfolio" href="#" target="_blank" class="flex-1 bg-[#1b509b] hover:bg-[#0f2854] text-white text-center py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors">Buka Portofolio</a>
+                                <a id="preview-link-wa" href="#" target="_blank" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-center py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors">Hubungi via WhatsApp</a>
+                            </div>
+                        </div>
+                    </div>
+                    
                 </div>
             </section>
 
             <!-- SECTION 2: TEAM -->
-            <section id="view-team" class="tab-content hidden">
+            <section id="view-team" class="tab-content hidden flex-1 overflow-y-auto custom-scroll">
                 <div class="max-w-4xl mx-auto">
-                    <div class="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-200 mb-10">
-                        <h2 class="text-2xl font-black text-slate-900 uppercase italic mb-6 leading-none">Whitelist Tim Penyeleksi</h2>
+                    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm mb-6">
+                        <h2 class="text-xl font-black text-slate-900 uppercase italic mb-4">Whitelist Tim Penyeleksi</h2>
                         <div class="flex flex-col md:flex-row gap-4">
-                            <input type="email" id="invite-email" placeholder="Email Google Anggota Tim" class="flex-1 bg-slate-50 border border-slate-200 px-6 py-4 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                            <button id="invite-member-btn" class="bg-[#1b509b] text-white px-10 py-4 rounded-2xl font-black uppercase text-xs tracking-widest">Tambah Admin</button>
+                            <input type="email" id="invite-email" placeholder="Email Google Anggota Tim" class="flex-1 bg-slate-50 border border-slate-200 px-5 py-3 rounded-xl text-sm outline-none focus:ring-1 focus:ring-blue-500">
+                            <button id="invite-member-btn" class="bg-[#1b509b] text-white px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest">Tambah Admin</button>
                         </div>
                     </div>
-                    <div class="bg-white rounded-[3rem] shadow-lg border border-slate-200 overflow-hidden">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                         <table class="w-full text-left">
                             <thead class="bg-slate-50 border-b border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-widest">
                                 <tr>
-                                    <th class="px-10 py-6">Email Admin</th>
-                                    <th class="px-10 py-6 text-right">Aksi</th>
+                                    <th class="px-8 py-4">Email Admin</th>
+                                    <th class="px-8 py-4 text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="team-list" class="divide-y divide-slate-100"></tbody>
@@ -164,7 +196,7 @@ import '../styles/global.css';
                     </div>
                 </div>
             </section>
-        </main>
+        </div>
     </div>
 
     <script>
@@ -173,9 +205,8 @@ import '../styles/global.css';
         // Variables
         let allApplicants: any[] = [];
         let selectedIds: string[] = [];
+        let activeApplicantId: string | null = null;
         const ADMIN_EMAIL = "aldnlee.ale@gmail.com";
-        const detailModal = document.getElementById('detail-modal');
-        const modalContent = document.getElementById('modal-content-area');
 
         // OTENTIKASI
         async function checkAdminAccess() {
@@ -202,7 +233,7 @@ import '../styles/global.css';
         // PELAMAR LOGIC
         async function loadApplicants() {
             const listContainer = document.getElementById('applicant-list');
-            listContainer!.innerHTML = `<tr><td colspan="6" class="p-20 text-center animate-pulse text-[10px] font-black uppercase text-slate-300">Syncing Mahardhika Database...</td></tr>`;
+            listContainer!.innerHTML = `<div class="p-10 text-center animate-pulse text-[10px] font-black uppercase text-slate-400">Syncing Database...</div>`;
 
             const { data, error } = await supabase.from('applications').select('*').order('created_at', { ascending: false });
             if (!error) {
@@ -210,6 +241,11 @@ import '../styles/global.css';
                 renderList();
                 updateStats();
                 renderFilterOptions();
+                
+                // Auto preview first applicant on load if available [source: 1]
+                if (data && data.length > 0 && !activeApplicantId) {
+                    (window as any).selectApplicantForPreview(data[0].id);
+                }
             }
         }
 
@@ -223,37 +259,79 @@ import '../styles/global.css';
                 (a.full_name.toLowerCase().includes(search) || a.nim?.includes(search) || a.user_email.toLowerCase().includes(search))
             );
 
+            document.getElementById('list-count-badge')!.innerText = filtered.length.toString();
+
+            if (filtered.length === 0) {
+                listContainer!.innerHTML = `<div class="p-8 text-center text-xs text-slate-400 italic">Kandidat tidak ditemukan</div>`;
+                clearPreview();
+                return;
+            }
+
             listContainer!.innerHTML = filtered.map(app => `
-                <tr class="hover:bg-slate-50 transition-colors group">
-                    <td class="px-8 py-7 text-center">
+                <div class="applicant-card p-4 flex items-start gap-3 cursor-pointer hover:bg-slate-50 transition-all ${activeApplicantId === app.id ? 'active' : ''}" data-id="${app.id}">
+                    <div class="pt-1" onclick="event.stopPropagation();">
                         <input type="checkbox" class="applicant-checkbox" value="${app.id}" ${selectedIds.includes(app.id) ? 'checked' : ''}>
-                    </td>
-                    <td class="px-6 py-7">
-                        <div class="font-black text-slate-900 text-lg leading-tight mb-1">${app.full_name}</div>
-                        <div class="text-[10px] text-[#1b509b] font-black uppercase tracking-wider mb-2">${app.role_applied}</div>
-                        <div class="text-[10px] text-slate-400 font-bold">${app.user_email}</div>
-                    </td>
-                    <td class="px-6 py-7">
-                        <div class="text-xs font-bold text-slate-700">${app.faculty || '-'}</div>
-                        <div class="text-[10px] text-slate-400">NIM: ${app.nim || '-'} • Sem: ${app.semester || '-'}</div>
-                    </td>
-                    <td class="px-6 py-7 text-center">
-                        <span class="text-xl" title="${app.email_status}">${app.email_status === 'sent' ? '📧' : '⚪'}</span>
-                    </td>
-                    <td class="px-6 py-7 text-center">
-                        <span class="px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest bg-white border border-slate-200">${app.status}</span>
-                    </td>
-                    <td class="px-6 py-7 text-right">
-                        <div class="flex justify-end gap-2">
-                            <button onclick="viewDetail('${app.id}')" class="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all">📄</button>
-                            <button onclick="updateStatus('${app.id}', 'interview')" class="p-3 bg-amber-50 text-amber-600 rounded-xl hover:bg-amber-500 hover:text-white transition-all">💬</button>
-                            <button onclick="updateStatus('${app.id}', 'accepted')" class="p-3 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-500 hover:text-white transition-all">✅</button>
+                    </div>
+                    <div class="flex-1 min-w-0" onclick="(window).selectApplicantForPreview('${app.id}')">
+                        <div class="flex justify-between items-start gap-2">
+                            <h4 class="font-black text-slate-900 text-sm truncate leading-tight">${app.full_name}</h4>
+                            <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 bg-white flex-shrink-0">${app.status}</span>
                         </div>
-                    </td>
-                </tr>
+                        <p class="text-[10px] text-[#1b509b] font-black uppercase tracking-wider mt-0.5">${app.role_applied}</p>
+                        <div class="flex items-center justify-between mt-2 text-[9px] text-slate-400 font-medium">
+                            <span>NIM: ${app.nim || '-'} • Sem: ${app.semester || '-'}</span>
+                            <span class="text-xs" title="${app.email_status}">${app.email_status === 'sent' ? '📧' : '⚪'}</span>
+                        </div>
+                    </div>
+                </div>
             `).join('');
 
             attachCheckboxListeners();
+        }
+
+        // PREVIEW GENERATION LOGIC - Mapped via dynamic assignment to bypass strict global interfaces [source: 1]
+        (window as any).selectApplicantForPreview = (id: string) => {
+            activeApplicantId = id;
+            
+            // Update active visually on list items
+            document.querySelectorAll('.applicant-card').forEach(card => {
+                if (card.getAttribute('data-id') === id) card.classList.add('active');
+                else card.classList.remove('active');
+            });
+
+            const app = allApplicants.find(a => a.id === id);
+            if (!app) return;
+
+            document.getElementById('empty-preview-state')?.classList.add('hidden');
+            const previewArea = document.getElementById('detail-preview-area');
+            previewArea?.classList.remove('opacity-0', 'pointer-events-none');
+
+            // Inject Data Content [source: 1]
+            document.getElementById('preview-name')!.innerText = app.full_name;
+            document.getElementById('preview-meta')!.innerText = `${app.faculty || '-'} • Semester ${app.semester || '-'}`;
+            document.getElementById('preview-status-badge')!.innerText = app.status;
+            document.getElementById('preview-email-status')!.innerText = app.email_status === 'sent' ? '📧 Sent' : '⚪ Pending';
+            document.getElementById('preview-pos-1')!.innerText = app.role_applied;
+            document.getElementById('preview-nim')!.innerText = app.nim || '-';
+            document.getElementById('preview-activities')!.innerText = app.other_activities || 'Tidak ada kegiatan khusus yang diisi.';
+            document.getElementById('preview-reason')!.innerText = app.reason_1 || 'Tidak ada alasan khusus yang dijabarkan.';
+
+            // Setup Link Footer Actions
+            (document.getElementById('preview-link-portfolio') as HTMLAnchorElement).href = app.portfolio_url || '#';
+            (document.getElementById('preview-link-wa') as HTMLAnchorElement).href = `https://wa.me/${app.phone?.replace(/[^0-9]/g, '')}`;
+
+            // Action Header Buttons
+            document.getElementById('preview-action-buttons')!.innerHTML = `
+                <button onclick="updateStatus('${app.id}', 'interview')" class="px-3 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl hover:bg-amber-500 hover:text-white font-bold text-[10px] uppercase transition-all">💬 Panggil Wawancara</button>
+                <button onclick="updateStatus('${app.id}', 'accepted')" class="px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl hover:bg-emerald-500 hover:text-white font-bold text-[10px] uppercase transition-all">✅ Lolos Seleksi</button>
+                <button onclick="updateStatus('${app.id}', 'rejected')" class="px-3 py-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl hover:bg-rose-500 hover:text-white font-bold text-[10px] uppercase transition-all">❌ Tolak</button>
+            `;
+        };
+
+        function clearPreview() {
+            document.getElementById('empty-preview-state')?.classList.remove('hidden');
+            document.getElementById('detail-preview-area')?.classList.add('opacity-0', 'pointer-events-none');
+            activeApplicantId = null;
         }
 
         // TEAM LOGIC
@@ -266,11 +344,11 @@ import '../styles/global.css';
             const container = document.getElementById('team-list');
             container!.innerHTML = members.map(m => `
                 <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="px-10 py-6">
-                        <div class="font-bold text-slate-800">${m.email}</div>
+                    <td class="px-8 py-4">
+                        <div class="font-bold text-slate-800 text-sm">${m.email}</div>
                         <div class="text-[9px] text-slate-400 uppercase tracking-widest font-black">${m.role || 'Reviewer'}</div>
                     </td>
-                    <td class="px-10 py-6 text-right">
+                    <td class="px-8 py-4 text-right">
                         ${m.email !== ADMIN_EMAIL ? `
                             <button onclick="deleteMember('${m.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-[10px] uppercase tracking-widest">Hapus Akses</button>
                         ` : '<span class="text-[9px] font-black uppercase opacity-20">Master Admin</span>'}
@@ -279,7 +357,7 @@ import '../styles/global.css';
             `).join('');
         }
 
-        // GLOBAL ACTIONS
+        // GLOBAL ACTIONS MAPPED SAFELY VIA ANY CASTING
         (window as any).switchTab = (tab: string) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
@@ -293,38 +371,12 @@ import '../styles/global.css';
             }
         };
 
-        (window as any).viewDetail = (id: string) => {
-            const app = allApplicants.find(a => a.id === id);
-            if (!app || !modalContent || !detailModal) return;
-
-            modalContent.innerHTML = `
-                <div class="space-y-8">
-                    <div>
-                        <h2 class="text-3xl font-black text-slate-900 italic uppercase leading-none mb-2">${app.full_name}</h2>
-                        <p class="text-blue-600 font-bold text-xs uppercase tracking-widest">${app.study_program} • Semester ${app.semester}</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-slate-50 p-4 rounded-2xl"><label class="text-[9px] font-black uppercase opacity-40">Pilihan 1</label><p class="font-bold text-sm text-slate-800">${app.role_applied}</p></div>
-                        <div class="bg-slate-50 p-4 rounded-2xl"><label class="text-[9px] font-black uppercase opacity-40">Pilihan 2</label><p class="font-bold text-sm text-slate-800">${app.role_2 || '-'}</p></div>
-                    </div>
-                    <div class="space-y-6">
-                        <div><label class="text-[10px] font-black uppercase tracking-widest text-[#1b509b] mb-2 block">Kegiatan Saat Ini</label><p class="text-sm text-slate-600 italic">"${app.other_activities || 'Tidak ada'}"</p></div>
-                        <div><label class="text-[10px] font-black uppercase tracking-widest text-[#1b509b] mb-2 block">Alasan Memilih Posisi</label><p class="text-sm text-slate-600 italic">"${app.reason_1 || '-'}"</p></div>
-                    </div>
-                    <div class="pt-6 border-t flex gap-4">
-                        <a href="${app.portfolio_url}" target="_blank" class="flex-1 bg-[#1b509b] text-white text-center py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest">Buka Portofolio</a>
-                        <a href="https://wa.me/${app.phone?.replace(/[^0-9]/g, '')}" target="_blank" class="flex-1 bg-emerald-500 text-white text-center py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest">WhatsApp</a>
-                    </div>
-                </div>
-            `;
-            detailModal.classList.add('active');
-        };
-
-        (window as any).closeDetail = () => detailModal?.classList.remove('active');
-
         (window as any).updateStatus = async (id: string, newStatus: string) => {
             const { error } = await supabase.from('applications').update({ status: newStatus, acknowledged: false, email_status: 'pending' }).eq('id', id);
-            if (!error) loadApplicants();
+            if (!error) {
+                await loadApplicants();
+                if(activeApplicantId) (window as any).selectApplicantForPreview(activeApplicantId);
+            }
         };
 
         (window as any).deleteMember = async (id: string) => {
@@ -337,7 +389,12 @@ import '../styles/global.css';
         async function bulkUpdate(status: string) {
             if (!confirm(`Ubah ${selectedIds.length} pelamar ke ${status.toUpperCase()}?`)) return;
             const { error } = await supabase.from('applications').update({ status, acknowledged: false, email_status: 'pending' }).in('id', selectedIds);
-            if (!error) { selectedIds = []; loadApplicants(); document.getElementById('bulk-action-panel')?.classList.replace('flex', 'hidden'); }
+            if (!error) { 
+                selectedIds = []; 
+                await loadApplicants(); 
+                document.getElementById('bulk-action-panel')?.classList.replace('flex', 'hidden'); 
+                (document.getElementById('master-checkbox') as HTMLInputElement).checked = false;
+            }
         }
 
         // EVENT LISTENERS
@@ -351,7 +408,30 @@ import '../styles/global.css';
 
         document.getElementById('bulk-interview-btn')?.addEventListener('click', () => bulkUpdate('interview'));
         document.getElementById('bulk-accept-btn')?.addEventListener('click', () => bulkUpdate('accepted'));
-        document.getElementById('clear-selection-btn')?.addEventListener('click', () => { selectedIds = []; renderList(); document.getElementById('bulk-action-panel')?.classList.replace('flex', 'hidden'); });
+        document.getElementById('clear-selection-btn')?.addEventListener('click', () => { 
+            selectedIds = []; 
+            renderList(); 
+            document.getElementById('bulk-action-panel')?.classList.replace('flex', 'hidden'); 
+            (document.getElementById('master-checkbox') as HTMLInputElement).checked = false;
+        });
+
+        // Master Checkbox Logic
+        document.getElementById('master-checkbox')?.addEventListener('change', (e: any) => {
+            const checkboxes = document.querySelectorAll('.applicant-checkbox') as NodeListOf<HTMLInputElement>;
+            selectedIds = [];
+            checkboxes.forEach(cb => {
+                cb.checked = e.target.checked;
+                if (e.target.checked) selectedIds.push(cb.value);
+            });
+            
+            const bulkPanel = document.getElementById('bulk-action-panel');
+            if (selectedIds.length > 0) {
+                bulkPanel?.classList.replace('hidden', 'flex');
+                document.getElementById('selected-count')!.innerText = selectedIds.length.toString();
+            } else {
+                bulkPanel?.classList.replace('flex', 'hidden');
+            }
+        });
 
         document.getElementById('search-input')?.addEventListener('input', renderList);
         document.getElementById('role-filter')?.addEventListener('change', renderList);
