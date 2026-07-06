@@ -75,4 +75,4 @@ collections:
       - { label: "Nama Role", name: "title", widget: "string" }
       - { label: "Kategori", name: "category", widget: "string", hint: "Contoh: Creative, Production" }
       - { label: "Icon Emoji", name: "icon", widget: "string" }
-      - { label: "Tanggung Jawab", name: "body", widget: "markdown" }
+      - { label: "Deskripsi Singkat", name: "description", widget: "markdown" }
