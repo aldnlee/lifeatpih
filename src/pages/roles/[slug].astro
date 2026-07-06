@@ -187,9 +187,12 @@ const { Content } = await entry.render();
                 </div>
             </div>
             
-            <div class="bg-white/5 border border-white/10 p-8 rounded-[2rem] backdrop-blur-sm prose-description">
-                <p class="text-l text-white/80 leading-relaxed font-light">"{entry.data.description}"</p>
-            </div>
+            <div class="bg-white/5 border border-white/10 p-8 md:p-10 rounded-[2rem] backdrop-blur-sm prose-description">
+    <div class="text-white/80 leading-relaxed font-light text-base md:text-lg space-y-4">
+        <Content /> 
+        <!-- Catatan: Jika deskripsi diisi menggunakan widget markdown, panggil menggunakan <Content /> agar format poin dari CMS langsung aktif -->
+    </div>
+</div>
         </div>
 
         <div class="mt-16 prose prose-invert prose-blue max-w-none border-t border-white/10 pt-16">
