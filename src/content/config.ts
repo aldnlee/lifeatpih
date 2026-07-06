@@ -33,7 +33,7 @@ const rolesCollection = defineCollection({
     title: z.string(),
     category: z.string(),
     icon: z.string(),
-    description: z.string(),
+    description: z.string().optional()
   }),
 });
 
