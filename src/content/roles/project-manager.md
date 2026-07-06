@@ -17,12 +17,14 @@ description: Sebagai Project Manager, peran ini mendukung tim project management
   yang baik, kepemimpinan, serta keterampilan komunikasi yang efektif guna
   menjaga kelancaran pelaksanaan proyek.
 ---
-Sebagai Project Manager, peran ini mendukung tim *project management* dalam merencanakan, melaksanakan, mengawasi, dan menyelesaikan proyek secara efektif.
+Sebagai **Project Manager**, Anda bertanggung jawab mendukung tim dalam mengelola siklus proyek secara efektif dari perencanaan hingga penyelesaian.
 
-**Fokus Utama Peran:**
-* **Manajemen & Timeline:** Membantu identifikasi kebutuhan, melacak kemajuan, serta memastikan proyek berjalan sesuai target dan spesifikasi.
-* **Koordinasi Stakeholder:** Mengelola sumber daya manusia, menyampaikan status proyek, serta menjembatani komunikasi internal dan eksternal.
-* **Mitigasi Risiko:** Mengidentifikasi dan mengatasi berbagai risiko yang muncul selama proses pelaksanaan proyek.
-* **Tooling Ekspertis:** Memanfaatkan alat manajemen modern seperti *Trello, Asana, Spreadsheet*, atau *Microsoft Project*.
+**Tanggung Jawab Utama:**
+* **Manajemen Target:** Mengidentifikasi kebutuhan proyek, melacak kemajuan, serta memastikan eksekusi berjalan sesuai *timeline* dan spesifikasi.
+* **Manajemen Risiko & Sumber Daya:** Mengelola alokasi sumber daya manusia/teknis serta memitigasi risiko yang muncul selama pelaksanaan.
+* **Komunikasi Stakeholder:** Menjadi jembatan komunikasi dan menyampaikan laporan status proyek kepada *stakeholder* internal maupun eksternal.
+* **Optimasi Proses:** Memberikan rekomendasi strategis demi meningkatkan efisiensi operasional proyek.
 
-Posisi ini membutuhkan kemampuan manajemen waktu yang kuat, kepemimpinan adaptif, serta keterampilan komunikasi yang efektif guna menjaga kelancaran seluruh ekosistem proyek.
+**Kebutuhan & Kualifikasi:**
+* **Keahlian Alat (Tooling):** Mampu mendokumentasikan proyek menggunakan *Trello, Asana, Spreadsheet*, atau *Microsoft Project*.
+* **Skill Inti:** Memiliki jiwa kepemimpinan, manajemen waktu yang kuat, serta kemampuan komunikasi yang efektif.
