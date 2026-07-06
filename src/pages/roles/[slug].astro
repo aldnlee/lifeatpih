@@ -35,23 +35,75 @@ const { Content } = await entry.render();
             margin: 0;
         }
         
-        /* Tipografi untuk konten Markdown */
+        /* -----------------------------------------------------------
+           TIPOGRAFI PREMIUM UNTUK KONTEN MARKDOWN DECAP CMS
+        ----------------------------------------------------------- */
+        
+        /* Mengatur Judul Bab Utama (H1, H2, H3) di dalam Markdown */
         .prose h1, .prose h2, .prose h3 { 
-            color: white !important; 
+            color: #ffffff !important; 
             font-weight: 800 !important; 
             text-transform: uppercase; 
             letter-spacing: -0.02em; 
-            margin-top: 2rem !important;
+            margin-top: 2.5rem !important;
+            margin-bottom: 1rem !important;
         }
-        .prose p, .prose li { 
-            color: rgba(255,255,255,0.7) !important; 
+
+        /* Jika kamu mengetik judul menggunakan Bold biasa (**JUDUL**) di awal baris */
+        .prose p > strong:first-child {
+            display: block;
+            color: #facc15 !important; /* Mengubah teks judul menjadi Kuning Emas */
+            font-size: 1.3rem;
+            letter-spacing: -0.01em;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Mengatur Paragraf Deskripsi */
+        .prose p { 
+            color: rgba(255, 255, 255, 0.75) !important; 
             line-height: 1.8; 
-            font-size: 1.1rem;
+            font-size: 1.05rem;
+            margin-bottom: 1.5rem !important;
         }
-        .prose strong { color: #facc15 !important; }
-        .prose ul { list-style-type: disc; padding-left: 1.5rem; }
+
+        /* Menghilangkan Bullet Point Standar Browser yang Rapat */
+        .prose ul { 
+            list-style-type: none !important; 
+            padding-left: 0.25rem !important; 
+            margin-top: 1rem !important;
+            margin-bottom: 2rem !important;
+        }
+
+        /* Mengatur Desain Baris Setiap Poin Tanggung Jawab */
+        .prose li { 
+            position: relative;
+            color: rgba(255, 255, 255, 0.85) !important; 
+            line-height: 1.7; 
+            font-size: 1.05rem;
+            padding-left: 1.75rem !important; /* Memberikan ruang untuk kustom bullet */
+            margin-bottom: 0.85rem !important; /* Membuat jarak antar poin lebih renggang dan lega */
+        }
+
+        /* Membuat Kustom Simbol Poin (Bullet) Berwarna Biru Terang */
+        .prose li::before {
+            content: "•";
+            position: absolute;
+            left: 0.25rem;
+            top: -0.05rem;
+            color: #38bdf8 !important; /* Warna Biru Sky Tailwind */
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+
+        /* Warna teks bold umum di dalam paragraf */
+        .prose strong { 
+            color: #facc15 !important; 
+        }
         
-        /* Modal Popup Styling */
+        /* -----------------------------------------------------------
+           MODAL POPUP STYLING
+        ----------------------------------------------------------- */
         #auth-modal {
             display: none;
             position: fixed;
