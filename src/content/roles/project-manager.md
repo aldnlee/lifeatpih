@@ -17,15 +17,12 @@ description: Sebagai Project Manager, peran ini mendukung tim project management
   yang baik, kepemimpinan, serta keterampilan komunikasi yang efektif guna
   menjaga kelancaran pelaksanaan proyek.
 ---
-**TUGAS DAN TANGGUNG JAWAB**\
-Membantu perencanaan kegiatan/project, termasuk mengidentifikasi kebutuhan sumber daya, timeline, dan tujuan kegiatan/project.
+Sebagai Project Manager, peran ini mendukung tim *project management* dalam merencanakan, melaksanakan, mengawasi, dan menyelesaikan proyek secara efektif.
 
-Berkoordinasi dengan tim untuk memastikan kelancaran pelaksanaan kegiatan/project.
+**Fokus Utama Peran:**
+* **Manajemen & Timeline:** Membantu identifikasi kebutuhan, melacak kemajuan, serta memastikan proyek berjalan sesuai target dan spesifikasi.
+* **Koordinasi Stakeholder:** Mengelola sumber daya manusia, menyampaikan status proyek, serta menjembatani komunikasi internal dan eksternal.
+* **Mitigasi Risiko:** Mengidentifikasi dan mengatasi berbagai risiko yang muncul selama proses pelaksanaan proyek.
+* **Tooling Ekspertis:** Memanfaatkan alat manajemen modern seperti *Trello, Asana, Spreadsheet*, atau *Microsoft Project*.
 
-Melacak perkembangan kegiatan/project dan menyampaikan status kepada User atau stakeholder terkait secara berkala.
-
-Mengidentifikasi risiko yang mungkin muncul selama pelaksanaan kegiatan/project dan membantu dalam menyusun mitigasinya.
-
-Mendukung komunikasi dengan stakeholder internal dan eksternal untuk memastikan kesesuaian kebutuhan mereka dengan hasil kegiatan/project.
-
-Menggunakan tools project management seperti Trello, Asana, Spreadsheet atau Microsoft Project untuk mendokumentasikan tugas dan timeline kegiatan/project.
+Posisi ini membutuhkan kemampuan manajemen waktu yang kuat, kepemimpinan adaptif, serta keterampilan komunikasi yang efektif guna menjaga kelancaran seluruh ekosistem proyek.
