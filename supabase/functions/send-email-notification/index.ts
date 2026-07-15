@@ -1,96 +1,87 @@
-// Supabase Edge Function: Pengiriman Email otomatis via Resend API dengan Tracking Status
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+// supabase/functions/send-email-notification/index.ts
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-interface WebhookPayload {
-  type: 'INSERT' | 'UPDATE' | 'DELETE';
-  table: string;
-  record: {
-    id: string;
-    full_name: string;
-    user_email: string;
-    role_applied: string;
-    status: string;
-    batch_id: string;
-  };
-  old_record: {
-    status: string;
-  } | null;
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
+
+// Mengambil API Key dari environment variable milik Supabase Vault
+const apiKey = Deno.env.get("BREVO_API_KEY");
+
+// Konfigurasi Header CORS agar bisa ditembak dari web Astro kamu
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-Deno.serve(async (req: Request) => {
-  // Inisialisasi client internal untuk update status
-  const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+serve(async (req) => {
+  // Handle request preflight OPTIONS untuk CORS
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
 
   try {
-    const payload: WebhookPayload = await req.json();
-    const { record, type, old_record } = payload;
+    // Membaca data kiriman (Payload) dari form Astro kamu
+    const { emailPelamar, namaPelamar } = await req.json();
 
-    const userEmail = record.user_email;
-    const fullName = record.full_name;
-    const role = record.role_applied;
-    const status = record.status;
-
-    let subject = "";
-    let htmlContent = "";
-
-    // Logika Trigger Email
-    if (type === 'INSERT') {
-      subject = `[Konfirmasi] Pendaftaran Magang PIH: ${fullName}`;
-      htmlContent = `<div style="font-family: sans-serif; padding: 20px;"><h2>Halo, ${fullName}!</h2><p>Pendaftaran Anda untuk posisi <b>${role}</b> telah kami terima.</p></div>`;
-    } 
-    else if (type === 'UPDATE' && status !== old_record?.status) {
-      if (status === 'interview') {
-        subject = `[Undangan Wawancara] Magang PIH - ${fullName}`;
-        htmlContent = `<div style="font-family: sans-serif; padding: 20px;"><h2>Selamat!</h2><p>Anda lolos ke tahap interview untuk posisi <b>${role}</b>.</p></div>`;
-      } else if (status === 'accepted') {
-        subject = `🎉 Selamat! Anda Diterima di Squad PIH`;
-        htmlContent = `<div style="font-family: sans-serif; padding: 20px;"><h2>Welcome to the Squad!</h2><p>Anda resmi diterima di posisi <b>${role}</b>.</p></div>`;
-      } else if (status === 'rejected') {
-        subject = `Update Lamaran Magang PIH - ${fullName}`;
-        htmlContent = `<div style="font-family: sans-serif; padding: 20px;"><p>Terima kasih sudah melamar. Mohon maaf, Anda belum bisa lanjut ke tahap berikutnya.</p></div>`;
-      }
+    if (!emailPelamar || !namaPelamar) {
+      return new Response(
+        JSON.stringify({ error: "Missing emailPelamar or namaPelamar parameter" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    if (!subject) return new Response("No trigger", { status: 200 });
+    // Payload JSON khusus untuk spesifikasi Brevo API V3
+    const emailPayload = {
+      sender: { 
+        name: "Tim Manajemen PIH UIN", 
+        email: "aldnlee.ale@gmail.com" // Ganti dengan Gmail kamu yang aktif di Brevo
+      },
+      to: [
+        { 
+          email: emailPelamar, 
+          name: namaPelamar 
+        }
+      ],
+      subject: "📢 Update Status Seleksi Magang PIH UIN Jakarta",
+      htmlContent: `
+        <div style="font-family: sans-serif; padding: 24px; color: #0f2854; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 16px;">
+          <h2 style="color: #1b509b;">Halo ${namaPelamar},</h2>
+          <p style="line-height: 1.6; font-size: 15px;">Terima kasih telah mendaftar di program magang internal PIH UIN Syarif Hidayatullah Jakarta.</p>
+          <p style="line-height: 1.6; font-size: 15px;">Dokumen pendaftaran Anda telah berhasil masuk ke sistem kami dan saat ini sedang berada dalam tahap <b>Review Berkas</b> oleh tim manajemen.</p>
+          <br/>
+          <hr style="border: 0; border-top: 1px solid #e2e8f0;"/>
+          <p style="font-size: 12px; color: #64748b; margin-top: 16px;">
+            Salam Hangat,<br/>
+            <b>Project Management Office (PMO) PIH</b>
+          </p>
+        </div>
+      `
+    };
 
-    // KIRIM KE RESEND
-    const res = await fetch('https://api.resend.com/emails', {
+    // Eksekusi POST request ke Brevo
+    const response = await fetch(BREVO_API_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'accept': 'application/json',
+        'api-key': apiKey || '',
+        'content-type': 'application/json'
       },
-      body: JSON.stringify({
-        from: 'PIH Recruitment <onboarding@resend.dev>',
-        to: [userEmail],
-        subject: subject,
-        html: htmlContent,
-      }),
+      body: JSON.stringify(emailPayload)
     });
 
-    const resendData = await res.json();
-
-    // VALIDASI & CATAT KE DATABASE
-    if (res.ok) {
-      await supabaseAdmin
-        .from('applications')
-        .update({ email_status: 'sent' })
-        .eq('id', record.id);
-    } else {
-      await supabaseAdmin
-        .from('applications')
-        .update({ email_status: 'failed' })
-        .eq('id', record.id);
+    if (!response.ok) {
+      const errorResponse = await response.text();
+      throw new Error(`Brevo API Error: ${errorResponse}`);
     }
 
-    return new Response(JSON.stringify(resendData), { status: 200 });
+    return new Response(
+      JSON.stringify({ success: true, message: "Notification email sent successfully!" }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
 
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: errorMessage }), { status: 500 });
+  } catch (error: any) {
+    return new Response(
+      JSON.stringify({ success: false, error: error.message }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
-});
+})
