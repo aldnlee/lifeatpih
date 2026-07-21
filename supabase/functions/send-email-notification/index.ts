@@ -33,7 +33,7 @@ serve(async (req) => {
     const emailPayload = {
       sender: { 
         name: "Tim Manajemen PIH UIN", 
-        email: "aldnlee.ale@gmail.com" // Ganti dengan Gmail kamu yang aktif di Brevo
+        email: "aldenlee354@gmail.com" // Ganti dengan Gmail kamu yang aktif di Brevo
       },
       to: [
         { 

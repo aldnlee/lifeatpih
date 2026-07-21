@@ -229,12 +229,42 @@ const roleOptions = availableRoles.map((role: Role) => ({
                         </div>
                     </div>
 
-                    <!-- SECTION 3: PORTOFOLIO -->
+                    <!-- SECTION 3: DOKUMEN PENDUKUNG (CV & PORTOFOLIO DIPISAH) -->
                     <div>
                         <div class="form-section-title">Dokumen Pendukung</div>
-                        <label>Lampirkan Tautan CV dan Portfolio</label>
-                        <input type="url" id="portfolio_url" required placeholder="https://drive.google.com/share-link-kamu">
-                        <p class="text-[10px] opacity-40 mt-2 font-bold uppercase tracking-wider italic">*Pastikan link dapat diakses secara publik</p>
+                        
+                        <!-- INPUT CV -->
+                        <div class="mb-6">
+                            <label>Lampirkan Tautan Curriculum Vitae (CV)</label>
+                            <input type="url" id="cv_url" required placeholder="https://drive.google.com/file/d/your-cv-link">
+                            <p class="text-[10px] opacity-40 mt-1 font-bold uppercase tracking-wider italic">*Pastikan link Google Drive/LinkedIn CV dapat diakses publik</p>
+                        </div>
+
+                        <!-- INPUT PORTOFOLIO DINAMIS -->
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <label class="text-yellow-400 !mb-0">Lampirkan Tautan Portofolio</label>
+                                <button type="button" id="add-portfolio-btn" class="text-xs font-black bg-white/10 hover:bg-white/20 text-yellow-300 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all">
+                                    <span>+</span> Tambah Link
+                                </button>
+                            </div>
+
+                            <!-- WARNING BADGE -->
+                            <div class="bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl flex items-center gap-2 text-amber-200 text-xs">
+                                <span>⚠️</span>
+                                <p class="m-0 font-medium text-[11px] leading-tight">
+                                    <strong>Perhatian:</strong> Hanya diizinkan memasukkan <strong>1 link portofolio per kolom</strong>. Gunakan tombol <strong>"+ Tambah Link"</strong> jika memiliki lebih dari satu tautan karya.
+                                </p>
+                            </div>
+
+                            <!-- CONTAINER INPUT PORTOFOLIO -->
+                            <div id="portfolio-list-container" class="space-y-3">
+                                <div class="portfolio-item flex items-center gap-2">
+                                    <input type="url" class="portfolio-input" required placeholder="https://behance.net/karya-kamu atau https://github.com/...">
+                                    <button type="button" class="remove-portfolio-btn hidden bg-rose-500/20 text-rose-300 hover:bg-rose-500 hover:text-white w-12 h-12 rounded-xl font-bold flex items-center justify-center flex-shrink-0 transition-all">✕</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- DECLARATION -->
@@ -314,7 +344,42 @@ const roleOptions = availableRoles.map((role: Role) => ({
             dock.addEventListener("mouseleave", () => gsap.to(icons, { duration: 0.3, scale: 1, x: 0 }));
         }
 
-        // --- 2. SUPABASE SUBMISSION LOGIC ---
+        // --- 2. DYNAMIC PORTFOLIO INPUT LOGIC ---
+        const portfolioContainer = document.getElementById('portfolio-list-container');
+        const addPortfolioBtn = document.getElementById('add-portfolio-btn');
+
+        function updateRemoveButtons() {
+            if (!portfolioContainer) return;
+            const items = portfolioContainer.querySelectorAll('.portfolio-item');
+            items.forEach((item) => {
+                const removeBtn = item.querySelector('.remove-portfolio-btn');
+                if (items.length > 1) {
+                    removeBtn?.classList.remove('hidden');
+                } else {
+                    removeBtn?.classList.add('hidden');
+                }
+            });
+        }
+
+        addPortfolioBtn?.addEventListener('click', () => {
+            if (!portfolioContainer) return;
+            const newItem = document.createElement('div');
+            newItem.className = 'portfolio-item flex items-center gap-2';
+            newItem.innerHTML = `
+                <input type="url" class="portfolio-input" required placeholder="https://behance.net/karya-kamu atau https://github.com/...">
+                <button type="button" class="remove-portfolio-btn bg-rose-500/20 text-rose-300 hover:bg-rose-500 hover:text-white w-12 h-12 rounded-xl font-bold flex items-center justify-center flex-shrink-0 transition-all">✕</button>
+            `;
+            portfolioContainer.appendChild(newItem);
+            updateRemoveButtons();
+
+            // Event listener hapus item
+            newItem.querySelector('.remove-portfolio-btn')?.addEventListener('click', () => {
+                newItem.remove();
+                updateRemoveButtons();
+            });
+        });
+
+        // --- 3. SUPABASE SUBMISSION LOGIC ---
         const form = document.getElementById('apply-form') as HTMLFormElement | null;
         const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
         const batchIdInput = document.getElementById('batch_id_val') as HTMLInputElement | null;
@@ -355,7 +420,19 @@ const roleOptions = availableRoles.map((role: Role) => ({
                 return;
             }
 
-            // Konstruksi Payload Data (Sesuai Struktur Baru)
+            // KUMPULKAN KESELURUHAN LINK PORTOFOLIO MENJADI SATU STRING
+            const portfolioInputs = document.querySelectorAll('.portfolio-input') as NodeListOf<HTMLInputElement>;
+            const portfolioUrls: string[] = [];
+            portfolioInputs.forEach(input => {
+                const val = input.value.trim();
+                if (val) portfolioUrls.push(val);
+            });
+
+            // Gabungkan link portofolio dengan koma
+            const combinedPortfolioUrl = portfolioUrls.join(', ');
+            const cvUrl = (document.getElementById('cv_url') as HTMLInputElement).value;
+
+            // Konstruksi Payload Data (Mendukung cv_url & portfolio_url)
             const formData = {
                 user_id: user.id,
                 user_email: user.email,
@@ -370,7 +447,8 @@ const roleOptions = availableRoles.map((role: Role) => ({
                 role_2: (document.getElementById('role_2') as HTMLSelectElement).value,
                 reason_1: (document.getElementById('reason_1') as HTMLTextAreaElement).value,
                 reason_2: (document.getElementById('reason_2') as HTMLTextAreaElement).value,
-                portfolio_url: (document.getElementById('portfolio_url') as HTMLInputElement).value,
+                cv_url: cvUrl,
+                portfolio_url: combinedPortfolioUrl,
                 batch_id: activeBatchId, 
                 status: 'administrasi',
                 acknowledged: false

@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v3.3 (LinkedIn HR Preview - Race Condition Fix)
+// Admin Portal v3.5 (LinkedIn HR Preview - Multi-Portfolio Modal & CV Separation)
 ---
 
 <html lang="id">
@@ -68,7 +68,7 @@ import '../styles/global.css';
         <!-- MAIN WORKSPACE CONTAINER -->
         <div class="flex-1 flex flex-col overflow-hidden max-w-[1600px] w-full mx-auto px-4 py-6">
             
-            <!-- VIEW: APPLICANTS (LINKEDIN HR SPLIT STYLE) -->
+            <!-- VIEW: APPLICANTS -->
             <section id="view-applicants" class="tab-content flex-1 flex flex-col overflow-hidden">
                 <!-- Top Toolbar & Stats -->
                 <div class="flex-shrink-0 mb-6">
@@ -94,7 +94,7 @@ import '../styles/global.css';
                         <button id="refresh-btn" class="bg-white border border-slate-200 px-4 rounded-xl hover:bg-slate-50">🔄</button>
                     </div>
 
-                    <!-- Bulk Action Panel Integration -->
+                    <!-- Bulk Action Panel -->
                     <div id="bulk-action-panel" class="hidden mt-4 bg-[#1b509b] p-3 rounded-xl items-center justify-between shadow-lg gap-4">
                         <div class="flex items-center gap-2 ml-2"><span class="text-white font-black text-xs uppercase"><span id="selected-count" class="text-xl text-yellow-300">0</span> Terpilih</span></div>
                         <div class="flex gap-2">
@@ -108,7 +108,7 @@ import '../styles/global.css';
                 <!-- SPLIT VIEW BOX -->
                 <div class="flex-1 flex gap-6 overflow-hidden">
                     
-                    <!-- LEFT SIDE: APPLICANTS LIST PANEL [source: 1] -->
+                    <!-- LEFT SIDE: APPLICANTS LIST PANEL -->
                     <div class="w-full md:w-[420px] flex-shrink-0 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                         <div class="bg-slate-50 border-b border-slate-200 p-4 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             <div class="flex items-center gap-3">
@@ -122,12 +122,12 @@ import '../styles/global.css';
                         </div>
                     </div>
 
-                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL [source: 1] -->
+                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL -->
                     <div class="hidden md:flex flex-1 flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v3.3</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v3.5</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
@@ -162,10 +162,17 @@ import '../styles/global.css';
                                 </div>
                             </div>
 
-                            <!-- Footer Actions -->
-                            <div class="p-6 border-t border-slate-100 bg-slate-50 flex gap-4 flex-shrink-0">
-                                <a id="preview-link-portfolio" href="#" target="_blank" class="flex-1 bg-[#1b509b] hover:bg-[#0f2854] text-white text-center py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors">Buka Portofolio</a>
-                                <a id="preview-link-wa" href="#" target="_blank" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-center py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors">Hubungi via WhatsApp</a>
+                            <!-- Footer Actions (Buka CV & Buka Portofolio) -->
+                            <div class="p-6 border-t border-slate-100 bg-slate-50 flex gap-3 flex-shrink-0">
+                                <a id="preview-link-cv" href="#" target="_blank" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white text-center py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2">
+                                    <span>📄</span> <span>Lihat CV</span>
+                                </a>
+                                <button id="preview-btn-portfolio" type="button" class="flex-1 bg-[#1b509b] hover:bg-[#0f2854] text-white text-center py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2">
+                                    <span>🎨</span> <span id="portfolio-btn-label">Buka Portofolio</span>
+                                </button>
+                                <a id="preview-link-wa" href="#" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white text-center px-5 py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center">
+                                    <span>💬 WA</span>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -199,6 +206,27 @@ import '../styles/global.css';
         </div>
     </div>
 
+    <!-- POP-UP MODAL MULTI-PORTOFOLIO -->
+    <div id="portfolio-modal" class="hidden fixed inset-0 z-[99999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white max-w-lg w-full rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in duration-200">
+            <div class="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                <div>
+                    <h3 class="font-black text-slate-900 uppercase italic text-lg leading-tight">Daftar Link Portofolio</h3>
+                    <p id="modal-applicant-name" class="text-xs text-blue-600 font-bold uppercase mt-0.5">-</p>
+                </div>
+                <button onclick="closePortfolioModal()" class="w-9 h-9 bg-slate-200/60 hover:bg-slate-200 text-slate-600 rounded-full font-bold flex items-center justify-center transition-all">✕</button>
+            </div>
+            
+            <div id="modal-portfolio-list" class="p-6 overflow-y-auto space-y-3 custom-scroll flex-1">
+                <!-- List link akan disuntikkan secara dinamis -->
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-100 text-center">
+                <button onclick="closePortfolioModal()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-black py-3 rounded-xl uppercase text-xs tracking-widest transition-colors">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         import { supabase } from '../lib/supabase';
 
@@ -211,12 +239,25 @@ import '../styles/global.css';
         // OTENTIKASI
         async function checkAdminAccess() {
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) { document.getElementById('admin-loader')?.classList.add('hidden'); document.getElementById('admin-login-screen')?.classList.remove('hidden'); return; }
+            if (!user) { 
+                document.getElementById('admin-loader')?.classList.add('hidden'); 
+                document.getElementById('admin-login-screen')?.classList.remove('hidden'); 
+                return; 
+            }
 
-            const { data: member } = await supabase.from('admin_members').select('*').eq('email', user.email).maybeSingle();
+            const currentUserEmail = (user.email || '').toLowerCase().trim();
+            const masterAdminEmail = ADMIN_EMAIL.toLowerCase().trim();
 
-            if (!member) {
-                alert("Akses Ditolak: Email " + user.email + " tidak terdaftar di whitelist Admin.");
+            const { data: member } = await supabase
+                .from('admin_members')
+                .select('*')
+                .eq('email', currentUserEmail)
+                .maybeSingle();
+
+            const isMasterAdmin = currentUserEmail === masterAdminEmail;
+
+            if (!member && !isMasterAdmin) {
+                alert("Akses Ditolak: Email " + currentUserEmail + " tidak terdaftar di whitelist Admin.");
                 await supabase.auth.signOut();
                 window.location.href = "/";
                 return;
@@ -236,14 +277,13 @@ import '../styles/global.css';
             listContainer!.innerHTML = `<div class="p-10 text-center animate-pulse text-[10px] font-black uppercase text-slate-400">Syncing Database...</div>`;
 
             const { data, error } = await supabase.from('applications').select('*').order('created_at', { ascending: false });
-            if (!error) {
+            if (!error && data) {
                 allApplicants = data;
-                renderFilterOptions(); // Mengisi opsi dropdown filter LEBIH DULU [source: 1]
-                renderList();          // Baru render data kandidat
+                renderFilterOptions();
+                renderList();
                 updateStats();
                 
-                // Auto preview pelamar pertama dengan casting global
-                if (data && data.length > 0 && !activeApplicantId) {
+                if (data.length > 0 && !activeApplicantId) {
                     (window as any).selectApplicantForPreview(data[0].id);
                 }
             }
@@ -251,7 +291,6 @@ import '../styles/global.css';
 
         function renderList() {
             const filterElement = document.getElementById('role-filter') as HTMLSelectElement;
-            // Hotfix: Jika elemen belum terisi opsi, beri nilai default "all" agar tidak memicu pencarian kosong [source: 1]
             const filter = filterElement && filterElement.value ? filterElement.value : 'all';
             const search = (document.getElementById('search-input') as HTMLInputElement).value.toLowerCase().trim();
             const listContainer = document.getElementById('applicant-list');
@@ -259,7 +298,6 @@ import '../styles/global.css';
             const filtered = allApplicants.filter(a => {
                 if (!a) return false;
                 
-                // Normalisasi Key Database secara aman (Aman dari null/undefined) [source: 2]
                 const fullName = (a.full_name || '').toString().toLowerCase();
                 const applicantRole = (a.position || a.role_applied || '').toString();
                 const applicantEmail = (a.email || a.user_email || '').toString().toLowerCase();
@@ -312,7 +350,7 @@ import '../styles/global.css';
             attachCheckboxListeners();
         }
 
-        // PREVIEW GENERATION LOGIC - Menggunakan casting global window
+        // PREVIEW GENERATION LOGIC
         (window as any).selectApplicantForPreview = (id: string) => {
             activeApplicantId = id;
             
@@ -328,7 +366,6 @@ import '../styles/global.css';
             const previewArea = document.getElementById('detail-preview-area');
             previewArea?.classList.remove('opacity-0', 'pointer-events-none');
 
-            // Inject Data Content [source: 2]
             document.getElementById('preview-name')!.innerText = app.full_name || "Tanpa Nama";
             document.getElementById('preview-meta')!.innerText = `${app.faculty || app.major || '-'} • Semester ${app.semester || '-'}`;
             document.getElementById('preview-status-badge')!.innerText = app.status || 'Pending';
@@ -338,16 +375,89 @@ import '../styles/global.css';
             document.getElementById('preview-activities')!.innerText = app.other_activities || 'Tidak ada kegiatan khusus yang diisi.';
             document.getElementById('preview-reason')!.innerText = app.reason_1 || 'Tidak ada alasan khusus yang dijabarkan.';
 
-            // Setup Link Footer Actions [source: 2]
-            (document.getElementById('preview-link-portfolio') as HTMLAnchorElement).href = app.portfolio_url || '#';
-            (document.getElementById('preview-link-wa') as HTMLAnchorElement).href = app.phone ? `https://wa.me/${app.phone.toString().replace(/[^0-9]/g, '')}` : '#';
+            // Format nomor WhatsApp (08... -> 628...)
+            let formattedPhone = (app.phone || '').toString().replace(/[^0-9]/g, '');
+            if (formattedPhone.startsWith('0')) formattedPhone = '62' + formattedPhone.slice(1);
+            (document.getElementById('preview-link-wa') as HTMLAnchorElement).href = formattedPhone ? `https://wa.me/${formattedPhone}` : '#';
 
-            // Action Header Buttons
+            // --- LINK CV LOGIC ---
+            const cvBtn = document.getElementById('preview-link-cv') as HTMLAnchorElement;
+            if (app.cv_url) {
+                cvBtn.href = app.cv_url;
+                cvBtn.classList.remove('opacity-40', 'pointer-events-none');
+            } else {
+                cvBtn.href = '#';
+                cvBtn.classList.add('opacity-40', 'pointer-events-none');
+            }
+
+            // --- LINK PORTOFOLIO LOGIC (SINGLE VS MULTI) ---
+            const portfolioBtn = document.getElementById('preview-btn-portfolio') as HTMLButtonElement;
+            const portfolioLabel = document.getElementById('portfolio-btn-label') as HTMLSpanElement;
+            
+            // Parsing link portofolio (dipisahkan koma dari form)
+            const rawPorto = app.portfolio_url || '';
+            const portoList = rawPorto.split(',').map((p: string) => p.trim()).filter((p: string) => p.length > 0);
+
+            if (portoList.length === 0) {
+                portfolioLabel.innerText = "Tidak Ada Porto";
+                portfolioBtn.disabled = true;
+                portfolioBtn.className = "flex-1 bg-slate-200 text-slate-400 cursor-not-allowed py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2";
+                portfolioBtn.onclick = null;
+            } else if (portoList.length === 1) {
+                portfolioLabel.innerText = "Buka Portofolio";
+                portfolioBtn.disabled = false;
+                portfolioBtn.className = "flex-1 bg-[#1b509b] hover:bg-[#0f2854] text-white py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2";
+                portfolioBtn.onclick = () => window.open(portoList[0], '_blank');
+            } else {
+                portfolioLabel.innerText = `Portofolio (${portoList.length} Link)`;
+                portfolioBtn.disabled = false;
+                portfolioBtn.className = "flex-1 bg-amber-500 hover:bg-amber-600 text-white py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2 shadow-md";
+                portfolioBtn.onclick = () => (window as any).openPortfolioModal(app.full_name, portoList);
+            }
+
             document.getElementById('preview-action-buttons')!.innerHTML = `
                 <button onclick="updateStatus('${app.id}', 'interview')" class="px-3 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl hover:bg-amber-500 hover:text-white font-bold text-[10px] uppercase transition-all">💬 Panggil Wawancara</button>
                 <button onclick="updateStatus('${app.id}', 'accepted')" class="px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl hover:bg-emerald-500 hover:text-white font-bold text-[10px] uppercase transition-all">✅ Lolos Seleksi</button>
                 <button onclick="updateStatus('${app.id}', 'rejected')" class="px-3 py-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl hover:bg-rose-500 hover:text-white font-bold text-[10px] uppercase transition-all">❌ Tolak</button>
             `;
+        };
+
+        // --- POP-UP MODAL LOGIC FOR MULTI PORTOFOLIO ---
+        (window as any).openPortfolioModal = (applicantName: string, urls: string[]) => {
+            const modal = document.getElementById('portfolio-modal');
+            const nameContainer = document.getElementById('modal-applicant-name');
+            const listContainer = document.getElementById('modal-portfolio-list');
+
+            if (!modal || !listContainer || !nameContainer) return;
+
+            nameContainer.innerText = applicantName || "Pelamar";
+            
+            listContainer.innerHTML = urls.map((url, index) => {
+                let domainTag = "Link Karya";
+                if (url.includes("behance")) domainTag = "Behance";
+                else if (url.includes("github")) domainTag = "GitHub";
+                else if (url.includes("drive.google")) domainTag = "Google Drive";
+                else if (url.includes("figma")) domainTag = "Figma";
+                else if (url.includes("dribbble")) domainTag = "Dribbble";
+
+                return `
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3 hover:border-blue-300 transition-all">
+                        <div class="min-w-0 flex-1">
+                            <span class="text-[9px] font-black uppercase tracking-wider text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full inline-block mb-1">${domainTag} #${index + 1}</span>
+                            <a href="${url}" target="_blank" class="block font-bold text-xs text-slate-800 hover:text-blue-600 truncate transition-colors">${url}</a>
+                        </div>
+                        <a href="${url}" target="_blank" class="px-4 py-2 bg-[#1b509b] hover:bg-[#0f2854] text-white text-[10px] font-black uppercase rounded-xl tracking-wider flex-shrink-0 transition-colors">
+                            Buka ↗
+                        </a>
+                    </div>
+                `;
+            }).join('');
+
+            modal.classList.remove('hidden');
+        };
+
+        (window as any).closePortfolioModal = () => {
+            document.getElementById('portfolio-modal')?.classList.add('hidden');
         };
 
         function clearPreview() {
@@ -359,7 +469,7 @@ import '../styles/global.css';
         // TEAM LOGIC
         async function loadTeam() {
             const { data, error } = await supabase.from('admin_members').select('*').order('email');
-            if (!error) renderTeamList(data);
+            if (!error && data) renderTeamList(data);
         }
 
         function renderTeamList(members: any[]) {
@@ -371,7 +481,7 @@ import '../styles/global.css';
                         <div class="text-[9px] text-slate-400 uppercase tracking-widest font-black">${m.role || 'Reviewer'}</div>
                     </td>
                     <td class="px-8 py-4 text-right">
-                        ${m.email !== ADMIN_EMAIL ? `
+                        ${m.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase() ? `
                             <button onclick="deleteMember('${m.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-[10px] uppercase tracking-widest">Hapus Akses</button>
                         ` : '<span class="text-[9px] font-black uppercase opacity-20">Master Admin</span>'}
                     </td>
@@ -379,7 +489,7 @@ import '../styles/global.css';
             `).join('');
         }
 
-        // GLOBAL ACTIONS MAPPED SAFELY VIA ANY CASTING
+        // GLOBAL ACTIONS EXPOSED TO WINDOW
         (window as any).switchTab = (tab: string) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
@@ -421,7 +531,7 @@ import '../styles/global.css';
 
         // EVENT LISTENERS
         document.getElementById('invite-member-btn')?.addEventListener('click', async () => {
-            const email = (document.getElementById('invite-email') as HTMLInputElement).value.trim();
+            const email = (document.getElementById('invite-email') as HTMLInputElement).value.trim().toLowerCase();
             if (!email) return;
             const { error } = await supabase.from('admin_members').insert([{ email, role: 'Reviewer' }]);
             if (!error) { (document.getElementById('invite-email') as HTMLInputElement).value = ''; loadTeam(); }

@@ -3,7 +3,6 @@ import '../styles/global.css';
 import { getCollection } from 'astro:content';
 
 // 1. Ambil data dari Decap CMS
-// Melakukan cast ke any untuk fleksibilitas schema yang sering berubah di CMS
 const allBatches = await getCollection('vacancies' as any) as any[];
 const rolesFromCMS = await getCollection('roles' as any) as any[];
 
@@ -24,6 +23,21 @@ if (isOpen && activeBatchData) {
     const firstBatch = allBatches[0] as any;
     const firstData = firstBatch.data?.map ? firstBatch.data.map : firstBatch.data;
     displayBatchName = firstData?.batch_name || "Internship";
+}
+
+// 3. Helper untuk format tanggal seleksi (Single Date / Rentang Tanggal)
+function formatTimelineDate(startDateStr: string, endDateStr?: string) {
+  if (!startDateStr) return "-";
+  
+  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+  const start = new Date(startDateStr).toLocaleDateString('id-ID', options);
+  
+  if (!endDateStr || endDateStr === startDateStr) {
+    return start;
+  }
+  
+  const end = new Date(endDateStr).toLocaleDateString('id-ID', options);
+  return `${start} – ${end}`;
 }
 ---
 
@@ -135,28 +149,7 @@ if (isOpen && activeBatchData) {
             </div>
         </div>
 
-        <div id="loader" class="fixed inset-0 z-[9999] flex items-center justify-center bg-[#1b509b]">
-            <svg id="svg-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 248 248" class="w-48 h-48 opacity-0">
-                <g class="loader-g1">
-                    <image href="https://assets.codepen.io/16327/flair-2.png" />
-                    <image href="https://assets.codepen.io/16327/flair-2.png" />
-                    <image href="https://assets.codepen.io/16327/flair-2.png" />
-                </g>
-                <g class="loader-g2">
-                    <image href="https://assets.codepen.io/16327/flair-3.png" mask="url(#m2)"/>
-                </g>
-                <mask id="m2" fill="#fff"><circle cx="124" cy="0" r="0"/><circle cx="124" cy="248" r="0"/></mask>
-                <g class="loader-g3">
-                    <image href="https://assets.codepen.io/16327/flair-4.png" mask="url(#m3)"/>
-                </g>
-                <mask id="m3" fill="#fff">
-                    <rect x="0" y="0" width="124" height="124"/><rect x="124" y="0" width="124" height="124"/>
-                    <rect x="0" y="124" width="124" height="124"/><rect x="124" y="124" width="124" height="124"/>
-                </mask>
-            </svg>
-        </div>
-
-        <div id="main-wrapper" class="opacity-0">
+        <div id="main-wrapper">
             <navbar class="relative flex items-center px-8 mt-5 md:px-24">
                 <div id="nav-actions" class="flex items-center gap-4">
                     <!-- Dinamis: Tombol Login atau Info User -->
@@ -283,37 +276,37 @@ if (isOpen && activeBatchData) {
             </footer>
         </div>
 
-       <nav class="dock-wrapper">
-    <ul class="toolbar">
-        <li class="toolbarItem">
-            <a class="toolbarLink" href="/">
-                <span class="tooltip">Home</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            </a>
-        </li>
+        <nav class="dock-wrapper">
+            <ul class="toolbar">
+                <li class="toolbarItem">
+                    <a class="toolbarLink" href="/">
+                        <span class="tooltip">Home</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    </a>
+                </li>
 
-        <li class="toolbarItem">
-            <a class="toolbarLink protected-link" href="#teams">
-                <span class="tooltip">Detail Roles</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-            </a>
-        </li>
+                <li class="toolbarItem">
+                    <a class="toolbarLink protected-link" href="#teams">
+                        <span class="tooltip">Detail Roles</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    </a>
+                </li>
 
-        <li class="toolbarItem">
-            <a class="toolbarLink protected-link" href="/dashboard">
-                <span class="tooltip">Application Status</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            </a>
-        </li>
+                <li class="toolbarItem">
+                    <a class="toolbarLink protected-link" href="/dashboard">
+                        <span class="tooltip">Application Status</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </a>
+                </li>
 
-        <li class="toolbarItem">
-            <a class="toolbarLink protected-link" href="/teams">
-                <span class="tooltip">Hall of Fame</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-            </a>
-        </li>
-    </ul>
-</nav>
+                <li class="toolbarItem">
+                    <a class="toolbarLink protected-link" href="/teams">
+                        <span class="tooltip">Hall of Fame</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
         <script>
             import { supabase } from '../lib/supabase';
@@ -406,8 +399,8 @@ if (isOpen && activeBatchData) {
                 }
                 
                 // Animate entry elements
-                gsap.to(ctaContainer, { opacity: 1, y: 0, duration: 1, delay: 0.5, ease: "power4.out" });
-                gsap.to(broadcastBar, { opacity: 1, y: 0, duration: 1.2, delay: 0.3, ease: "power4.out" });
+                gsap.to(ctaContainer, { opacity: 1, y: 0, duration: 1, delay: 0.2, ease: "power4.out" });
+                gsap.to(broadcastBar, { opacity: 1, y: 0, duration: 1, delay: 0.1, ease: "power4.out" });
             }
 
             // Monitor status login
@@ -436,28 +429,7 @@ if (isOpen && activeBatchData) {
                 }
             });
 
-            // --- GSAP ANIMATIONS & LOADER ---
-            function initLoader() {
-                const tl = gsap.timeline({
-                    onComplete: () => {
-                        gsap.to("#loader", { opacity: 0, duration: 0.4, pointerEvents: "none" });
-                        gsap.to("#main-wrapper", { opacity: 1, duration: 1 });
-                        init(); 
-                    }
-                });
-
-                gsap.set('#svg-loader', { opacity: 1 });
-                tl.fromTo('.loader-g1', {scale:0.1, transformOrigin:'124 124'}, {duration:0.35, scale:1, ease:'expo.inOut'})
-                  .to('.loader-g1', {duration:1.2, rotate:15, ease:'none'}, 0.1)
-                  .to('.loader-g1 image', {scale:(i:any)=>[0.4,0.2,0.3][i], x:(i:any)=>[0,135,100][i], y:(i:any)=>[90,24,124][i], ease:'back'}, 0.4)
-                  .to('.loader-g1 image', {duration:0.01, opacity:0, stagger:0.06}, 1.1)
-                  .to('#m2 circle', {duration:0.4, attr:{r:"124"}, ease:'circ'}, 1.3)
-                  .fromTo('.loader-g2', {scale:1, transformOrigin:'124 124'}, {duration:1, scale:0.9, ease:'none'}, 1.3)
-                  .to('#m2 circle', {duration:0.3, attr:{cx:(i:any)=>["+=248","-=248"][i]}, ease:'sine.in'}, 2.1)
-                  .fromTo('.loader-g3', {transformOrigin:'124 124', rotate:-90}, {duration:0.7, rotate:0, ease:'expo'}, 2.3)
-                  .fromTo('#m3 rect', {transformOrigin:(i:any)=>['0 124','124 0','124 124','248 124'][i], scale:0},{duration:0.4, scale:1, ease:'expo', stagger:-0.03}, 2.3);
-            }
-
+            // --- GSAP ANIMATIONS ---
             function init() {
                 const hero = document.querySelector("#home") as HTMLElement;
                 const dots = document.querySelectorAll(".trail-dot");
@@ -471,7 +443,7 @@ if (isOpen && activeBatchData) {
                     });
                 }
 
-                gsap.to("#scroll-hint", { opacity: 1, duration: 1, delay: 1 });
+                gsap.to("#scroll-hint", { opacity: 1, duration: 1, delay: 0.5 });
 
                 const scrollTl = gsap.timeline({ scrollTrigger: { trigger: "#home", start: "top top", end: "+=120%", scrub: 1, pin: true } });
                 scrollTl.to("#line-1", { y: 100, opacity: 0 })
@@ -578,7 +550,12 @@ if (isOpen && activeBatchData) {
                 });
             }
 
-            window.addEventListener("load", initLoader);
+            // Inisialisasi langsung saat DOM siap tanpa menunggu loading screen
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
         </script>
     </body>
 </html>
