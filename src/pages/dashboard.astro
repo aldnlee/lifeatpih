@@ -23,10 +23,10 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
-        background-color: #f8fafc !important; /* Warna bg-slate-50 */
-        color: #0f172a !important; 
-        font-family: 'Funnel Display', sans-serif; 
-    }
+            background-color: #f8fafc !important; 
+            color: #0f172a !important; 
+            font-family: 'Funnel Display', sans-serif; 
+        }
         .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
         
         #celebration-modal {
@@ -173,15 +173,24 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
                         
                         <ul class="space-y-4 text-[11px]">
                             {cmsTimeline.length > 0 ? (
-                                cmsTimeline.map((item: any) => (
-                                    <li class={`flex justify-between items-center ${item.is_active ? 'font-bold text-yellow-400' : 'opacity-50'}`}>
-                                        <div class="flex items-center gap-2">
-                                            {item.is_active && <div class="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>}
-                                            <span>{item.label}</span>
-                                        </div>
-                                        <span class="text-[9px] font-black uppercase tracking-tighter bg-white/10 px-2 py-0.5 rounded">{item.date}</span>
-                                    </li>
-                                ))
+                                cmsTimeline.map((item: any) => {
+                                    // PERUBAHAN DISINI: Penanganan Format Periode Tanggal
+                                    const formattedDate = item.start_date 
+                                        ? `${item.start_date}${item.end_date ? ` - ${item.end_date}` : ''}`
+                                        : (item.date || '-');
+
+                                    return (
+                                        <li class={`flex justify-between items-center ${item.is_active ? 'font-bold text-yellow-400' : 'opacity-50'}`}>
+                                            <div class="flex items-center gap-2">
+                                                {item.is_active && <div class="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>}
+                                                <span>{item.label}</span>
+                                            </div>
+                                            <span class="text-[9px] font-black uppercase tracking-tighter bg-white/10 px-2 py-0.5 rounded">
+                                                {formattedDate}
+                                            </span>
+                                        </li>
+                                    );
+                                })
                             ) : (
                                 <li class="italic opacity-30">Belum ada timeline yang diatur di CMS.</li>
                             )}
@@ -205,36 +214,36 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
     </main>
 
     <nav class="dock-wrapper">
-            <ul class="toolbar">
-                <li class="toolbarItem">
-                    <a class="toolbarLink" href="/">
-                        <span class="tooltip">Home</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    </a>
-                </li>
+        <ul class="toolbar">
+            <li class="toolbarItem">
+                <a class="toolbarLink" href="/">
+                    <span class="tooltip">Home</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </a>
+            </li>
 
-                <li class="toolbarItem">
-                    <a class="toolbarLink" href="/#teams">
-                        <span class="tooltip">Detail Roles</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                    </a>
-                </li>
+            <li class="toolbarItem">
+                <a class="toolbarLink" href="/#teams">
+                    <span class="tooltip">Detail Roles</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </a>
+            </li>
 
-                <li class="toolbarItem">
-                    <a class="toolbarLink protected-link" href="/dashboard">
-                        <span class="tooltip">Application Status</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                    </a>
-                </li>
+            <li class="toolbarItem">
+                <a class="toolbarLink protected-link" href="/dashboard">
+                    <span class="tooltip">Application Status</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </a>
+            </li>
 
-                <li class="toolbarItem">
-                    <a class="toolbarLink protected-link" href="/">
-                        <span class="tooltip">Hall of Fame</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+            <li class="toolbarItem">
+                <a class="toolbarLink protected-link" href="/">
+                    <span class="tooltip">Hall of Fame</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                </a>
+            </li>
+        </ul>
+    </nav>
 
     <script>
         import { supabase } from '../lib/supabase';
@@ -393,32 +402,29 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
 
         init();
 
-
-
-
-          const dock = document.querySelector(".toolbar") as HTMLElement;
-                const icons = document.querySelectorAll(".toolbarItem");
-                if (dock && icons.length > 0) {
-                    const min = 48; const max = 100; const bound = min * Math.PI;
-                    gsap.set(icons, { transformOrigin: "50% 120%", height: 40 });
-                    dock.addEventListener("mousemove", (event: MouseEvent) => {
-                        const rect = dock.getBoundingClientRect();
-                        const firstIcon = icons[0] as HTMLElement;
-                        const offset = rect.left + firstIcon.offsetLeft;
-                        const pointer = event.clientX - offset;
-                        icons.forEach((icon, i) => {
-                            const distance = (i * min + min / 2) - pointer;
-                            let x = 0, scale = 1;
-                            if (Math.abs(distance) < bound) {
-                                const rad = distance / min * 0.5;
-                                scale = 1 + (max / min - 1) * Math.cos(rad);
-                                x = 2 * (max - min) * Math.sin(rad);
-                            } else { x = (distance < 0 ? 2 : -2) * (max - min); }
-                            gsap.to(icon, { duration: 0.3, x: x, scale: scale, ease: "power3.out" });
-                        });
-                    });
-                    dock.addEventListener("mouseleave", () => gsap.to(icons, { duration: 0.3, scale: 1, x: 0 }));
-                }
+        const dock = document.querySelector(".toolbar") as HTMLElement;
+        const icons = document.querySelectorAll(".toolbarItem");
+        if (dock && icons.length > 0) {
+            const min = 48; const max = 100; const bound = min * Math.PI;
+            gsap.set(icons, { transformOrigin: "50% 120%", height: 40 });
+            dock.addEventListener("mousemove", (event: MouseEvent) => {
+                const rect = dock.getBoundingClientRect();
+                const firstIcon = icons[0] as HTMLElement;
+                const offset = rect.left + firstIcon.offsetLeft;
+                const pointer = event.clientX - offset;
+                icons.forEach((icon, i) => {
+                    const distance = (i * min + min / 2) - pointer;
+                    let x = 0, scale = 1;
+                    if (Math.abs(distance) < bound) {
+                        const rad = distance / min * 0.5;
+                        scale = 1 + (max / min - 1) * Math.cos(rad);
+                        x = 2 * (max - min) * Math.sin(rad);
+                    } else { x = (distance < 0 ? 2 : -2) * (max - min); }
+                    gsap.to(icon, { duration: 0.3, x: x, scale: scale, ease: "power3.out" });
+                });
+            });
+            dock.addEventListener("mouseleave", () => gsap.to(icons, { duration: 0.3, scale: 1, x: 0 }));
+        }
     </script>
 </body>
 </html>
