@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v3.5 (LinkedIn HR Preview - Multi-Portfolio Modal & CV Separation)
+// Admin Portal v3.6 (Includes Bookmark Feature & Position-based Detail Statistics Pop-up Modal)
 ---
 
 <html lang="id">
@@ -17,13 +17,28 @@ import '../styles/global.css';
         .stats-card:hover { transform: translateY(-3px); }
         .nav-tab.active { background: white; color: #0f2854; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         
-        /* Custom Scrollbar for LinkedIn View */
+        /* Custom Scrollbar */
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
         /* Active State Card */
         .applicant-card.active { border-color: #1b509b; background-color: #f8fafc; box-shadow: inset 4px 0 0 0 #1b509b; }
+
+        /* Animation Modal */
+        #portfolio-modal, #position-detail-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(6px);
+        }
+        #portfolio-modal.active, #position-detail-modal.active { display: flex; animation: fadeIn 0.2s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col overflow-hidden">
@@ -70,11 +85,11 @@ import '../styles/global.css';
             
             <!-- VIEW: APPLICANTS -->
             <section id="view-applicants" class="tab-content flex-1 flex flex-col overflow-hidden">
-                <!-- Top Toolbar & Stats -->
-                <div class="flex-shrink-0 mb-6">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <!-- Top Toolbar & Ringkasan Stats Utama -->
+                <div class="flex-shrink-0 mb-4 overflow-y-auto max-h-[35vh] custom-scroll pr-1">
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
                         <div class="stats-card bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
-                            <div><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total</p><p id="stat-total" class="text-2xl font-black text-slate-900">0</p></div>
+                            <div><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Pelamar</p><p id="stat-total" class="text-2xl font-black text-slate-900">0</p></div>
                         </div>
                         <div class="stats-card bg-amber-50 p-4 rounded-2xl border border-amber-100 flex justify-between items-center">
                             <div><p class="text-[9px] font-black text-amber-600 uppercase">Wawancara</p><p id="stat-interview" class="text-2xl font-black text-amber-700">0</p></div>
@@ -82,31 +97,45 @@ import '../styles/global.css';
                         <div class="stats-card bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex justify-between items-center">
                             <div><p class="text-[9px] font-black text-emerald-600 uppercase">Diterima</p><p id="stat-accepted" class="text-2xl font-black text-emerald-700">0</p></div>
                         </div>
+                        <div class="stats-card bg-yellow-50 p-4 rounded-2xl border border-yellow-200 flex justify-between items-center">
+                            <div><p class="text-[9px] font-black text-yellow-700 uppercase">Bookmark 🔖</p><p id="stat-bookmark" class="text-2xl font-black text-yellow-800">0</p></div>
+                        </div>
                         <div class="stats-card bg-rose-50 p-4 rounded-2xl border border-rose-100 flex justify-between items-center">
                             <div><p class="text-[9px] font-black text-rose-600 uppercase">Ditolak</p><p id="stat-rejected" class="text-2xl font-black text-rose-700">0</p></div>
                         </div>
                     </div>
 
+                    <!-- RINGKASAN DETAIL PER POSISI -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-slate-500">Statistik Pelamar Per Posisi</h3>
+                            <span class="text-[9px] font-bold text-slate-400 italic">*Klik angka status untuk melihat daftar pelamar terpilih</span>
+                        </div>
+                        <div id="position-stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <!-- Cards per posisi disuntikkan via JS -->
+                        </div>
+                    </div>
+
                     <div class="flex flex-col lg:flex-row gap-3">
-                        <input type="text" id="search-input" placeholder="Cari Nama/NIM/Email..." class="flex-1 bg-white border border-slate-200 px-5 py-3 rounded-xl text-sm outline-none shadow-sm focus:ring-1 focus:ring-blue-500">
-                        <select id="role-filter" class="bg-white border border-slate-200 px-5 py-3 rounded-xl text-xs font-bold text-slate-600 outline-none shadow-sm min-w-[180px]"></select>
-                        <button id="export-csv-btn" class="bg-slate-800 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest">📥 Export</button>
-                        <button id="refresh-btn" class="bg-white border border-slate-200 px-4 rounded-xl hover:bg-slate-50">🔄</button>
+                        <input type="text" id="search-input" placeholder="Cari Nama/NIM/Email..." class="flex-1 bg-white border border-slate-200 px-5 py-2.5 rounded-xl text-sm outline-none shadow-sm focus:ring-1 focus:ring-blue-500">
+                        <select id="role-filter" class="bg-white border border-slate-200 px-5 py-2.5 rounded-xl text-xs font-bold text-slate-600 outline-none shadow-sm min-w-[180px]"></select>
+                        <button id="refresh-btn" class="bg-white border border-slate-200 px-4 rounded-xl hover:bg-slate-50 text-xs font-bold">🔄 Refresh</button>
                     </div>
 
                     <!-- Bulk Action Panel -->
-                    <div id="bulk-action-panel" class="hidden mt-4 bg-[#1b509b] p-3 rounded-xl items-center justify-between shadow-lg gap-4">
+                    <div id="bulk-action-panel" class="hidden mt-3 bg-[#1b509b] p-3 rounded-xl items-center justify-between shadow-lg gap-4">
                         <div class="flex items-center gap-2 ml-2"><span class="text-white font-black text-xs uppercase"><span id="selected-count" class="text-xl text-yellow-300">0</span> Terpilih</span></div>
                         <div class="flex gap-2">
-                            <button id="bulk-interview-btn" class="bg-amber-400 text-slate-900 px-4 py-2 rounded-lg text-[9px] font-black uppercase">Wawancara</button>
-                            <button id="bulk-accept-btn" class="bg-emerald-500 text-white px-4 py-2 rounded-lg text-[9px] font-black uppercase">Terima</button>
-                            <button id="clear-selection-btn" class="bg-white/10 text-white px-4 py-2 rounded-lg text-[9px] font-black uppercase">Batal</button>
+                            <button id="bulk-interview-btn" class="bg-amber-400 text-slate-900 px-3 py-2 rounded-lg text-[9px] font-black uppercase">Wawancara</button>
+                            <button id="bulk-accept-btn" class="bg-emerald-500 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase">Terima</button>
+                            <button id="bulk-bookmark-btn" class="bg-yellow-400 text-slate-900 px-3 py-2 rounded-lg text-[9px] font-black uppercase">🔖 Bookmark</button>
+                            <button id="clear-selection-btn" class="bg-white/10 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase">Batal</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- SPLIT VIEW BOX -->
-                <div class="flex-1 flex gap-6 overflow-hidden">
+                <div class="flex-1 flex gap-6 overflow-hidden min-h-0">
                     
                     <!-- LEFT SIDE: APPLICANTS LIST PANEL -->
                     <div class="w-full md:w-[420px] flex-shrink-0 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -127,12 +156,12 @@ import '../styles/global.css';
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v3.5</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v3.6</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
                             <!-- Header Info -->
-                            <div class="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-start">
+                            <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-start">
                                 <div>
                                     <h2 id="preview-name" class="text-2xl font-black text-slate-900 italic uppercase leading-tight mb-1">-</h2>
                                     <p id="preview-meta" class="text-blue-600 font-bold text-xs uppercase tracking-widest">-</p>
@@ -141,13 +170,13 @@ import '../styles/global.css';
                                         <span id="preview-email-status" class="text-xs" title="Status Notifikasi Email">⚪</span>
                                     </div>
                                 </div>
-                                <div class="flex gap-2" id="preview-action-buttons">
+                                <div class="flex flex-wrap gap-1.5" id="preview-action-buttons">
                                     <!-- Diisi Dinamis -->
                                 </div>
                             </div>
                             
                             <!-- Body Info Content -->
-                            <div class="flex-1 overflow-y-auto p-8 space-y-6 custom-scroll">
+                            <div class="flex-1 overflow-y-auto p-6 space-y-5 custom-scroll">
                                 <div class="grid grid-cols-2 gap-4">
                                     <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Pilihan Posisi Utama</label><p id="preview-pos-1" class="font-bold text-sm text-slate-800">-</p></div>
                                     <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Nomor Induk Mahasiswa</label><p id="preview-nim" class="font-bold text-sm text-slate-800">-</p></div>
@@ -162,15 +191,15 @@ import '../styles/global.css';
                                 </div>
                             </div>
 
-                            <!-- Footer Actions (Buka CV & Buka Portofolio) -->
-                            <div class="p-6 border-t border-slate-100 bg-slate-50 flex gap-3 flex-shrink-0">
-                                <a id="preview-link-cv" href="#" target="_blank" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white text-center py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2">
+                            <!-- Footer Actions -->
+                            <div class="p-4 border-t border-slate-100 bg-slate-50 flex gap-3 flex-shrink-0">
+                                <a id="preview-link-cv" href="#" target="_blank" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white text-center py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2">
                                     <span>📄</span> <span>Lihat CV</span>
                                 </a>
-                                <button id="preview-btn-portfolio" type="button" class="flex-1 bg-[#1b509b] hover:bg-[#0f2854] text-white text-center py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2">
+                                <button id="preview-btn-portfolio" type="button" class="flex-1 bg-[#1b509b] hover:bg-[#0f2854] text-white text-center py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2">
                                     <span>🎨</span> <span id="portfolio-btn-label">Buka Portofolio</span>
                                 </button>
-                                <a id="preview-link-wa" href="#" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white text-center px-5 py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center">
+                                <a id="preview-link-wa" href="#" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white text-center px-5 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center">
                                     <span>💬 WA</span>
                                 </a>
                             </div>
@@ -207,8 +236,8 @@ import '../styles/global.css';
     </div>
 
     <!-- POP-UP MODAL MULTI-PORTOFOLIO -->
-    <div id="portfolio-modal" class="hidden fixed inset-0 z-[99999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white max-w-lg w-full rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in duration-200">
+    <div id="portfolio-modal">
+        <div class="bg-white max-w-lg w-full rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[85vh]">
             <div class="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
                 <div>
                     <h3 class="font-black text-slate-900 uppercase italic text-lg leading-tight">Daftar Link Portofolio</h3>
@@ -218,11 +247,28 @@ import '../styles/global.css';
             </div>
             
             <div id="modal-portfolio-list" class="p-6 overflow-y-auto space-y-3 custom-scroll flex-1">
-                <!-- List link akan disuntikkan secara dinamis -->
+                <!-- List link disuntikkan dinamis -->
             </div>
 
             <div class="p-4 bg-slate-50 border-t border-slate-100 text-center">
                 <button onclick="closePortfolioModal()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-black py-3 rounded-xl uppercase text-xs tracking-widest transition-colors">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POP-UP MODAL DETAIL DAFTAR PELAMAR PER POSISI & STATUS -->
+    <div id="position-detail-modal">
+        <div class="bg-white max-w-2xl w-full rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[85vh] p-6">
+            <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-100">
+                <div>
+                    <span id="pos-modal-status-badge" class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 border border-blue-100">Status</span>
+                    <h2 id="pos-modal-role-title" class="text-xl font-black text-slate-900 uppercase italic mt-1 leading-tight tracking-tighter">Posisi</h2>
+                </div>
+                <button onclick="closePositionModal()" class="w-9 h-9 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full font-bold flex items-center justify-center transition-all">✕</button>
+            </div>
+
+            <div id="pos-modal-applicants-list" class="overflow-y-auto space-y-2.5 pr-2 flex-1 custom-scroll">
+                <!-- Data pelamar disuntik via Javascript -->
             </div>
         </div>
     </div>
@@ -282,6 +328,7 @@ import '../styles/global.css';
                 renderFilterOptions();
                 renderList();
                 updateStats();
+                renderPositionStatsGrid();
                 
                 if (data.length > 0 && !activeApplicantId) {
                     (window as any).selectApplicantForPreview(data[0].id);
@@ -326,7 +373,14 @@ import '../styles/global.css';
                 const finalNim = app.nim || "-";
                 const finalSem = app.semester || "-";
                 const emailStatus = app.email_status || "pending";
+                const appStatus = app.status || 'Pending';
                 
+                let badgeClass = "bg-white border-slate-200 text-slate-600";
+                if (appStatus === 'accepted') badgeClass = "bg-emerald-50 border-emerald-200 text-emerald-700 font-bold";
+                else if (appStatus === 'interview') badgeClass = "bg-amber-50 border-amber-200 text-amber-700 font-bold";
+                else if (appStatus === 'bookmark') badgeClass = "bg-yellow-50 border-yellow-300 text-yellow-800 font-bold";
+                else if (appStatus === 'rejected') badgeClass = "bg-rose-50 border-rose-200 text-rose-700 font-bold";
+
                 return `
                     <div class="applicant-card p-4 flex items-start gap-3 cursor-pointer hover:bg-slate-50 transition-all ${activeApplicantId === app.id ? 'active' : ''}" data-id="${app.id}">
                         <div class="pt-1" onclick="event.stopPropagation();">
@@ -335,7 +389,7 @@ import '../styles/global.css';
                         <div class="flex-1 min-w-0" onclick="(window).selectApplicantForPreview('${app.id}')">
                             <div class="flex justify-between items-start gap-2">
                                 <h4 class="font-black text-slate-900 text-sm truncate leading-tight">${finalName}</h4>
-                                <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-slate-200 bg-white flex-shrink-0">${app.status || 'Pending'}</span>
+                                <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${badgeClass} flex-shrink-0">${appStatus === 'bookmark' ? '🔖 Bookmark' : appStatus}</span>
                             </div>
                             <p class="text-[10px] text-[#1b509b] font-black uppercase tracking-wider mt-0.5">${finalRole}</p>
                             <div class="flex items-center justify-between mt-2 text-[9px] text-slate-400 font-medium">
@@ -368,19 +422,19 @@ import '../styles/global.css';
 
             document.getElementById('preview-name')!.innerText = app.full_name || "Tanpa Nama";
             document.getElementById('preview-meta')!.innerText = `${app.faculty || app.major || '-'} • Semester ${app.semester || '-'}`;
-            document.getElementById('preview-status-badge')!.innerText = app.status || 'Pending';
+            document.getElementById('preview-status-badge')!.innerText = app.status === 'bookmark' ? '🔖 Bookmark' : (app.status || 'Pending');
             document.getElementById('preview-email-status')!.innerText = app.email_status === 'sent' ? '📧 Sent' : '⚪ Pending';
             document.getElementById('preview-pos-1')!.innerText = app.position || app.role_applied || '-';
             document.getElementById('preview-nim')!.innerText = app.nim || '-';
             document.getElementById('preview-activities')!.innerText = app.other_activities || 'Tidak ada kegiatan khusus yang diisi.';
             document.getElementById('preview-reason')!.innerText = app.reason_1 || 'Tidak ada alasan khusus yang dijabarkan.';
 
-            // Format nomor WhatsApp (08... -> 628...)
+            // Format WhatsApp
             let formattedPhone = (app.phone || '').toString().replace(/[^0-9]/g, '');
             if (formattedPhone.startsWith('0')) formattedPhone = '62' + formattedPhone.slice(1);
             (document.getElementById('preview-link-wa') as HTMLAnchorElement).href = formattedPhone ? `https://wa.me/${formattedPhone}` : '#';
 
-            // --- LINK CV LOGIC ---
+            // CV LINK LOGIC
             const cvBtn = document.getElementById('preview-link-cv') as HTMLAnchorElement;
             if (app.cv_url) {
                 cvBtn.href = app.cv_url;
@@ -390,39 +444,133 @@ import '../styles/global.css';
                 cvBtn.classList.add('opacity-40', 'pointer-events-none');
             }
 
-            // --- LINK PORTOFOLIO LOGIC (SINGLE VS MULTI) ---
+            // PORTFOLIO LINK LOGIC
             const portfolioBtn = document.getElementById('preview-btn-portfolio') as HTMLButtonElement;
             const portfolioLabel = document.getElementById('portfolio-btn-label') as HTMLSpanElement;
             
-            // Parsing link portofolio (dipisahkan koma dari form)
             const rawPorto = app.portfolio_url || '';
             const portoList = rawPorto.split(',').map((p: string) => p.trim()).filter((p: string) => p.length > 0);
 
             if (portoList.length === 0) {
                 portfolioLabel.innerText = "Tidak Ada Porto";
                 portfolioBtn.disabled = true;
-                portfolioBtn.className = "flex-1 bg-slate-200 text-slate-400 cursor-not-allowed py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2";
+                portfolioBtn.className = "flex-1 bg-slate-200 text-slate-400 cursor-not-allowed py-3 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2";
                 portfolioBtn.onclick = null;
             } else if (portoList.length === 1) {
                 portfolioLabel.innerText = "Buka Portofolio";
                 portfolioBtn.disabled = false;
-                portfolioBtn.className = "flex-1 bg-[#1b509b] hover:bg-[#0f2854] text-white py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2";
+                portfolioBtn.className = "flex-1 bg-[#1b509b] hover:bg-[#0f2854] text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2";
                 portfolioBtn.onclick = () => window.open(portoList[0], '_blank');
             } else {
                 portfolioLabel.innerText = `Portofolio (${portoList.length} Link)`;
                 portfolioBtn.disabled = false;
-                portfolioBtn.className = "flex-1 bg-amber-500 hover:bg-amber-600 text-white py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2 shadow-md";
+                portfolioBtn.className = "flex-1 bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2 shadow-md";
                 portfolioBtn.onclick = () => (window as any).openPortfolioModal(app.full_name, portoList);
             }
 
+            // DITAMBAHKAN TOMBOL BOOKMARK
             document.getElementById('preview-action-buttons')!.innerHTML = `
-                <button onclick="updateStatus('${app.id}', 'interview')" class="px-3 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl hover:bg-amber-500 hover:text-white font-bold text-[10px] uppercase transition-all">💬 Panggil Wawancara</button>
-                <button onclick="updateStatus('${app.id}', 'accepted')" class="px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl hover:bg-emerald-500 hover:text-white font-bold text-[10px] uppercase transition-all">✅ Lolos Seleksi</button>
-                <button onclick="updateStatus('${app.id}', 'rejected')" class="px-3 py-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl hover:bg-rose-500 hover:text-white font-bold text-[10px] uppercase transition-all">❌ Tolak</button>
+                <button onclick="updateStatus('${app.id}', 'interview')" class="px-2.5 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl hover:bg-amber-500 hover:text-white font-bold text-[9px] uppercase transition-all">💬 Wawancara</button>
+                <button onclick="updateStatus('${app.id}', 'accepted')" class="px-2.5 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl hover:bg-emerald-500 hover:text-white font-bold text-[9px] uppercase transition-all">✅ Lolos</button>
+                <button onclick="updateStatus('${app.id}', 'bookmark')" class="px-2.5 py-1.5 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-xl hover:bg-yellow-400 font-bold text-[9px] uppercase transition-all">🔖 Bookmark</button>
+                <button onclick="updateStatus('${app.id}', 'rejected')" class="px-2.5 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl hover:bg-rose-500 hover:text-white font-bold text-[9px] uppercase transition-all">❌ Tolak</button>
             `;
         };
 
-        // --- POP-UP MODAL LOGIC FOR MULTI PORTOFOLIO ---
+        // RENDER KARTU STATISTIK DETAIL PER POSISI
+        function renderPositionStatsGrid() {
+            const container = document.getElementById('position-stats-grid');
+            if (!container) return;
+
+            const roles = [...new Set(allApplicants.map(a => a.position || a.role_applied).filter(Boolean))];
+            
+            container.innerHTML = roles.map(role => {
+                const appsInRole = allApplicants.filter(a => (a.position || a.role_applied) === role);
+                const total = appsInRole.length;
+                const interview = appsInRole.filter(a => a.status === 'interview').length;
+                const accepted = appsInRole.filter(a => a.status === 'accepted').length;
+                const bookmark = appsInRole.filter(a => a.status === 'bookmark').length;
+                const rejected = appsInRole.filter(a => a.status === 'rejected').length;
+
+                return `
+                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-black text-slate-800 uppercase italic text-xs tracking-tight truncate">${role}</h4>
+                            <span class="bg-slate-100 text-slate-600 font-black text-[9px] px-2 py-0.5 rounded-full">${total} Total</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-1 text-[9px] font-bold">
+                            <button onclick="openPositionModal('${role}', 'interview')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 p-1.5 rounded-lg text-center transition-colors">
+                                <span class="block font-black">${interview}</span>
+                                <span class="text-[7px] uppercase opacity-75">Wawancara</span>
+                            </button>
+                            <button onclick="openPositionModal('${role}', 'accepted')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-1.5 rounded-lg text-center transition-colors">
+                                <span class="block font-black">${accepted}</span>
+                                <span class="text-[7px] uppercase opacity-75">Lolos</span>
+                            </button>
+                            <button onclick="openPositionModal('${role}', 'bookmark')" class="bg-yellow-50 hover:bg-yellow-100 text-yellow-800 p-1.5 rounded-lg text-center transition-colors">
+                                <span class="block font-black">🔖 ${bookmark}</span>
+                                <span class="text-[7px] uppercase opacity-75">Bookm'k</span>
+                            </button>
+                            <button onclick="openPositionModal('${role}', 'rejected')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 p-1.5 rounded-lg text-center transition-colors">
+                                <span class="block font-black">${rejected}</span>
+                                <span class="text-[7px] uppercase opacity-75">Tolak</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Buka Pop Up Modal Detail Pelamar Berdasarkan Posisi & Status
+        (window as any).openPositionModal = (role: string, status: string) => {
+            const modal = document.getElementById('position-detail-modal');
+            const title = document.getElementById('pos-modal-role-title');
+            const badge = document.getElementById('pos-modal-status-badge');
+            const list = document.getElementById('pos-modal-applicants-list');
+
+            if (!modal || !title || !badge || !list) return;
+
+            const filtered = allApplicants.filter(a => (a.position || a.role_applied) === role && a.status === status);
+
+            title.innerText = role;
+            badge.innerText = `Status: ${status}`;
+
+            if (status === 'accepted') badge.className = "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700 border border-emerald-200";
+            else if (status === 'interview') badge.className = "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 border border-amber-200";
+            else if (status === 'bookmark') badge.className = "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-yellow-100 text-yellow-800 border border-yellow-200";
+            else if (status === 'rejected') badge.className = "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-rose-100 text-rose-700 border border-rose-200";
+
+            if (filtered.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-10 border-2 border-dashed border-slate-100 rounded-2xl">
+                        <p class="text-2xl mb-1">📂</p>
+                        <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Belum ada kandidat di status ini.</p>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = filtered.map(app => `
+                    <div class="p-3.5 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between hover:bg-white hover:border-slate-200 transition-all">
+                        <div class="space-y-0.5">
+                            <p class="text-xs font-black text-slate-800 uppercase italic leading-none">${app.full_name || 'Tanpa Nama'}</p>
+                            <p class="text-[10px] font-bold text-slate-400">${app.faculty || '-'} • ${app.major || app.study_program || '-'} (Sem ${app.semester || '-'})</p>
+                            <p class="text-[9px] text-slate-400">NIM: ${app.nim || '-'}</p>
+                        </div>
+                        <div class="flex gap-2 items-center">
+                            ${app.portfolio_url ? `<a href="${app.portfolio_url.split(',')[0]}" target="_blank" class="bg-[#1b509b] text-white text-[9px] font-black uppercase px-3 py-1.5 rounded-lg hover:opacity-90">Portofolio</a>` : ''}
+                            <button onclick="closePositionModal(); (window).selectApplicantForPreview('${app.id}')" class="bg-slate-800 text-white text-[9px] font-black uppercase px-3 py-1.5 rounded-lg">Pilih</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            modal.classList.add('active');
+        };
+
+        (window as any).closePositionModal = () => {
+            document.getElementById('position-detail-modal')?.classList.remove('active');
+        };
+
+        // POP-UP MULTI PORTOFOLIO LOGIC
         (window as any).openPortfolioModal = (applicantName: string, urls: string[]) => {
             const modal = document.getElementById('portfolio-modal');
             const nameContainer = document.getElementById('modal-applicant-name');
@@ -453,11 +601,11 @@ import '../styles/global.css';
                 `;
             }).join('');
 
-            modal.classList.remove('hidden');
+            modal.classList.add('active');
         };
 
         (window as any).closePortfolioModal = () => {
-            document.getElementById('portfolio-modal')?.classList.add('hidden');
+            document.getElementById('portfolio-modal')?.classList.remove('active');
         };
 
         function clearPreview() {
@@ -540,6 +688,7 @@ import '../styles/global.css';
 
         document.getElementById('bulk-interview-btn')?.addEventListener('click', () => bulkUpdate('interview'));
         document.getElementById('bulk-accept-btn')?.addEventListener('click', () => bulkUpdate('accepted'));
+        document.getElementById('bulk-bookmark-btn')?.addEventListener('click', () => bulkUpdate('bookmark'));
         document.getElementById('clear-selection-btn')?.addEventListener('click', () => { 
             selectedIds = []; 
             renderList(); 
@@ -575,6 +724,7 @@ import '../styles/global.css';
             document.getElementById('stat-total')!.innerText = allApplicants.length.toString();
             document.getElementById('stat-interview')!.innerText = allApplicants.filter(a => a.status === 'interview').length.toString();
             document.getElementById('stat-accepted')!.innerText = allApplicants.filter(a => a.status === 'accepted').length.toString();
+            document.getElementById('stat-bookmark')!.innerText = allApplicants.filter(a => a.status === 'bookmark').length.toString();
             document.getElementById('stat-rejected')!.innerText = allApplicants.filter(a => a.status === 'rejected').length.toString();
         }
 
