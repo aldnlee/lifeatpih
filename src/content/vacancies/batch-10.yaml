@@ -3,8 +3,8 @@ batch_name: Mahardika Intership Batch 10
 status: Open
 timeline:
   - is_active: true
-    start_date: 22 Jul 2026
-    end_date: 28 Jul 2026
+    start_date: "2026-07-22"
+    end_date: "2026-07-28"
     label: Mahardika Intership Batch 10
 roles:
   - role_title: Project Manager

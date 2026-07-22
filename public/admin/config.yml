@@ -56,9 +56,9 @@ collections:
         widget: "list"
         fields:
           - { label: "Kegiatan", name: "label", widget: "string" }
-          # --- DITAMBAHKAN format: "YYYY-MM-DD" AGAR TIDAK SALAH DIBACA ASTRO ---
-          - { label: "Tanggal Mulai", name: "start_date", widget: "datetime", format: "YYYY-MM-DD", date_format: "DD MMM YYYY", time_format: false }
-          - { label: "Tanggal Selesai", name: "end_date", widget: "datetime", format: "YYYY-MM-DD", date_format: "DD MMM YYYY", time_format: false, required: false }
+          # --- GUNAKAN WIDGET DATE DENGAN FORMAT STANDAR YYYY-MM-DD ---
+          - { label: "Tanggal Mulai", name: "start_date", widget: "date", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD" }
+          - { label: "Tanggal Selesai", name: "end_date", widget: "date", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", required: false }
           - { label: "Sedang Berlangsung?", name: "is_active", widget: "boolean", default: false }
           
       - label: "Daftar Role Tersedia"

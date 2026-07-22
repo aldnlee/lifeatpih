@@ -176,7 +176,7 @@ try {
                     </div>
                 </div>
 
-                <!-- SIDEBAR / TIMELINE (DINAMIS DARI CMS) -->
+                <!-- SIDEBAR / TIMELINE (OPTIMAL ISO FORMAT) -->
                 <div class="space-y-6">
                     <div class="bg-[#1b509b] p-8 rounded-[3rem] text-white shadow-lg relative overflow-hidden">
                         <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🗓️</div>
@@ -185,27 +185,25 @@ try {
                         <ul class="space-y-4 text-[11px]">
                             {cmsTimeline.length > 0 ? (
                                 cmsTimeline.map((item: any) => {
-                                    // FORMATTER TANGGAL TANPA RISK PARSING
-                                    const formatDate = (val: any) => {
-                                        if (!val) return '';
+                                    // FORMATTER TANGGAL OPTIMAL BISA MEMBACA "YYYY-MM-DD"
+                                    const formatDate = (dateVal: any) => {
+                                        if (!dateVal) return '';
                                         
-                                        // 1. Jika Objek Date Javascript resmi dari Astro Collection
-                                        if (val instanceof Date) {
-                                            if (isNaN(val.getTime())) return '';
-                                            return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(val);
+                                        // 1. Jika Objek Date Javascript
+                                        if (dateVal instanceof Date) {
+                                            if (isNaN(dateVal.getTime())) return '';
+                                            return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(dateVal);
                                         }
 
-                                        const str = String(val).trim();
+                                        const str = String(dateVal).trim();
                                         
-                                        // 2. Jika ISO String (misal "2026-07-22T00:00:00Z")
-                                        if (str.includes('T') || str.includes('-')) {
-                                            const d = new Date(str);
-                                            if (!isNaN(d.getTime())) {
-                                                return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
-                                            }
+                                        // 2. Parse Tanggal Format ISO / YYYY-MM-DD
+                                        const d = new Date(str);
+                                        if (!isNaN(d.getTime())) {
+                                            return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
                                         }
 
-                                        // 3. Fallback langsung gunakan string aslinya (misal "22 Jul 2026")
+                                        // Fallback balikkan teks asli jika parsing gagal
                                         return str;
                                     };
 
