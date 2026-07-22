@@ -46,20 +46,20 @@ collections:
     extension: "yaml"
     format: "yaml"
     fields:
-      # --- INDENTASI SUDAH DIPERBAIKI ---
-      - { label: "ID Batch (Unik)", name: "batch_id", widget: "string", hint: "Gunakan kode unik tanpa spasi, misal: pih-b1. JANGAN diubah jika sudah ada pelamar." }
-      - { label: "Nama Batch", name: "batch_name", widget: "string", hint: "Contoh: Batch 9" }
+      - { label: "ID Batch (Unik)", name: "batch_id", widget: "string", hint: "Gunakan kode unik tanpa spasi, misal: Batch-10. JANGAN diubah jika sudah ada pelamar." }
+      - { label: "Nama Batch", name: "batch_name", widget: "string", hint: "Contoh: Mahardika Internship Batch 10" }
       - { label: "Status Pendaftaran", name: "status", widget: "select", options: ["Open", "Closed"], default: "Open" }
       
-      - label: "Timeline Seleksi"
-        name: "timeline"
-        widget: "list"
+      # --- TIMELINE EKSPLISIT BERDASARKAN BANNER REKRUTMEN ---
+      - label: "Detail Timeline Seleksi"
+        name: "timeline_details"
+        widget: "object"
         fields:
-          - { label: "Kegiatan", name: "label", widget: "string" }
-          # --- GUNAKAN WIDGET DATE DENGAN FORMAT STANDAR YYYY-MM-DD ---
-          - { label: "Tanggal Mulai", name: "start_date", widget: "date", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD" }
-          - { label: "Tanggal Selesai", name: "end_date", widget: "date", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", required: false }
-          - { label: "Sedang Berlangsung?", name: "is_active", widget: "boolean", default: false }
+          - { label: "Tanggal Registrasi", name: "registrasi", widget: "string", default: "22-28 JUL 2026 (17.00 WIB)", hint: "Contoh: 22-28 JUL 2026 17.00 WIB" }
+          - { label: "Pengumuman Seleksi Administratif", name: "pengumuman_admin", widget: "string", default: "29 JUL 2026 (20.00 WIB)", hint: "Contoh: 29 JUL 2026 20.00 WIB" }
+          - { label: "Tanggal Wawancara", name: "wawancara", widget: "string", default: "3-4 AGU 2026", hint: "Contoh: 3-4 AGU 2026" }
+          - { label: "Pengumuman Akhir", name: "pengumuman_akhir", widget: "string", default: "5 AGU 2026", hint: "Contoh: 5 AGU 2026" }
+          - { label: "Tanggal Onboarding", name: "onboarding", widget: "string", default: "10 AGU 2026", hint: "Contoh: 10 AGU 2026" }
           
       - label: "Daftar Role Tersedia"
         name: "roles"

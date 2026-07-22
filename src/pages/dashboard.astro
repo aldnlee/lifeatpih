@@ -3,7 +3,13 @@ import '../styles/global.css';
 import { getCollection } from 'astro:content';
 
 // 1. Ambil data Batch Aktif dari Decap CMS secara aman
-let cmsTimeline: any[] = [];
+let timelineDetails: any = {
+    registrasi: "22-28 JUL 2026 (17.00 WIB)",
+    pengumuman_admin: "29 JUL 2026 (20.00 WIB)",
+    wawancara: "3-4 AGU 2026",
+    pengumuman_akhir: "5 AGU 2026",
+    onboarding: "10 AGU 2026"
+};
 let cmsBatchName = "Mahardhika Internship";
 
 try {
@@ -17,12 +23,23 @@ try {
 
     if (activeBatchFromCMS) {
         const batchData = activeBatchFromCMS.data || activeBatchFromCMS;
-        cmsTimeline = batchData.timeline || [];
+        if (batchData.timeline_details) {
+            timelineDetails = batchData.timeline_details;
+        }
         cmsBatchName = batchData.batch_name || cmsBatchName;
     }
 } catch (e) {
     console.error("Gagal memuat collection vacancies dari CMS:", e);
 }
+
+// Array pasangan stage timeline untuk kemudahan looping di UI
+const timelineItems = [
+    { key: "registrasi", label: "Registrasi", val: timelineDetails.registrasi, is_active: true },
+    { key: "pengumuman_admin", label: "Pengumuman Administrasi", val: timelineDetails.pengumuman_admin, is_active: false },
+    { key: "wawancara", label: "Wawancara", val: timelineDetails.wawancara, is_active: false },
+    { key: "pengumuman_akhir", label: "Pengumuman Akhir", val: timelineDetails.pengumuman_akhir, is_active: false },
+    { key: "onboarding", label: "Onboarding", val: timelineDetails.onboarding, is_active: false }
+];
 ---
 
 <html lang="id">
@@ -176,61 +193,23 @@ try {
                     </div>
                 </div>
 
-                <!-- SIDEBAR / TIMELINE (OPTIMAL ISO FORMAT) -->
+                <!-- SIDEBAR / TIMELINE SELEKSI (OBJECT-BASED DINAMIS) -->
                 <div class="space-y-6">
                     <div class="bg-[#1b509b] p-8 rounded-[3rem] text-white shadow-lg relative overflow-hidden">
                         <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🗓️</div>
                         <h3 class="text-[10px] font-black uppercase tracking-widest mb-6 border-b border-white/10 pb-4">Timeline Seleksi</h3>
             
                         <ul class="space-y-4 text-[11px]">
-                            {cmsTimeline.length > 0 ? (
-                                cmsTimeline.map((item: any) => {
-                                    // FORMATTER TANGGAL OPTIMAL BISA MEMBACA "YYYY-MM-DD"
-                                    const formatDate = (dateVal: any) => {
-                                        if (!dateVal) return '';
-                                        
-                                        // 1. Jika Objek Date Javascript
-                                        if (dateVal instanceof Date) {
-                                            if (isNaN(dateVal.getTime())) return '';
-                                            return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(dateVal);
-                                        }
-
-                                        const str = String(dateVal).trim();
-                                        
-                                        // 2. Parse Tanggal Format ISO / YYYY-MM-DD
-                                        const d = new Date(str);
-                                        if (!isNaN(d.getTime())) {
-                                            return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
-                                        }
-
-                                        // Fallback balikkan teks asli jika parsing gagal
-                                        return str;
-                                    };
-
-                                    let formattedDate = '-';
-                                    if (item.start_date) {
-                                        const start = formatDate(item.start_date);
-                                        const end = formatDate(item.end_date);
-                                        formattedDate = (end && end !== start) ? `${start} - ${end}` : start;
-                                    } else if (item.date) {
-                                        formattedDate = formatDate(item.date);
-                                    }
-
-                                    return (
-                                        <li class={`flex justify-between items-center ${item.is_active ? 'font-bold text-yellow-400' : 'opacity-50'}`}>
-                                            <div class="flex items-center gap-2">
-                                                {item.is_active && <div class="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>}
-                                                <span>{item.label}</span>
-                                            </div>
-                                            <span class="text-[9px] font-black uppercase tracking-tighter bg-white/10 px-2 py-0.5 rounded ml-2 text-right">
-                                                {formattedDate}
-                                            </span>
-                                        </li>
-                                    );
-                                })
-                            ) : (
-                                <li class="italic opacity-30">Belum ada timeline yang diatur di CMS.</li>
-                            )}
+                            {timelineItems.map((item) => (
+                                <li class="flex justify-between items-center opacity-90">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold">{item.label}</span>
+                                    </div>
+                                    <span class="text-[9px] font-black uppercase tracking-tighter bg-white/10 px-2.5 py-1 rounded-lg ml-2 text-right">
+                                        {item.val || '-'}
+                                    </span>
+                                </li>
+                            ))}
                         </ul>
                     </div>
     
