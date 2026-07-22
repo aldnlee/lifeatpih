@@ -23,7 +23,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const transporter = nodemailer.createTransport({
   host: process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com',
   port: Number(process.env.BREVO_SMTP_PORT) || 587,
-  secure: false, // Gunakan TLS
+  secure: false, // TLS
   auth: {
     user: process.env.BREVO_SMTP_USER,
     pass: process.env.BREVO_SMTP_PASS,
@@ -37,7 +37,7 @@ async function runRelayBroadcast() {
   console.log('🚀 Memulai pengiriman email via Brevo SMTP Relay...\n');
 
   try {
-    // 4. Tarik data pendaftar (posisi dihapus dari query agar tidak error)
+    // 4. Tarik data pendaftar yang status emailnya 'pending'
     const { data: applicants, error } = await supabase
       .from('applications')
       .select('id, full_name, user_email, status, email_status')
@@ -58,6 +58,9 @@ async function runRelayBroadcast() {
     let successCount = 0;
     let failCount = 0;
 
+    // Email pengirim resmi yang terverifikasi di Brevo
+    const senderEmail = process.env.BREVO_SENDER_EMAIL || 'aldnlee.ale@gmail.com';
+
     // 5. Looping Pengiriman Email
     for (const [index, app] of applicants.entries()) {
       const recipientEmail = app.user_email;
@@ -66,9 +69,9 @@ async function runRelayBroadcast() {
       try {
         console.log(`[${index + 1}/${applicants.length}] Mengirim ke ${recipientEmail}...`);
 
-        // Kirim Email via Brevo SMTP
+        // Kirim Email via Brevo SMTP menggunakan Sender Email Terverifikasi
         await transporter.sendMail({
-          from: `"Life at PIH UIN Jakarta" <${process.env.BREVO_SMTP_USER}>`,
+          from: `"Life at PIH UIN Jakarta" <${senderEmail}>`,
           to: recipientEmail,
           subject: `[Life at PIH] Update Pendaftaran Magang - ${recipientName}`,
           html: `

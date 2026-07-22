@@ -157,7 +157,7 @@ function formatTimelineDate(startDateStr: string, endDateStr?: string) {
                 <img src="/images/letermark-uin.png" class="ml-auto w-32" alt="Logo PIH" />
             </navbar>
 
-            <section id="home" class="relative h-screen flex flex-col justify-start pt-20 mt-1 px-8 md:px-24 overflow-hidden">
+            <section id="home" class="relative h-screen flex flex-col justify-start pt-10 mt-1 px-8 md:px-24 overflow-hidden">
                 <div id="cursor-trail-container" class="pointer-events-none absolute inset-0 z-0">
                     {Array.from({ length: 6 }).map((_, i) => (
                         <div class="trail-dot w-4 h-4 bg-yellow-500/30 rounded-full blur-sm"></div>
@@ -197,12 +197,11 @@ function formatTimelineDate(startDateStr: string, endDateStr?: string) {
                     <!-- Dinamis: Mulai Sekarang atau Dashboard -->
                 </div>
 
-                <div id="scroll-hint" class="m-auto z-10 opacity-0">
-                    <p class="text-[14px] font-bold tracking-[0.4em] uppercase text-white/50 flex flex-col items-center gap-4">
-                        Scroll to continue 
-                        <span class="w-[1px] h-12 bg-white/30 block"></span> 
-                    </p>
-                </div>
+                <div id="scroll-hint" class="mx-auto md:ml-auto md:mr-12 lg:mr-20 w-fit z-10 opacity-0">
+    <p class="text-[14px] font-bold tracking-[0.4em] uppercase text-white/50 flex flex-col items-center gap-4">
+        Scroll to continue
+    </p>
+</div>
             </section>
 
             <section id="introduction" class="min-h-[70vh] py-20 px-8 md:px-24 flex flex-col items-center justify-center">
