@@ -168,40 +168,58 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
                 <!-- SIDEBAR / TIMELINE (DINAMIS DARI CMS) -->
                 <div class="space-y-6">
                     <div class="bg-[#1b509b] p-8 rounded-[3rem] text-white shadow-lg relative overflow-hidden">
-                        <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🗓️</div>
-                        <h3 class="text-[10px] font-black uppercase tracking-widest mb-6 border-b border-white/10 pb-4">Timeline Seleksi</h3>
-                        
-                        <ul class="space-y-4 text-[11px]">
-                            {cmsTimeline.length > 0 ? (
-                                cmsTimeline.map((item: any) => {
-                                    // PERUBAHAN DISINI: Penanganan Format Periode Tanggal
-                                    const formattedDate = item.start_date 
-                                        ? `${item.start_date}${item.end_date ? ` - ${item.end_date}` : ''}`
-                                        : (item.date || '-');
+                    <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🗓️</div>
+                    <h3 class="text-[10px] font-black uppercase tracking-widest mb-6 border-b border-white/10 pb-4">Timeline Seleksi</h3>
+        
+                    <ul class="space-y-4 text-[11px]">
+                     {cmsTimeline.length > 0 ? (
+                         cmsTimeline.map((item: any) => {
+                             // Helper Fungsi Formatter Tanggal (ID)
+                          const formatDate = (dateString: string) => {
+                             if (!dateString) return '';
+                              const date = new Date(dateString);
+                              // Cek jika valid date
+                                 if (isNaN(date.getTime())) return dateString; 
+                                return new Intl.DateTimeFormat('id-ID', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric'
+                              }).format(date);
+                                    };
+
+                                     // Format Periode Tanggal
+                                    let formattedDate = '-';
+                                    if (item.start_date) {
+                                    const start = formatDate(item.start_date);
+                                    const end = formatDate(item.end_date);
+                                    formattedDate = end ? `${start} - ${end}` : start;
+                                    } else if (item.date) {
+                                   formattedDate = item.date;
+                                    }
 
                                     return (
-                                        <li class={`flex justify-between items-center ${item.is_active ? 'font-bold text-yellow-400' : 'opacity-50'}`}>
-                                            <div class="flex items-center gap-2">
-                                                {item.is_active && <div class="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>}
-                                                <span>{item.label}</span>
-                                            </div>
-                                            <span class="text-[9px] font-black uppercase tracking-tighter bg-white/10 px-2 py-0.5 rounded">
-                                                {formattedDate}
-                                            </span>
-                                        </li>
-                                    );
+                                     <li class={`flex justify-between items-center ${item.is_active ? 'font-bold text-yellow-400' : 'opacity-50'}`}>
+                                    <div class="flex items-center gap-2">
+                                    {item.is_active && <div class="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>}
+                                    <span>{item.label}</span>
+                                    </div>
+                                    <span class="text-[9px] font-black uppercase tracking-tighter bg-white/10 px-2 py-0.5 rounded ml-2 text-right">
+                                     {formattedDate}
+                                    </span>
+                                 </li>
+                                );
                                 })
-                            ) : (
-                                <li class="italic opacity-30">Belum ada timeline yang diatur di CMS.</li>
-                            )}
-                        </ul>
-                    </div>
-                    
-                    <div class="p-8 border-2 border-dashed border-slate-200 rounded-[3rem] text-center">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Butuh Bantuan?</p>
-                        <a href="https://wa.me/xxx" class="text-xs font-black text-[#1b509b] hover:underline">Hubungi Admin PIH</a>
-                    </div>
-                </div>
+                                ) : (
+                                 <li class="italic opacity-30">Belum ada timeline yang diatur di CMS.</li>
+                                     )}
+                                 </ul>
+            </div>
+    
+    <div class="p-8 border-2 border-dashed border-slate-200 rounded-[3rem] text-center">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Butuh Bantuan?</p>
+        <a href="https://wa.me/xxx" class="text-xs font-black text-[#1b509b] hover:underline">Hubungi Admin PIH</a>
+    </div>
+</div>
             </div>
 
             <div id="no-application" class="hidden text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-200 shadow-inner">
