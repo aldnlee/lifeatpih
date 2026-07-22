@@ -2,16 +2,26 @@
 import '../styles/global.css';
 import { getCollection } from 'astro:content';
 
-// 1. Ambil data Batch Aktif dari Decap CMS untuk Timeline
-const allBatches = await getCollection('vacancies' as any) as any[];
-const activeBatchFromCMS = allBatches.find((b: any) => {
-    const d = b.data?.map ? b.data.map : b.data;
-    return (d?.status || "").toLowerCase().trim() === 'open';
-});
+// 1. Ambil data Batch Aktif dari Decap CMS secara aman (Safe Collection Fetching)
+let cmsTimeline: any[] = [];
+let cmsBatchName = "Mahardhika Internship";
 
-const cmsData = activeBatchFromCMS?.data?.map ? activeBatchFromCMS.data.map : activeBatchFromCMS?.data;
-const cmsTimeline = cmsData?.timeline || [];
-const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
+try {
+    const allBatches: any[] = (await getCollection('vacancies' as any)) || [];
+    const activeBatchFromCMS: any = allBatches.find((b: any) => {
+        const status = b?.data?.status || b?.status || "";
+        return status.toString().toLowerCase().trim() === 'open';
+    });
+
+    if (activeBatchFromCMS) {
+        // Ambil data objek secara aman tanpa paksaan `.data`
+        const batchData = activeBatchFromCMS.data || activeBatchFromCMS;
+        cmsTimeline = batchData.timeline || [];
+        cmsBatchName = batchData.batch_name || cmsBatchName;
+    }
+} catch (e) {
+    console.error("Gagal memuat collection vacancies dari CMS:", e);
+}
 ---
 
 <html lang="id">
@@ -168,58 +178,55 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
                 <!-- SIDEBAR / TIMELINE (DINAMIS DARI CMS) -->
                 <div class="space-y-6">
                     <div class="bg-[#1b509b] p-8 rounded-[3rem] text-white shadow-lg relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🗓️</div>
-                    <h3 class="text-[10px] font-black uppercase tracking-widest mb-6 border-b border-white/10 pb-4">Timeline Seleksi</h3>
-        
-                    <ul class="space-y-4 text-[11px]">
-                     {cmsTimeline.length > 0 ? (
-                         cmsTimeline.map((item: any) => {
-                             // Helper Fungsi Formatter Tanggal (ID)
-                          const formatDate = (dateString: string) => {
-                             if (!dateString) return '';
-                              const date = new Date(dateString);
-                              // Cek jika valid date
-                                 if (isNaN(date.getTime())) return dateString; 
-                                return new Intl.DateTimeFormat('id-ID', {
-                                        day: 'numeric',
-                                        month: 'short',
-                                        year: 'numeric'
-                              }).format(date);
+                        <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🗓️</div>
+                        <h3 class="text-[10px] font-black uppercase tracking-widest mb-6 border-b border-white/10 pb-4">Timeline Seleksi</h3>
+            
+                        <ul class="space-y-4 text-[11px]">
+                            {cmsTimeline.length > 0 ? (
+                                cmsTimeline.map((item: any) => {
+                                    const formatDate = (dateString: string) => {
+                                        if (!dateString) return '';
+                                        const date = new Date(dateString);
+                                        if (isNaN(date.getTime())) return dateString; 
+                                        return new Intl.DateTimeFormat('id-ID', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            year: 'numeric'
+                                        }).format(date);
                                     };
 
-                                     // Format Periode Tanggal
                                     let formattedDate = '-';
                                     if (item.start_date) {
-                                    const start = formatDate(item.start_date);
-                                    const end = formatDate(item.end_date);
-                                    formattedDate = end ? `${start} - ${end}` : start;
+                                        const start = formatDate(item.start_date);
+                                        const end = formatDate(item.end_date);
+                                        formattedDate = end ? `${start} - ${end}` : start;
                                     } else if (item.date) {
-                                   formattedDate = item.date;
+                                        formattedDate = item.date;
                                     }
 
                                     return (
-                                     <li class={`flex justify-between items-center ${item.is_active ? 'font-bold text-yellow-400' : 'opacity-50'}`}>
-                                    <div class="flex items-center gap-2">
-                                    {item.is_active && <div class="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>}
-                                    <span>{item.label}</span>
-                                    </div>
-                                    <span class="text-[9px] font-black uppercase tracking-tighter bg-white/10 px-2 py-0.5 rounded ml-2 text-right">
-                                     {formattedDate}
-                                    </span>
-                                 </li>
-                                );
+                                        <li class={`flex justify-between items-center ${item.is_active ? 'font-bold text-yellow-400' : 'opacity-50'}`}>
+                                            <div class="flex items-center gap-2">
+                                                {item.is_active && <div class="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>}
+                                                <span>{item.label}</span>
+                                            </div>
+                                            <span class="text-[9px] font-black uppercase tracking-tighter bg-white/10 px-2 py-0.5 rounded ml-2 text-right">
+                                                {formattedDate}
+                                            </span>
+                                        </li>
+                                    );
                                 })
-                                ) : (
-                                 <li class="italic opacity-30">Belum ada timeline yang diatur di CMS.</li>
-                                     )}
-                                 </ul>
-            </div>
+                            ) : (
+                                <li class="italic opacity-30">Belum ada timeline yang diatur di CMS.</li>
+                            )}
+                        </ul>
+                    </div>
     
-    <div class="p-8 border-2 border-dashed border-slate-200 rounded-[3rem] text-center">
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Butuh Bantuan?</p>
-        <a href="https://wa.me/xxx" class="text-xs font-black text-[#1b509b] hover:underline">Hubungi Admin PIH</a>
-    </div>
-</div>
+                    <div class="p-8 border-2 border-dashed border-slate-200 rounded-[3rem] text-center">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Butuh Bantuan?</p>
+                        <a href="https://wa.me/xxx" class="text-xs font-black text-[#1b509b] hover:underline">Hubungi Admin PIH</a>
+                    </div>
+                </div>
             </div>
 
             <div id="no-application" class="hidden text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-slate-200 shadow-inner">
@@ -296,61 +303,75 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
         let lastStatus = "";
 
         async function init() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) { window.location.href = '/'; return; }
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) { 
+                    window.location.href = '/'; 
+                    return; 
+                }
 
-            userName.innerText = user.user_metadata.full_name || "User";
+                if (userName) userName.innerText = user.user_metadata?.full_name || user.email || "User";
 
-            const { data: application, error } = await supabase
-                .from('applications')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false })
-                .maybeSingle();
+                const { data: application, error } = await supabase
+                    .from('applications')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .maybeSingle();
 
-            loadingState.classList.add('hidden');
-            dashboardContent.classList.remove('hidden');
+                loadingState?.classList.add('hidden');
+                dashboardContent?.classList.remove('hidden');
 
-            if (!application) {
-                noApp.classList.remove('hidden');
-                document.querySelector('.grid')?.classList.add('hidden');
-                document.querySelector('.glass-card')?.classList.add('hidden');
-                return;
-            }
+                if (!application) {
+                    noApp?.classList.remove('hidden');
+                    document.querySelector('.grid')?.classList.add('hidden');
+                    document.querySelector('.glass-card')?.classList.add('hidden');
+                    return;
+                }
 
-            // Fill Data
-            currentAppId = application.id;
-            lastStatus = application.status;
-            
-            role1Val.innerText = application.role_applied;
-            role2Val.innerText = application.role_2 || "Tidak ada pilihan ke-2";
-            academicVal.innerText = `${application.faculty} / ${application.study_program}`;
-            nimVal.innerText = `${application.nim} (Semester ${application.semester})`;
-            portfolioLink.href = application.portfolio_url;
-            portfolioLink.innerText = application.portfolio_url;
-            batchIdVal.innerText = `ID: ${application.batch_id}`;
+                // Fill Data
+                currentAppId = application.id;
+                lastStatus = application.status;
+                
+                if (role1Val) role1Val.innerText = application.role_applied || '-';
+                if (role2Val) role2Val.innerText = application.role_2 || "Tidak ada pilihan ke-2";
+                if (academicVal) academicVal.innerText = `${application.faculty || '-'} / ${application.study_program || '-'}`;
+                if (nimVal) nimVal.innerText = `${application.nim || '-'} (Semester ${application.semester || '-'})`;
+                
+                if (portfolioLink) {
+                    portfolioLink.href = application.portfolio_url || '#';
+                    portfolioLink.innerText = application.portfolio_url || 'Belum ada link';
+                }
+                
+                if (batchIdVal) batchIdVal.innerText = `ID: ${application.batch_id || '-'}`;
 
-            appliedBanner.classList.remove('hidden');
-            updateUI(application.status);
+                appliedBanner?.classList.remove('hidden');
+                updateUI(application.status);
 
-            if (application.status !== 'administrasi' && !application.acknowledged) {
-                showNotification(application.status);
-            }
+                if (application.status !== 'administrasi' && !application.acknowledged) {
+                    showNotification(application.status);
+                }
 
-            // Realtime Update
-            supabase
-                .channel('applicant-status')
-                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'applications', filter: `id=eq.${application.id}` },
-                    async (payload) => {
-                        const newStatus = payload.new.status;
-                        if (newStatus !== lastStatus) {
-                            await supabase.from('applications').update({ acknowledged: false }).eq('id', application.id);
-                            showNotification(newStatus);
-                            lastStatus = newStatus;
-                            updateUI(newStatus);
+                // Realtime Update
+                supabase
+                    .channel('applicant-status')
+                    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'applications', filter: `id=eq.${application.id}` },
+                        async (payload) => {
+                            const newStatus = payload.new.status;
+                            if (newStatus !== lastStatus) {
+                                await supabase.from('applications').update({ acknowledged: false }).eq('id', application.id);
+                                showNotification(newStatus);
+                                lastStatus = newStatus;
+                                updateUI(newStatus);
+                            }
                         }
-                    }
-                ).subscribe();
+                    ).subscribe();
+
+            } catch (err) {
+                console.error("Dashboard error:", err);
+                loadingState?.classList.add('hidden');
+                dashboardContent?.classList.remove('hidden');
+            }
         }
 
         function showNotification(status: string) {
@@ -389,16 +410,18 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
         }
 
         function updateUI(status: string) {
-            badgeStatus.innerText = status;
+            if (badgeStatus) badgeStatus.innerText = status;
             const steps = document.querySelectorAll('.step-item');
             let p = 0;
             if (status === 'interview') p = 50;
             if (status === 'accepted' || status === 'rejected') p = 100;
-            progressBar.style.width = `${p}%`;
+            if (progressBar) progressBar.style.width = `${p}%`;
 
             steps.forEach((item) => {
                 const s = (item as HTMLElement).dataset.step;
                 const circle = item.querySelector('.circle') as HTMLElement;
+                if (!circle) return;
+
                 circle.classList.remove('border-[#1b509b]', 'bg-[#1b509b]', 'text-white', 'border-emerald-500', 'bg-emerald-500', 'border-rose-500', 'text-rose-500');
 
                 if (status === 'administrasi' && s === 'administrasi') {
@@ -407,10 +430,10 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
                     circle.classList.add('border-[#1b509b]', 'bg-[#1b509b]', 'text-white');
                 } else if (status === 'accepted') {
                     circle.classList.add('border-emerald-500', 'bg-emerald-500', 'text-white');
-                    badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-emerald-50 text-emerald-600 border border-emerald-100 font-black uppercase tracking-widest";
+                    if (badgeStatus) badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-emerald-50 text-emerald-600 border border-emerald-100 font-black uppercase tracking-widest";
                 } else if (status === 'rejected') {
                     circle.classList.add('border-rose-500', 'text-rose-500');
-                    badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-rose-50 text-rose-600 border border-rose-100 font-black uppercase tracking-widest";
+                    if (badgeStatus) badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-rose-50 text-rose-600 border border-rose-100 font-black uppercase tracking-widest";
                 }
             });
         }
