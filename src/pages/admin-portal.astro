@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v3.6 (Includes Bookmark Feature & Position-based Detail Statistics Pop-up Modal)
+// Admin Portal v3.7 (Multi-Master Admin Support & Bug Fixes)
 ---
 
 <html lang="id">
@@ -156,7 +156,7 @@ import '../styles/global.css';
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v3.6</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v3.7</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
@@ -280,7 +280,12 @@ import '../styles/global.css';
         let allApplicants: any[] = [];
         let selectedIds: string[] = [];
         let activeApplicantId: string | null = null;
-        const ADMIN_EMAIL = "aldnlee.ale@gmail.com";
+        
+        // ARRAY DUA MASTER ADMIN
+        const MASTER_ADMIN_EMAILS = [
+            "aldnlee.ale@gmail.com",
+            "asr070902@gmail.com"
+        ];
 
         // OTENTIKASI
         async function checkAdminAccess() {
@@ -292,7 +297,7 @@ import '../styles/global.css';
             }
 
             const currentUserEmail = (user.email || '').toLowerCase().trim();
-            const masterAdminEmail = ADMIN_EMAIL.toLowerCase().trim();
+            const normalizedMasterEmails = MASTER_ADMIN_EMAILS.map(e => e.toLowerCase().trim());
 
             const { data: member } = await supabase
                 .from('admin_members')
@@ -300,7 +305,7 @@ import '../styles/global.css';
                 .eq('email', currentUserEmail)
                 .maybeSingle();
 
-            const isMasterAdmin = currentUserEmail === masterAdminEmail;
+            const isMasterAdmin = normalizedMasterEmails.includes(currentUserEmail);
 
             if (!member && !isMasterAdmin) {
                 alert("Akses Ditolak: Email " + currentUserEmail + " tidak terdaftar di whitelist Admin.");
@@ -468,7 +473,6 @@ import '../styles/global.css';
                 portfolioBtn.onclick = () => (window as any).openPortfolioModal(app.full_name, portoList);
             }
 
-            // DITAMBAHKAN TOMBOL BOOKMARK
             document.getElementById('preview-action-buttons')!.innerHTML = `
                 <button onclick="updateStatus('${app.id}', 'interview')" class="px-2.5 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl hover:bg-amber-500 hover:text-white font-bold text-[9px] uppercase transition-all">💬 Wawancara</button>
                 <button onclick="updateStatus('${app.id}', 'accepted')" class="px-2.5 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl hover:bg-emerald-500 hover:text-white font-bold text-[9px] uppercase transition-all">✅ Lolos</button>
@@ -622,19 +626,28 @@ import '../styles/global.css';
 
         function renderTeamList(members: any[]) {
             const container = document.getElementById('team-list');
-            container!.innerHTML = members.map(m => `
-                <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="px-8 py-4">
-                        <div class="font-bold text-slate-800 text-sm">${m.email}</div>
-                        <div class="text-[9px] text-slate-400 uppercase tracking-widest font-black">${m.role || 'Reviewer'}</div>
-                    </td>
-                    <td class="px-8 py-4 text-right">
-                        ${m.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase() ? `
-                            <button onclick="deleteMember('${m.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-[10px] uppercase tracking-widest">Hapus Akses</button>
-                        ` : '<span class="text-[9px] font-black uppercase opacity-20">Master Admin</span>'}
-                    </td>
-                </tr>
-            `).join('');
+            if (!container) return;
+
+            const normalizedMasterEmails = MASTER_ADMIN_EMAILS.map(e => e.toLowerCase().trim());
+
+            container.innerHTML = members.map(m => {
+                const memberEmail = (m.email || '').toLowerCase().trim();
+                const isMaster = normalizedMasterEmails.includes(memberEmail);
+
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-8 py-4">
+                            <div class="font-bold text-slate-800 text-sm">${m.email}</div>
+                            <div class="text-[9px] text-slate-400 uppercase tracking-widest font-black">${isMaster ? 'Master Admin' : (m.role || 'Reviewer')}</div>
+                        </td>
+                        <td class="px-8 py-4 text-right">
+                            ${!isMaster ? `
+                                <button onclick="deleteMember('${m.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-[10px] uppercase tracking-widest">Hapus Akses</button>
+                            ` : '<span class="text-[9px] font-black uppercase opacity-20">Master Admin</span>'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         // GLOBAL ACTIONS EXPOSED TO WINDOW
