@@ -8,8 +8,10 @@ let cmsBatchName = "Mahardhika Internship";
 
 try {
     const allBatches: any[] = (await getCollection('vacancies' as any)) || [];
+    
     const activeBatchFromCMS: any = allBatches.find((b: any) => {
-        const status = b?.data?.status || b?.status || "";
+        const d = b?.data || b;
+        const status = d?.status || "";
         return status.toString().toLowerCase().trim() === 'open';
     });
 
@@ -183,21 +185,27 @@ try {
                         <ul class="space-y-4 text-[11px]">
                             {cmsTimeline.length > 0 ? (
                                 cmsTimeline.map((item: any) => {
-                                    // Helper Formatter Tanggal yang AMAN
+                                    // HELPER TANGGAL SERBA BISA (AMANKAN STRING / DATE OBJECT)
                                     const formatDate = (dateVal: any) => {
                                         if (!dateVal) return '';
-                                        // Jika sudah berbentuk String seperti "22 Jul 2026", langsung tampilkan
-                                        if (typeof dateVal === 'string' && !dateVal.includes('T')) {
-                                            return dateVal;
+                                        
+                                        // Jika tipe data sudah Objek Date JavaScript
+                                        if (dateVal instanceof Date) {
+                                            if (isNaN(dateVal.getTime())) return '';
+                                            return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(dateVal);
                                         }
-                                        // Jika ISO String (misal dari widget ISO), konversi ke lokal ID
-                                        const d = new Date(dateVal);
-                                        if (isNaN(d.getTime())) return String(dateVal);
-                                        return new Intl.DateTimeFormat('id-ID', {
-                                            day: 'numeric',
-                                            month: 'short',
-                                            year: 'numeric'
-                                        }).format(d);
+
+                                        // Jika tipe data String (contoh: "22 Jul 2026")
+                                        const strVal = String(dateVal).trim();
+                                        const parsedDate = new Date(strVal);
+                                        
+                                        // Jika parsing berhasil
+                                        if (!isNaN(parsedDate.getTime())) {
+                                            return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(parsedDate);
+                                        }
+
+                                        // Fallback balikkan string aslinya jika parsing Date gagal
+                                        return strVal;
                                     };
 
                                     let formattedDate = '-';
@@ -206,7 +214,7 @@ try {
                                         const end = formatDate(item.end_date);
                                         formattedDate = end ? `${start} - ${end}` : start;
                                     } else if (item.date) {
-                                        formattedDate = item.date;
+                                        formattedDate = formatDate(item.date);
                                     }
 
                                     return (
