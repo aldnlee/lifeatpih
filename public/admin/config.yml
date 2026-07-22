@@ -46,31 +46,33 @@ collections:
     extension: "yaml"
     format: "yaml"
     fields:
-    # --- FIELD UNTUK DATABASE SYNC ---
-    - { label: "ID Batch (Unik)", name: "batch_id", widget: "string", hint: "Gunakan kode unik tanpa spasi, misal: pih-b1. JANGAN diubah jika sudah ada pelamar." }
-    - { label: "Nama Batch", name: "batch_name", widget: "string", hint: "Contoh: Batch 9" }
-    - { label: "Status Pendaftaran", name: "status", widget: "select", options: ["Open", "Closed"], default: "Open" }
-    - label: "Timeline Seleksi"
-      name: "timeline"
-      widget: "list"
-      fields:
-        - { label: "Kegiatan", name: "label", widget: "string" }
-        # --- DIPERBARUI: DUA FIELD TANGGAL DENGAN KALENDER ---
-        - { label: "Tanggal Mulai", name: "start_date", widget: "datetime", date_format: "DD MMM YYYY", time_format: false }
-        - { label: "Tanggal Selesai", name: "end_date", widget: "datetime", date_format: "DD MMM YYYY", time_format: false, required: false }
-        - { label: "Sedang Berlangsung?", name: "is_active", widget: "boolean", default: false }
-    - label: "Daftar Role Tersedia"
-      name: "roles"
-      widget: "list"
-      summary: "{{fields.role_title}}"
-      fields:
-        - { label: "Nama Role/Posisi", name: "role_title", widget: "string" }
-        - { label: "Deskripsi Singkat", name: "description", widget: "text", required: false }
-    - { label: "Konten Pengumuman", name: "body", widget: "markdown" }
+      # --- INDENTASI SUDAH DIPERBAIKI ---
+      - { label: "ID Batch (Unik)", name: "batch_id", widget: "string", hint: "Gunakan kode unik tanpa spasi, misal: pih-b1. JANGAN diubah jika sudah ada pelamar." }
+      - { label: "Nama Batch", name: "batch_name", widget: "string", hint: "Contoh: Batch 9" }
+      - { label: "Status Pendaftaran", name: "status", widget: "select", options: ["Open", "Closed"], default: "Open" }
+      
+      - label: "Timeline Seleksi"
+        name: "timeline"
+        widget: "list"
+        fields:
+          - { label: "Kegiatan", name: "label", widget: "string" }
+          # --- DITAMBAHKAN format: "YYYY-MM-DD" AGAR TIDAK SALAH DIBACA ASTRO ---
+          - { label: "Tanggal Mulai", name: "start_date", widget: "datetime", format: "YYYY-MM-DD", date_format: "DD MMM YYYY", time_format: false }
+          - { label: "Tanggal Selesai", name: "end_date", widget: "datetime", format: "YYYY-MM-DD", date_format: "DD MMM YYYY", time_format: false, required: false }
+          - { label: "Sedang Berlangsung?", name: "is_active", widget: "boolean", default: false }
+          
+      - label: "Daftar Role Tersedia"
+        name: "roles"
+        widget: "list"
+        summary: "{{fields.role_title}}"
+        fields:
+          - { label: "Nama Role/Posisi", name: "role_title", widget: "string" }
+          - { label: "Deskripsi Singkat", name: "description", widget: "text", required: false }
+      - { label: "Konten Pengumuman", name: "body", widget: "markdown" }
 
   - name: "role_details"
     label: "Detail Role/Posisi"
-    folder: "src/content/roles" # Folder penyimpanan file markdown/yaml
+    folder: "src/content/roles"
     create: true
     slug: "{{slug}}"
     extension: "md"
