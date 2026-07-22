@@ -2,7 +2,7 @@
 import '../styles/global.css';
 import { getCollection } from 'astro:content';
 
-// 1. Ambil data Batch Aktif dari Decap CMS secara aman (Safe Collection Fetching)
+// 1. Ambil data Batch Aktif dari Decap CMS secara aman
 let cmsTimeline: any[] = [];
 let cmsBatchName = "Mahardhika Internship";
 
@@ -14,7 +14,6 @@ try {
     });
 
     if (activeBatchFromCMS) {
-        // Ambil data objek secara aman tanpa paksaan `.data`
         const batchData = activeBatchFromCMS.data || activeBatchFromCMS;
         cmsTimeline = batchData.timeline || [];
         cmsBatchName = batchData.batch_name || cmsBatchName;
@@ -184,15 +183,21 @@ try {
                         <ul class="space-y-4 text-[11px]">
                             {cmsTimeline.length > 0 ? (
                                 cmsTimeline.map((item: any) => {
-                                    const formatDate = (dateString: string) => {
-                                        if (!dateString) return '';
-                                        const date = new Date(dateString);
-                                        if (isNaN(date.getTime())) return dateString; 
+                                    // Helper Formatter Tanggal yang AMAN
+                                    const formatDate = (dateVal: any) => {
+                                        if (!dateVal) return '';
+                                        // Jika sudah berbentuk String seperti "22 Jul 2026", langsung tampilkan
+                                        if (typeof dateVal === 'string' && !dateVal.includes('T')) {
+                                            return dateVal;
+                                        }
+                                        // Jika ISO String (misal dari widget ISO), konversi ke lokal ID
+                                        const d = new Date(dateVal);
+                                        if (isNaN(d.getTime())) return String(dateVal);
                                         return new Intl.DateTimeFormat('id-ID', {
                                             day: 'numeric',
                                             month: 'short',
                                             year: 'numeric'
-                                        }).format(date);
+                                        }).format(d);
                                     };
 
                                     let formattedDate = '-';
@@ -387,6 +392,10 @@ try {
                 modalIcon.innerText = "📩";
                 modalTitle.innerText = "Lolos Berkas!";
                 modalMsg.innerText = "Selamat! Kamu diundang untuk tahap wawancara Mahardhika. Mohon tunggu informasi jadwal selanjutnya.";
+            } else if (status === 'bookmark') {
+                modalIcon.innerText = "🔖";
+                modalTitle.innerText = "Masuk Bookmark";
+                modalMsg.innerText = "Lamaran kamu saat ini masuk dalam kandidat potensial (bookmark) PIH UIN Jakarta.";
             } else if (status === 'accepted') {
                 modalIcon.innerText = "🎉";
                 modalTitle.innerText = "Diterima Magang!";
@@ -413,7 +422,7 @@ try {
             if (badgeStatus) badgeStatus.innerText = status;
             const steps = document.querySelectorAll('.step-item');
             let p = 0;
-            if (status === 'interview') p = 50;
+            if (status === 'interview' || status === 'bookmark') p = 50;
             if (status === 'accepted' || status === 'rejected') p = 100;
             if (progressBar) progressBar.style.width = `${p}%`;
 
@@ -422,12 +431,15 @@ try {
                 const circle = item.querySelector('.circle') as HTMLElement;
                 if (!circle) return;
 
-                circle.classList.remove('border-[#1b509b]', 'bg-[#1b509b]', 'text-white', 'border-emerald-500', 'bg-emerald-500', 'border-rose-500', 'text-rose-500');
+                circle.classList.remove('border-[#1b509b]', 'bg-[#1b509b]', 'text-white', 'border-emerald-500', 'bg-emerald-500', 'border-rose-500', 'text-rose-500', 'border-amber-500', 'bg-amber-500');
 
                 if (status === 'administrasi' && s === 'administrasi') {
                     circle.classList.add('border-[#1b509b]', 'bg-[#1b509b]', 'text-white');
                 } else if (status === 'interview' && (s === 'administrasi' || s === 'interview')) {
                     circle.classList.add('border-[#1b509b]', 'bg-[#1b509b]', 'text-white');
+                } else if (status === 'bookmark' && (s === 'administrasi' || s === 'interview')) {
+                    circle.classList.add('border-amber-500', 'bg-amber-500', 'text-white');
+                    if (badgeStatus) badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-amber-50 text-amber-600 border border-amber-100 font-black uppercase tracking-widest";
                 } else if (status === 'accepted') {
                     circle.classList.add('border-emerald-500', 'bg-emerald-500', 'text-white');
                     if (badgeStatus) badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-emerald-50 text-emerald-600 border border-emerald-100 font-black uppercase tracking-widest";
