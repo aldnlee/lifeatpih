@@ -18,18 +18,18 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard Pelamar | Life at PIH</title>
+    <title>Dashboard Admin Rekrutmen | Life at PIH</title>
     <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
-        background-color: #f8fafc !important; /* Warna bg-slate-50 */
-        color: #0f172a !important; 
-        font-family: 'Funnel Display', sans-serif; 
-    }
+            background-color: #f8fafc !important; 
+            color: #0f172a !important; 
+            font-family: 'Funnel Display', sans-serif; 
+        }
         .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
         
-        #celebration-modal {
+        #celebration-modal, #applicants-detail-modal {
             display: none;
             position: fixed;
             inset: 0;
@@ -40,15 +40,15 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
             background: rgba(15, 40, 84, 0.6);
             backdrop-filter: blur(10px);
         }
-        #celebration-modal.active { display: flex; animation: fadeIn 0.5s ease forwards; }
+        #celebration-modal.active, #applicants-detail-modal.active { display: flex; animation: fadeIn 0.3s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
         .modal-box {
             transform: translateY(20px);
             opacity: 0;
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        #celebration-modal.active .modal-box { transform: translateY(0); opacity: 1; }
+        #celebration-modal.active .modal-box, #applicants-detail-modal.active .modal-box { transform: translateY(0); opacity: 1; }
         .progress-dot { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
@@ -67,6 +67,24 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
             <button id="close-modal-btn" class="w-full bg-[#1b509b] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-900/30 hover:scale-[1.03] active:scale-95 transition-all">
                 Lanjutkan ke Dashboard
             </button>
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL DAFTAR PELAMAR PER POSISI & STATUS -->
+    <div id="applicants-detail-modal">
+        <div class="modal-box bg-white max-w-2xl w-full p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden border border-slate-100 max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+                <div>
+                    <span id="detail-modal-status-badge" class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 border border-blue-100">Status</span>
+                    <h2 id="detail-modal-title" class="text-xl font-black text-slate-900 uppercase italic mt-1 leading-tight tracking-tighter">Detail Pelamar</h2>
+                </div>
+                <button id="close-detail-modal-btn" class="w-10 h-10 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full font-black flex items-center justify-center transition-all">✕</button>
+            </div>
+
+            <!-- List Pelamar Container -->
+            <div id="detail-applicants-list" class="overflow-y-auto space-y-3 pr-2 flex-1">
+                <!-- Data pelamar disuntik via Javascript -->
+            </div>
         </div>
     </div>
 
@@ -100,7 +118,7 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
             <!-- PROGRESS CARD -->
             <div class="glass-card p-10 rounded-[3rem] shadow-2xl shadow-blue-900/5 mb-10 overflow-hidden relative border-t-8 border-t-[#1b509b]">
                 <div class="flex justify-between items-center mb-12 font-bold">
-                    <span class="text-slate-500 uppercase text-[10px] tracking-[0.2em]">Tahapan Rekrutmen</span>
+                    <span class="text-slate-500 uppercase text-[10px] tracking-[0.2em]">Tahapan Rekrutmen Saya</span>
                     <span id="badge-status" class="px-4 py-1.5 rounded-full text-[9px] bg-slate-100 uppercase border border-slate-200 font-black tracking-widest">-</span>
                 </div>
                 
@@ -121,12 +139,27 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
                 </div>
             </div>
 
+            <!-- SECTION BARU: BREAKDOWN DETAIL PELAMAR PER POSISI -->
+            <div class="mb-10">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-900 uppercase italic tracking-tighter">Ringkasan Pelamar Per Posisi</h2>
+                        <p class="text-xs text-slate-500 font-medium">Klik pada indikator status untuk melihat daftar pelamar yang terpilih.</p>
+                    </div>
+                    <span class="bg-blue-100 text-[#1b509b] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">Live Stat</span>
+                </div>
+
+                <div id="position-stats-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Cards statistik per posisi dirender secara dinamis oleh JavaScript -->
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- DATA DETAIL LAMARAN -->
                 <div class="lg:col-span-2 space-y-6">
                     <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
                         <h3 class="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-2">
-                            <span class="w-8 h-px bg-slate-200"></span> Detail Aplikasi
+                            <span class="w-8 h-px bg-slate-200"></span> Detail Aplikasi Saya
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div>
@@ -205,36 +238,36 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
     </main>
 
     <nav class="dock-wrapper">
-            <ul class="toolbar">
-                <li class="toolbarItem">
-                    <a class="toolbarLink" href="/">
-                        <span class="tooltip">Home</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    </a>
-                </li>
+        <ul class="toolbar">
+            <li class="toolbarItem">
+                <a class="toolbarLink" href="/">
+                    <span class="tooltip">Home</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </a>
+            </li>
 
-                <li class="toolbarItem">
-                    <a class="toolbarLink" href="/#teams">
-                        <span class="tooltip">Detail Roles</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                    </a>
-                </li>
+            <li class="toolbarItem">
+                <a class="toolbarLink" href="/#teams">
+                    <span class="tooltip">Detail Roles</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </a>
+            </li>
 
-                <li class="toolbarItem">
-                    <a class="toolbarLink protected-link" href="/dashboard">
-                        <span class="tooltip">Application Status</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                    </a>
-                </li>
+            <li class="toolbarItem">
+                <a class="toolbarLink protected-link" href="/dashboard">
+                    <span class="tooltip">Application Status</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </a>
+            </li>
 
-                <li class="toolbarItem">
-                    <a class="toolbarLink protected-link" href="/">
-                        <span class="tooltip">Hall of Fame</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+            <li class="toolbarItem">
+                <a class="toolbarLink protected-link" href="/">
+                    <span class="tooltip">Hall of Fame</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                </a>
+            </li>
+        </ul>
+    </nav>
 
     <script>
         import { supabase } from '../lib/supabase';
@@ -257,7 +290,7 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
         const noApp = document.getElementById('no-application') as HTMLElement;
         const appliedBanner = document.getElementById('active-banner') as HTMLElement;
 
-        // Modal
+        // Modal Notifikasi Status
         const modal = document.getElementById('celebration-modal');
         const modalTitle = document.getElementById('modal-title');
         const modalMsg = document.getElementById('modal-message');
@@ -265,8 +298,16 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
         const modalClose = document.getElementById('close-modal-btn');
         const modalDeco = document.getElementById('modal-bg-deco');
 
+        // Modal Detail Pelamar Per Status & Posisi
+        const applicantsModal = document.getElementById('applicants-detail-modal');
+        const detailModalTitle = document.getElementById('detail-modal-title');
+        const detailModalBadge = document.getElementById('detail-modal-status-badge');
+        const detailApplicantsList = document.getElementById('detail-applicants-list');
+        const closeDetailModalBtn = document.getElementById('close-detail-modal-btn');
+
         let currentAppId = "";
         let lastStatus = "";
+        let allApplicationsData: any[] = [];
 
         async function init() {
             const { data: { user } } = await supabase.auth.getUser();
@@ -274,12 +315,18 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
 
             userName.innerText = user.user_metadata.full_name || "User";
 
-            const { data: application, error } = await supabase
+            // Ambil semua data lamaran untuk ringkasan posisi & per-user
+            const { data: allApps, error: allAppsErr } = await supabase
                 .from('applications')
                 .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false })
-                .maybeSingle();
+                .order('created_at', { ascending: false });
+
+            if (!allAppsErr && allApps) {
+                allApplicationsData = allApps;
+                renderPositionStats(allApps);
+            }
+
+            const application = allApps?.find((a: any) => a.user_id === user.id);
 
             loadingState.classList.add('hidden');
             dashboardContent.classList.remove('hidden');
@@ -291,7 +338,7 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
                 return;
             }
 
-            // Fill Data
+            // Fill Data Pelamar Utama
             currentAppId = application.id;
             lastStatus = application.status;
             
@@ -310,20 +357,135 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
                 showNotification(application.status);
             }
 
-            // Realtime Update
+            // Realtime Update Seluruh Aplikasi
             supabase
-                .channel('applicant-status')
-                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'applications', filter: `id=eq.${application.id}` },
-                    async (payload) => {
-                        const newStatus = payload.new.status;
-                        if (newStatus !== lastStatus) {
-                            await supabase.from('applications').update({ acknowledged: false }).eq('id', application.id);
-                            showNotification(newStatus);
-                            lastStatus = newStatus;
-                            updateUI(newStatus);
+                .channel('all-applicants-realtime')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'applications' },
+                    async () => {
+                        const { data: refreshedData } = await supabase.from('applications').select('*');
+                        if (refreshedData) {
+                            allApplicationsData = refreshedData;
+                            renderPositionStats(refreshedData);
+                            
+                            const myCurrentApp = refreshedData.find((a: any) => a.id === currentAppId);
+                            if (myCurrentApp && myCurrentApp.status !== lastStatus) {
+                                await supabase.from('applications').update({ acknowledged: false }).eq('id', myCurrentApp.id);
+                                showNotification(myCurrentApp.status);
+                                lastStatus = myCurrentApp.status;
+                                updateUI(myCurrentApp.status);
+                            }
                         }
                     }
                 ).subscribe();
+        }
+
+        // Render Kartu Detail Per Posisi
+        function renderPositionStats(applications: any[]) {
+            const container = document.getElementById('position-stats-container');
+            if (!container) return;
+
+            // Grouping data per Posisi
+            const positionGroup: Record<string, any[]> = {};
+            applications.forEach(app => {
+                const role = app.role_applied || 'Unassigned';
+                if (!positionGroup[role]) positionGroup[role] = [];
+                positionGroup[role].push(app);
+            });
+
+            container.innerHTML = '';
+
+            Object.keys(positionGroup).forEach(role => {
+                const appsInRole = positionGroup[role];
+                const total = appsInRole.length;
+                const interview = appsInRole.filter(a => a.status === 'interview').length;
+                const accepted = appsInRole.filter(a => a.status === 'accepted').length;
+                const rejected = appsInRole.filter(a => a.status === 'rejected').length;
+                const bookmark = appsInRole.filter(a => a.status === 'bookmark').length;
+
+                const cardHtml = `
+                    <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-black text-slate-800 uppercase italic text-base tracking-tight truncate">${role}</h3>
+                                <span class="bg-slate-100 text-slate-600 font-black text-[10px] px-2.5 py-1 rounded-full uppercase">${total} Total</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 text-[10px] font-bold">
+                                <button data-role="${role}" data-status="interview" class="btn-open-detail bg-blue-50 hover:bg-blue-100 text-blue-700 p-2.5 rounded-2xl flex flex-col items-center transition-colors">
+                                    <span class="text-xs font-black">${interview}</span>
+                                    <span class="uppercase tracking-wider text-[8px] opacity-80">Wawancara</span>
+                                </button>
+                                
+                                <button data-role="${role}" data-status="accepted" class="btn-open-detail bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-2.5 rounded-2xl flex flex-col items-center transition-colors">
+                                    <span class="text-xs font-black">${accepted}</span>
+                                    <span class="uppercase tracking-wider text-[8px] opacity-80">Diterima</span>
+                                </button>
+
+                                <button data-role="${role}" data-status="bookmark" class="btn-open-detail bg-amber-50 hover:bg-amber-100 text-amber-700 p-2.5 rounded-2xl flex flex-col items-center transition-colors">
+                                    <span class="text-xs font-black">🔖 ${bookmark}</span>
+                                    <span class="uppercase tracking-wider text-[8px] opacity-80">Bookmark</span>
+                                </button>
+
+                                <button data-role="${role}" data-status="rejected" class="btn-open-detail bg-rose-50 hover:bg-rose-100 text-rose-700 p-2.5 rounded-2xl flex flex-col items-center transition-colors">
+                                    <span class="text-xs font-black">${rejected}</span>
+                                    <span class="uppercase tracking-wider text-[8px] opacity-80">Ditolak</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+
+            // Bind Event Handler Klik Button Detail
+            document.querySelectorAll('.btn-open-detail').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const target = e.currentTarget as HTMLElement;
+                    const role = target.getAttribute('data-role') || '';
+                    const status = target.getAttribute('data-status') || '';
+                    openDetailModal(role, status);
+                });
+            });
+        }
+
+        // Buka Pop Up Modal Pelamar Terpilih
+        function openDetailModal(role: string, status: string) {
+            if (!applicantsModal || !detailModalTitle || !detailModalBadge || !detailApplicantsList) return;
+
+            const filteredApplicants = allApplicationsData.filter(a => a.role_applied === role && a.status === status);
+
+            detailModalTitle.innerText = role;
+            detailModalBadge.innerText = `Status: ${status}`;
+
+            // Style Badge berdasarkan status
+            if (status === 'accepted') detailModalBadge.className = "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700 border border-emerald-200";
+            else if (status === 'interview') detailModalBadge.className = "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-blue-100 text-blue-700 border border-blue-200";
+            else if (status === 'bookmark') detailModalBadge.className = "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 border border-amber-200";
+            else if (status === 'rejected') detailModalBadge.className = "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-rose-100 text-rose-700 border border-rose-200";
+
+            if (filteredApplicants.length === 0) {
+                detailApplicantsList.innerHTML = `
+                    <div class="text-center py-12 border-2 border-dashed border-slate-100 rounded-3xl">
+                        <p class="text-3xl mb-2">📂</p>
+                        <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Belum ada pelamar dengan status ini.</p>
+                    </div>
+                `;
+            } else {
+                detailApplicantsList.innerHTML = filteredApplicants.map(app => `
+                    <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between hover:bg-white hover:border-slate-200 transition-all">
+                        <div class="space-y-1">
+                            <p class="text-sm font-black text-slate-800 uppercase italic leading-none">${app.full_name || app.user_id}</p>
+                            <p class="text-[10px] font-bold text-slate-400 leading-tight">${app.faculty || '-'} • ${app.study_program || '-'} (Sem ${app.semester || '-'})</p>
+                            <p class="text-[9px] text-slate-400 font-medium">NIM: ${app.nim || '-'}</p>
+                        </div>
+                        <div>
+                            ${app.portfolio_url ? `<a href="${app.portfolio_url}" target="_blank" class="bg-[#1b509b] text-white text-[9px] font-black uppercase tracking-wider px-3 py-2 rounded-xl hover:opacity-90 transition-opacity inline-block">Portofolio</a>` : '<span class="text-[9px] text-slate-400 italic">No Link</span>'}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            applicantsModal.classList.add('active');
         }
 
         function showNotification(status: string) {
@@ -343,6 +505,10 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
                 modalIcon.innerText = "🎉";
                 modalTitle.innerText = "Diterima Magang!";
                 modalMsg.innerText = "Selamat bergabung dengan Squad PIH UIN Jakarta! Cek email kamu untuk surat pengantar dan jadwal Onboarding.";
+            } else if (status === 'bookmark') {
+                modalIcon.innerText = "🔖";
+                modalTitle.innerText = "Masuk Bookmark";
+                modalMsg.innerText = "Lamaran kamu saat ini masuk dalam kandidat potensial (bookmark) PIH UIN Jakarta.";
             } else if (status === 'rejected') {
                 modalIcon.innerText = "🤝"; 
                 modalTitle.innerText = "Belum Berhasil";
@@ -365,19 +531,22 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
             badgeStatus.innerText = status;
             const steps = document.querySelectorAll('.step-item');
             let p = 0;
-            if (status === 'interview') p = 50;
+            if (status === 'interview' || status === 'bookmark') p = 50;
             if (status === 'accepted' || status === 'rejected') p = 100;
             progressBar.style.width = `${p}%`;
 
             steps.forEach((item) => {
                 const s = (item as HTMLElement).dataset.step;
                 const circle = item.querySelector('.circle') as HTMLElement;
-                circle.classList.remove('border-[#1b509b]', 'bg-[#1b509b]', 'text-white', 'border-emerald-500', 'bg-emerald-500', 'border-rose-500', 'text-rose-500');
+                circle.classList.remove('border-[#1b509b]', 'bg-[#1b509b]', 'text-white', 'border-emerald-500', 'bg-emerald-500', 'border-rose-500', 'text-rose-500', 'border-amber-500', 'bg-amber-500');
 
                 if (status === 'administrasi' && s === 'administrasi') {
                     circle.classList.add('border-[#1b509b]', 'bg-[#1b509b]', 'text-white');
                 } else if (status === 'interview' && (s === 'administrasi' || s === 'interview')) {
                     circle.classList.add('border-[#1b509b]', 'bg-[#1b509b]', 'text-white');
+                } else if (status === 'bookmark' && (s === 'administrasi' || s === 'interview')) {
+                    circle.classList.add('border-amber-500', 'bg-amber-500', 'text-white');
+                    badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-amber-50 text-amber-600 border border-amber-100 font-black uppercase tracking-widest";
                 } else if (status === 'accepted') {
                     circle.classList.add('border-emerald-500', 'bg-emerald-500', 'text-white');
                     badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-emerald-50 text-emerald-600 border border-emerald-100 font-black uppercase tracking-widest";
@@ -389,36 +558,39 @@ const cmsBatchName = cmsData?.batch_name || "Mahardhika Internship";
         }
 
         modalClose?.addEventListener('click', handleCloseModal);
-        document.getElementById('logout-btn')?.addEventListener('click', async () => { await supabase.auth.signOut(); window.location.href = '/'; });
+        closeDetailModalBtn?.addEventListener('click', () => applicantsModal?.classList.remove('active'));
+        
+        document.getElementById('logout-btn')?.addEventListener('click', async () => { 
+            await supabase.auth.signOut(); 
+            window.location.href = '/'; 
+        });
 
         init();
 
-
-
-
-          const dock = document.querySelector(".toolbar") as HTMLElement;
-                const icons = document.querySelectorAll(".toolbarItem");
-                if (dock && icons.length > 0) {
-                    const min = 48; const max = 100; const bound = min * Math.PI;
-                    gsap.set(icons, { transformOrigin: "50% 120%", height: 40 });
-                    dock.addEventListener("mousemove", (event: MouseEvent) => {
-                        const rect = dock.getBoundingClientRect();
-                        const firstIcon = icons[0] as HTMLElement;
-                        const offset = rect.left + firstIcon.offsetLeft;
-                        const pointer = event.clientX - offset;
-                        icons.forEach((icon, i) => {
-                            const distance = (i * min + min / 2) - pointer;
-                            let x = 0, scale = 1;
-                            if (Math.abs(distance) < bound) {
-                                const rad = distance / min * 0.5;
-                                scale = 1 + (max / min - 1) * Math.cos(rad);
-                                x = 2 * (max - min) * Math.sin(rad);
-                            } else { x = (distance < 0 ? 2 : -2) * (max - min); }
-                            gsap.to(icon, { duration: 0.3, x: x, scale: scale, ease: "power3.out" });
-                        });
-                    });
-                    dock.addEventListener("mouseleave", () => gsap.to(icons, { duration: 0.3, scale: 1, x: 0 }));
-                }
+        // Animation Dock
+        const dock = document.querySelector(".toolbar") as HTMLElement;
+        const icons = document.querySelectorAll(".toolbarItem");
+        if (dock && icons.length > 0) {
+            const min = 48; const max = 100; const bound = min * Math.PI;
+            gsap.set(icons, { transformOrigin: "50% 120%", height: 40 });
+            dock.addEventListener("mousemove", (event: MouseEvent) => {
+                const rect = dock.getBoundingClientRect();
+                const firstIcon = icons[0] as HTMLElement;
+                const offset = rect.left + firstIcon.offsetLeft;
+                const pointer = event.clientX - offset;
+                icons.forEach((icon, i) => {
+                    const distance = (i * min + min / 2) - pointer;
+                    let x = 0, scale = 1;
+                    if (Math.abs(distance) < bound) {
+                        const rad = distance / min * 0.5;
+                        scale = 1 + (max / min - 1) * Math.cos(rad);
+                        x = 2 * (max - min) * Math.sin(rad);
+                    } else { x = (distance < 0 ? 2 : -2) * (max - min); }
+                    gsap.to(icon, { duration: 0.3, x: x, scale: scale, ease: "power3.out" });
+                });
+            });
+            dock.addEventListener("mouseleave", () => gsap.to(icons, { duration: 0.3, scale: 1, x: 0 }));
+        }
     </script>
 </body>
 </html>
