@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v3.7 (Multi-Master Admin Support & Bug Fixes)
+// Admin Portal v4.0 (Fully Dynamic Roles - No Hardcoded Emails)
 ---
 
 <html lang="id">
@@ -156,7 +156,7 @@ import '../styles/global.css';
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">Mahardika Intership PIH UIN Jakarta</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v4.0</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
@@ -280,14 +280,9 @@ import '../styles/global.css';
         let allApplicants: any[] = [];
         let selectedIds: string[] = [];
         let activeApplicantId: string | null = null;
-        
-        // ARRAY DUA MASTER ADMIN
-        const MASTER_ADMIN_EMAILS = [
-            "aldnlee.ale@gmail.com",
-            "asr070902@gmail.com"
-        ];
+        let currentAdminRole: string = "Reviewer"; // Role pengguna yang sedang login
 
-        // OTENTIKASI
+        // OTENTIKASI DINAMIS DARI DATABASE SUPABASE
         async function checkAdminAccess() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) { 
@@ -297,24 +292,25 @@ import '../styles/global.css';
             }
 
             const currentUserEmail = (user.email || '').toLowerCase().trim();
-            const normalizedMasterEmails = MASTER_ADMIN_EMAILS.map(e => e.toLowerCase().trim());
 
+            // Ambil data admin dari tabel admin_members
             const { data: member } = await supabase
                 .from('admin_members')
                 .select('*')
                 .eq('email', currentUserEmail)
                 .maybeSingle();
 
-            const isMasterAdmin = normalizedMasterEmails.includes(currentUserEmail);
-
-            if (!member && !isMasterAdmin) {
+            // Jika email tidak terdaftar di database admin_members
+            if (!member) {
                 alert("Akses Ditolak: Email " + currentUserEmail + " tidak terdaftar di whitelist Admin.");
                 await supabase.auth.signOut();
                 window.location.href = "/";
                 return;
             }
 
-            document.getElementById('admin-email-tag')!.innerText = user.email!;
+            currentAdminRole = member.role || 'Reviewer';
+
+            document.getElementById('admin-email-tag')!.innerText = `${user.email} (${currentAdminRole})`;
             document.getElementById('admin-loader')?.classList.add('hidden');
             document.getElementById('admin-content')?.classList.remove('hidden');
             
@@ -628,17 +624,15 @@ import '../styles/global.css';
             const container = document.getElementById('team-list');
             if (!container) return;
 
-            const normalizedMasterEmails = MASTER_ADMIN_EMAILS.map(e => e.toLowerCase().trim());
-
             container.innerHTML = members.map(m => {
-                const memberEmail = (m.email || '').toLowerCase().trim();
-                const isMaster = normalizedMasterEmails.includes(memberEmail);
+                const roleLower = (m.role || '').toLowerCase().trim();
+                const isMaster = roleLower === 'master admin';
 
                 return `
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="px-8 py-4">
                             <div class="font-bold text-slate-800 text-sm">${m.email}</div>
-                            <div class="text-[9px] text-slate-400 uppercase tracking-widest font-black">${isMaster ? 'Master Admin' : (m.role || 'Reviewer')}</div>
+                            <div class="text-[9px] text-slate-400 uppercase tracking-widest font-black">${m.role || 'Reviewer'}</div>
                         </td>
                         <td class="px-8 py-4 text-right">
                             ${!isMaster ? `
