@@ -1,8 +1,32 @@
-batch_id: "Batch 10 "
-batch_name: Mahardika Batch 10
+batch_id: "Batch-10 "
+batch_name: Mahardika Intership Batch 10
 status: Open
-timeline: []
+timeline:
+  - is_active: true
+    start_date: 22 Jul 2026
+    end_date: 28 Jul 2026
+    label: Mahardika Intership Batch 10
 roles:
   - role_title: Project Manager
     description: PM
-body: a
+  - role_title: Graphic Designer
+    description: GD
+  - role_title: Social Media Officer
+    description: SMO
+  - role_title: Journalist
+    description: JO
+  - role_title: Content Creator
+    description: CC
+  - role_title: Editorial and Publish Management
+    description: EPM
+  - role_title: Media Analyst
+    description: MA
+  - role_title: Public Relation
+    description: PR
+  - role_title: Video Operation
+    description: VO
+  - role_title: Photografer
+    description: PH
+  - role_title: Finance and Administration
+    description: FA
+body: Silakan Pilih Role yang sesuai
