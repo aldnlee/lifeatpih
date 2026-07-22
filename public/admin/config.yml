@@ -52,7 +52,7 @@ collections:
     - { label: "Status Pendaftaran", name: "status", widget: "select", options: ["Open", "Closed"], default: "Open" }
     - label: "Timeline Seleksi"
       name: "timeline"
-      widget: "list"da
+      widget: "list"
       fields:
         - { label: "Kegiatan", name: "label", widget: "string" }
         # --- DIPERBARUI: DUA FIELD TANGGAL DENGAN KALENDER ---
