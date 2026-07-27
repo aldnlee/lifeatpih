@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v5.0 (Master Admin Decision Locks, Fixed Bookmarks & Full Team Audit Trail)
+// Admin Portal v5.1 (Master Admin Locks, Toggle Unbookmark, & Audit Trail)
 ---
 
 <html lang="id">
@@ -156,7 +156,7 @@ import '../styles/global.css';
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v5.0</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v5.1</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
@@ -326,7 +326,7 @@ import '../styles/global.css';
             document.getElementById('admin-loader')?.classList.add('hidden');
             document.getElementById('admin-content')?.classList.remove('hidden');
             
-            // Sembunyikan bulk master jika Reviewer
+            // Sembunyikan bulk action khusus jika bukan Master Admin
             if (currentAdminRole.toLowerCase() !== 'master admin') {
                 document.querySelectorAll('.master-only-btn').forEach(btn => btn.classList.add('hidden'));
             }
@@ -438,7 +438,9 @@ import '../styles/global.css';
             const previewArea = document.getElementById('detail-preview-area');
             previewArea?.classList.remove('opacity-0', 'pointer-events-none');
 
-            const currentStatus = (app.status || 'Pending').trim();
+            const currentStatus = (app.status || 'administrasi').trim();
+            const isBookmarked = currentStatus === 'bookmark';
+            const isMaster = currentAdminRole.toLowerCase() === 'master admin';
 
             document.getElementById('preview-name')!.innerText = app.full_name || "Tanpa Nama";
             document.getElementById('preview-meta')!.innerText = `${app.faculty || app.major || '-'} • Semester ${app.semester || '-'}`;
@@ -488,25 +490,38 @@ import '../styles/global.css';
                 portfolioBtn.onclick = () => (window as any).openPortfolioModal(app.full_name, portoList);
             }
 
-            // AKSI DISESUAIKAN BERDASARKAN OTORITAS (MASTER ADMIN VS REVIEWER)
-            const isMaster = currentAdminRole.toLowerCase() === 'master admin';
+            // LOGIKA DYNAMIC BUTTONS (BOOKMARK & UNBOOKMARK BISA DILAKUKAN SELURUH TIM)
+            let buttonsHTML = ``;
 
-            let buttonsHTML = `
-                <!-- Bookmark Bisa Dilihat & Klik oleh SELURUH TIM -->
-                <button onclick="updateStatus('${app.id}', 'bookmark')" class="px-2.5 py-1.5 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-xl hover:bg-yellow-400 font-bold text-[9px] uppercase transition-all">🔖 Bookmark</button>
-            `;
-
-            if (isMaster) {
-                // Master Admin Memiliki Kontrol Penuh Termasuk Reset, Wawancara, Terima, Tolak
+            if (isBookmarked) {
                 buttonsHTML += `
-                    <button onclick="updateStatus('${app.id}', 'administrasi')" class="px-2.5 py-1.5 bg-slate-100 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-200 font-bold text-[9px] uppercase transition-all" title="Kembalikan ke tahap Administrasi">🔄 Reset Status</button>
+                    <button onclick="updateStatus('${app.id}', 'administrasi')" class="px-2.5 py-1.5 bg-yellow-100 border border-yellow-400 text-yellow-900 rounded-xl hover:bg-yellow-200 font-bold text-[9px] uppercase transition-all" title="Klik untuk membatalkan bookmark">
+                        ❌ Hapus Bookmark
+                    </button>
+                `;
+            } else {
+                buttonsHTML += `
+                    <button onclick="updateStatus('${app.id}', 'bookmark')" class="px-2.5 py-1.5 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-xl hover:bg-yellow-400 font-bold text-[9px] uppercase transition-all">
+                        🔖 Bookmark
+                    </button>
+                `;
+            }
+
+            // HAK KEPUTUSAN EKSKLUSIF MASTER ADMIN
+            if (isMaster) {
+                if (!isBookmarked) {
+                    buttonsHTML += `
+                        <button onclick="updateStatus('${app.id}', 'administrasi')" class="px-2.5 py-1.5 bg-slate-100 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-200 font-bold text-[9px] uppercase transition-all" title="Kembalikan ke tahap Administrasi">🔄 Reset Status</button>
+                    `;
+                }
+                buttonsHTML += `
                     <button onclick="updateStatus('${app.id}', 'interview')" class="px-2.5 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl hover:bg-amber-500 hover:text-white font-bold text-[9px] uppercase transition-all">💬 Wawancara</button>
                     <button onclick="updateStatus('${app.id}', 'accepted')" class="px-2.5 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl hover:bg-emerald-500 hover:text-white font-bold text-[9px] uppercase transition-all">✅ Lolos</button>
                     <button onclick="updateStatus('${app.id}', 'rejected')" class="px-2.5 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl hover:bg-rose-500 hover:text-white font-bold text-[9px] uppercase transition-all">❌ Tolak</button>
                 `;
             } else {
                 buttonsHTML += `
-                    <span class="text-[8px] font-bold text-slate-400 uppercase italic self-center ml-1">(Status Wawancara/Lolos/Tolak dikunci khusus Master Admin)</span>
+                    <span class="text-[8px] font-bold text-slate-400 uppercase italic self-center ml-1">(Status Keputusan dikunci khusus Master Admin)</span>
                 `;
             }
 
@@ -561,21 +576,27 @@ import '../styles/global.css';
             const cleanStatus = newStatus.trim();
             const isMaster = currentAdminRole.toLowerCase() === 'master admin';
 
-            // Pengecekan Batasan Otoritas
-            if (!isMaster && cleanStatus !== 'bookmark') {
+            const app = allApplicants.find(a => a.id === id);
+            const oldStatus = app ? (app.status || 'administrasi').trim() : 'administrasi';
+
+            // Pengecekan Otoritas Unbookmark / Bookmark
+            const isSettingBookmark = (cleanStatus === 'bookmark');
+            const isUnbookmarking = (oldStatus === 'bookmark' && cleanStatus === 'administrasi');
+
+            // Jika bukan Master Admin, HANYA diizinkan Bookmark atau Unbookmark
+            if (!isMaster && !isSettingBookmark && !isUnbookmarking) {
                 alert("Akses Ditolak: Hanya Master Admin yang berhak menentukan keputusan Wawancara, Lolos, Tolak, atau Reset.");
                 return;
             }
-
-            const app = allApplicants.find(a => a.id === id);
-            const oldStatus = app ? (app.status || 'administrasi').trim() : 'administrasi';
 
             if (oldStatus === cleanStatus) {
                 alert(`Pelamar ini sudah berada pada status: ${cleanStatus.toUpperCase()}`);
                 return;
             }
 
-            if (!confirm(`Ubah status ${app?.full_name || 'pelamar'} dari [${oldStatus.toUpperCase()}] menjadi [${cleanStatus.toUpperCase()}]?`)) {
+            const actionText = isUnbookmarking ? "MENGHAPUS BOOKMARK (Kembali ke Administrasi)" : cleanStatus.toUpperCase();
+
+            if (!confirm(`Ubah status ${app?.full_name || 'pelamar'} dari [${oldStatus.toUpperCase()}] menjadi [${actionText}]?`)) {
                 return;
             }
 
