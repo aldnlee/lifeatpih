@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v4.0 (Fully Dynamic Roles - No Hardcoded Emails)
+// Admin Portal v5.0 (Master Admin Decision Locks, Fixed Bookmarks & Full Team Audit Trail)
 ---
 
 <html lang="id">
@@ -126,9 +126,9 @@ import '../styles/global.css';
                     <div id="bulk-action-panel" class="hidden mt-3 bg-[#1b509b] p-3 rounded-xl items-center justify-between shadow-lg gap-4">
                         <div class="flex items-center gap-2 ml-2"><span class="text-white font-black text-xs uppercase"><span id="selected-count" class="text-xl text-yellow-300">0</span> Terpilih</span></div>
                         <div class="flex gap-2">
-                            <button id="bulk-interview-btn" class="bg-amber-400 text-slate-900 px-3 py-2 rounded-lg text-[9px] font-black uppercase">Wawancara</button>
-                            <button id="bulk-accept-btn" class="bg-emerald-500 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase">Terima</button>
                             <button id="bulk-bookmark-btn" class="bg-yellow-400 text-slate-900 px-3 py-2 rounded-lg text-[9px] font-black uppercase">🔖 Bookmark</button>
+                            <button id="bulk-interview-btn" class="master-only-btn bg-amber-400 text-slate-900 px-3 py-2 rounded-lg text-[9px] font-black uppercase">Wawancara</button>
+                            <button id="bulk-accept-btn" class="master-only-btn bg-emerald-500 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase">Terima</button>
                             <button id="clear-selection-btn" class="bg-white/10 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase">Batal</button>
                         </div>
                     </div>
@@ -156,7 +156,7 @@ import '../styles/global.css';
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v4.0</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v5.0</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
@@ -170,8 +170,8 @@ import '../styles/global.css';
                                         <span id="preview-email-status" class="text-xs" title="Status Notifikasi Email">⚪</span>
                                     </div>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5" id="preview-action-buttons">
-                                    <!-- Diisi Dinamis -->
+                                <div class="flex flex-wrap gap-1.5 justify-end" id="preview-action-buttons">
+                                    <!-- Diisi Dinamis Berdasarkan Role -->
                                 </div>
                             </div>
                             
@@ -188,6 +188,19 @@ import '../styles/global.css';
                                 <div>
                                     <label class="text-[10px] font-black uppercase tracking-widest text-[#1b509b] mb-2 block">Alasan Memilih Posisi</label>
                                     <p id="preview-reason" class="text-sm text-slate-600 bg-slate-50/50 p-4 rounded-xl border border-slate-100 italic">-</p>
+                                </div>
+
+                                <!-- TIMELINE AUDIT LOG / HISTORY UNTUK SELURUH TIM -->
+                                <div class="mt-6 pt-6 border-t border-slate-100">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <label class="text-[10px] font-black uppercase tracking-widest text-[#1b509b] flex items-center gap-1.5">
+                                            <span>📜</span> <span>Riwayat Keputusan Tim</span>
+                                        </label>
+                                        <span class="text-[8px] font-bold text-slate-400 uppercase bg-slate-100 px-2 py-0.5 rounded-full">Transparan Seluruh Admin</span>
+                                    </div>
+                                    <div id="preview-history-list" class="space-y-2 max-h-48 overflow-y-auto custom-scroll pr-1">
+                                        <!-- Data History Disuntikkan Via JS -->
+                                    </div>
                                 </div>
                             </div>
 
@@ -216,6 +229,10 @@ import '../styles/global.css';
                         <h2 class="text-xl font-black text-slate-900 uppercase italic mb-4">Whitelist Tim Penyeleksi</h2>
                         <div class="flex flex-col md:flex-row gap-4">
                             <input type="email" id="invite-email" placeholder="Email Google Anggota Tim" class="flex-1 bg-slate-50 border border-slate-200 px-5 py-3 rounded-xl text-sm outline-none focus:ring-1 focus:ring-blue-500">
+                            <select id="invite-role" class="bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl text-xs font-bold">
+                                <option value="Reviewer">Reviewer</option>
+                                <option value="Master Admin">Master Admin</option>
+                            </select>
                             <button id="invite-member-btn" class="bg-[#1b509b] text-white px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest">Tambah Admin</button>
                         </div>
                     </div>
@@ -246,9 +263,7 @@ import '../styles/global.css';
                 <button onclick="closePortfolioModal()" class="w-9 h-9 bg-slate-200/60 hover:bg-slate-200 text-slate-600 rounded-full font-bold flex items-center justify-center transition-all">✕</button>
             </div>
             
-            <div id="modal-portfolio-list" class="p-6 overflow-y-auto space-y-3 custom-scroll flex-1">
-                <!-- List link disuntikkan dinamis -->
-            </div>
+            <div id="modal-portfolio-list" class="p-6 overflow-y-auto space-y-3 custom-scroll flex-1"></div>
 
             <div class="p-4 bg-slate-50 border-t border-slate-100 text-center">
                 <button onclick="closePortfolioModal()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-black py-3 rounded-xl uppercase text-xs tracking-widest transition-colors">Tutup</button>
@@ -267,9 +282,7 @@ import '../styles/global.css';
                 <button onclick="closePositionModal()" class="w-9 h-9 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full font-bold flex items-center justify-center transition-all">✕</button>
             </div>
 
-            <div id="pos-modal-applicants-list" class="overflow-y-auto space-y-2.5 pr-2 flex-1 custom-scroll">
-                <!-- Data pelamar disuntik via Javascript -->
-            </div>
+            <div id="pos-modal-applicants-list" class="overflow-y-auto space-y-2.5 pr-2 flex-1 custom-scroll"></div>
         </div>
     </div>
 
@@ -280,7 +293,8 @@ import '../styles/global.css';
         let allApplicants: any[] = [];
         let selectedIds: string[] = [];
         let activeApplicantId: string | null = null;
-        let currentAdminRole: string = "Reviewer"; // Role pengguna yang sedang login
+        let currentAdminRole: string = "Reviewer"; 
+        let currentUserEmail: string = "";
 
         // OTENTIKASI DINAMIS DARI DATABASE SUPABASE
         async function checkAdminAccess() {
@@ -291,16 +305,14 @@ import '../styles/global.css';
                 return; 
             }
 
-            const currentUserEmail = (user.email || '').toLowerCase().trim();
+            currentUserEmail = (user.email || '').toLowerCase().trim();
 
-            // Ambil data admin dari tabel admin_members
             const { data: member } = await supabase
                 .from('admin_members')
                 .select('*')
                 .eq('email', currentUserEmail)
                 .maybeSingle();
 
-            // Jika email tidak terdaftar di database admin_members
             if (!member) {
                 alert("Akses Ditolak: Email " + currentUserEmail + " tidak terdaftar di whitelist Admin.");
                 await supabase.auth.signOut();
@@ -308,12 +320,17 @@ import '../styles/global.css';
                 return;
             }
 
-            currentAdminRole = member.role || 'Reviewer';
+            currentAdminRole = (member.role || 'Reviewer').trim();
 
             document.getElementById('admin-email-tag')!.innerText = `${user.email} (${currentAdminRole})`;
             document.getElementById('admin-loader')?.classList.add('hidden');
             document.getElementById('admin-content')?.classList.remove('hidden');
             
+            // Sembunyikan bulk master jika Reviewer
+            if (currentAdminRole.toLowerCase() !== 'master admin') {
+                document.querySelectorAll('.master-only-btn').forEach(btn => btn.classList.add('hidden'));
+            }
+
             loadApplicants();
             loadTeam();
         }
@@ -374,7 +391,7 @@ import '../styles/global.css';
                 const finalNim = app.nim || "-";
                 const finalSem = app.semester || "-";
                 const emailStatus = app.email_status || "pending";
-                const appStatus = app.status || 'Pending';
+                const appStatus = (app.status || 'Pending').trim();
                 
                 let badgeClass = "bg-white border-slate-200 text-slate-600";
                 if (appStatus === 'accepted') badgeClass = "bg-emerald-50 border-emerald-200 text-emerald-700 font-bold";
@@ -421,21 +438,23 @@ import '../styles/global.css';
             const previewArea = document.getElementById('detail-preview-area');
             previewArea?.classList.remove('opacity-0', 'pointer-events-none');
 
+            const currentStatus = (app.status || 'Pending').trim();
+
             document.getElementById('preview-name')!.innerText = app.full_name || "Tanpa Nama";
             document.getElementById('preview-meta')!.innerText = `${app.faculty || app.major || '-'} • Semester ${app.semester || '-'}`;
-            document.getElementById('preview-status-badge')!.innerText = app.status === 'bookmark' ? '🔖 Bookmark' : (app.status || 'Pending');
+            document.getElementById('preview-status-badge')!.innerText = currentStatus === 'bookmark' ? '🔖 Bookmark' : currentStatus;
             document.getElementById('preview-email-status')!.innerText = app.email_status === 'sent' ? '📧 Sent' : '⚪ Pending';
             document.getElementById('preview-pos-1')!.innerText = app.position || app.role_applied || '-';
             document.getElementById('preview-nim')!.innerText = app.nim || '-';
             document.getElementById('preview-activities')!.innerText = app.other_activities || 'Tidak ada kegiatan khusus yang diisi.';
             document.getElementById('preview-reason')!.innerText = app.reason_1 || 'Tidak ada alasan khusus yang dijabarkan.';
 
-            // Format WhatsApp
+            // WhatsApp Format
             let formattedPhone = (app.phone || '').toString().replace(/[^0-9]/g, '');
             if (formattedPhone.startsWith('0')) formattedPhone = '62' + formattedPhone.slice(1);
             (document.getElementById('preview-link-wa') as HTMLAnchorElement).href = formattedPhone ? `https://wa.me/${formattedPhone}` : '#';
 
-            // CV LINK LOGIC
+            // CV Link
             const cvBtn = document.getElementById('preview-link-cv') as HTMLAnchorElement;
             if (app.cv_url) {
                 cvBtn.href = app.cv_url;
@@ -445,7 +464,7 @@ import '../styles/global.css';
                 cvBtn.classList.add('opacity-40', 'pointer-events-none');
             }
 
-            // PORTFOLIO LINK LOGIC
+            // Portfolio Link
             const portfolioBtn = document.getElementById('preview-btn-portfolio') as HTMLButtonElement;
             const portfolioLabel = document.getElementById('portfolio-btn-label') as HTMLSpanElement;
             
@@ -469,12 +488,121 @@ import '../styles/global.css';
                 portfolioBtn.onclick = () => (window as any).openPortfolioModal(app.full_name, portoList);
             }
 
-            document.getElementById('preview-action-buttons')!.innerHTML = `
-                <button onclick="updateStatus('${app.id}', 'interview')" class="px-2.5 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl hover:bg-amber-500 hover:text-white font-bold text-[9px] uppercase transition-all">💬 Wawancara</button>
-                <button onclick="updateStatus('${app.id}', 'accepted')" class="px-2.5 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl hover:bg-emerald-500 hover:text-white font-bold text-[9px] uppercase transition-all">✅ Lolos</button>
+            // AKSI DISESUAIKAN BERDASARKAN OTORITAS (MASTER ADMIN VS REVIEWER)
+            const isMaster = currentAdminRole.toLowerCase() === 'master admin';
+
+            let buttonsHTML = `
+                <!-- Bookmark Bisa Dilihat & Klik oleh SELURUH TIM -->
                 <button onclick="updateStatus('${app.id}', 'bookmark')" class="px-2.5 py-1.5 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-xl hover:bg-yellow-400 font-bold text-[9px] uppercase transition-all">🔖 Bookmark</button>
-                <button onclick="updateStatus('${app.id}', 'rejected')" class="px-2.5 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl hover:bg-rose-500 hover:text-white font-bold text-[9px] uppercase transition-all">❌ Tolak</button>
             `;
+
+            if (isMaster) {
+                // Master Admin Memiliki Kontrol Penuh Termasuk Reset, Wawancara, Terima, Tolak
+                buttonsHTML += `
+                    <button onclick="updateStatus('${app.id}', 'administrasi')" class="px-2.5 py-1.5 bg-slate-100 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-200 font-bold text-[9px] uppercase transition-all" title="Kembalikan ke tahap Administrasi">🔄 Reset Status</button>
+                    <button onclick="updateStatus('${app.id}', 'interview')" class="px-2.5 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl hover:bg-amber-500 hover:text-white font-bold text-[9px] uppercase transition-all">💬 Wawancara</button>
+                    <button onclick="updateStatus('${app.id}', 'accepted')" class="px-2.5 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl hover:bg-emerald-500 hover:text-white font-bold text-[9px] uppercase transition-all">✅ Lolos</button>
+                    <button onclick="updateStatus('${app.id}', 'rejected')" class="px-2.5 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl hover:bg-rose-500 hover:text-white font-bold text-[9px] uppercase transition-all">❌ Tolak</button>
+                `;
+            } else {
+                buttonsHTML += `
+                    <span class="text-[8px] font-bold text-slate-400 uppercase italic self-center ml-1">(Status Wawancara/Lolos/Tolak dikunci khusus Master Admin)</span>
+                `;
+            }
+
+            document.getElementById('preview-action-buttons')!.innerHTML = buttonsHTML;
+
+            // Load History Perubahan Status untuk Seluruh Tim
+            (window as any).loadApplicantHistory(id);
+        };
+
+        // FUNGSI LOG & AUDIT TRAIL HISTORY UNTUK SELURUH TIM
+        (window as any).loadApplicantHistory = async (applicationId: string) => {
+            const historyContainer = document.getElementById('preview-history-list');
+            if (!historyContainer) return;
+
+            historyContainer.innerHTML = `<p class="text-slate-400 italic text-[10px]">Memuat riwayat keputusan...</p>`;
+
+            const { data: logs, error } = await supabase
+                .from('application_logs')
+                .select('*')
+                .eq('application_id', applicationId)
+                .order('created_at', { ascending: false });
+
+            if (error || !logs || logs.length === 0) {
+                historyContainer.innerHTML = `<p class="text-slate-400 italic text-[10px] bg-slate-50 p-3 rounded-xl border border-slate-100 text-center">Belum ada riwayat perubahan status dari tim.</p>`;
+                return;
+            }
+
+            historyContainer.innerHTML = logs.map(log => {
+                const timeFormatted = new Date(log.created_at).toLocaleString('id-ID', {
+                    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                });
+
+                const adminName = log.changed_by_email ? log.changed_by_email.split('@')[0] : 'Admin';
+
+                return `
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex justify-between items-center text-[10px]">
+                        <div>
+                            <span class="font-bold text-slate-900">${adminName}</span>
+                            <span class="text-slate-400">mengubah</span>
+                            <span class="font-black uppercase text-slate-500">${log.old_status || 'Awal'}</span>
+                            <span>➔</span>
+                            <span class="font-black uppercase text-[#1b509b]">${log.new_status}</span>
+                        </div>
+                        <span class="text-[8px] text-slate-400 font-medium">${timeFormatted}</span>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        // PERBARUI STATUS + CATAT LOG HISTORY
+        (window as any).updateStatus = async (id: string, newStatus: string) => {
+            const cleanStatus = newStatus.trim();
+            const isMaster = currentAdminRole.toLowerCase() === 'master admin';
+
+            // Pengecekan Batasan Otoritas
+            if (!isMaster && cleanStatus !== 'bookmark') {
+                alert("Akses Ditolak: Hanya Master Admin yang berhak menentukan keputusan Wawancara, Lolos, Tolak, atau Reset.");
+                return;
+            }
+
+            const app = allApplicants.find(a => a.id === id);
+            const oldStatus = app ? (app.status || 'administrasi').trim() : 'administrasi';
+
+            if (oldStatus === cleanStatus) {
+                alert(`Pelamar ini sudah berada pada status: ${cleanStatus.toUpperCase()}`);
+                return;
+            }
+
+            if (!confirm(`Ubah status ${app?.full_name || 'pelamar'} dari [${oldStatus.toUpperCase()}] menjadi [${cleanStatus.toUpperCase()}]?`)) {
+                return;
+            }
+
+            // 1. Update Database Applications
+            const { error: updateError } = await supabase
+                .from('applications')
+                .update({ status: cleanStatus, acknowledged: false, email_status: 'pending' })
+                .eq('id', id);
+
+            if (updateError) {
+                alert("Gagal memperbarui status: " + updateError.message);
+                return;
+            }
+
+            // 2. Insert Log Audit History
+            await supabase.from('application_logs').insert([{
+                application_id: id,
+                changed_by_email: currentUserEmail,
+                old_status: oldStatus,
+                new_status: cleanStatus
+            }]);
+
+            // 3. UI Auto Refresh
+            await loadApplicants();
+            if (activeApplicantId) {
+                (window as any).selectApplicantForPreview(activeApplicantId);
+            }
         };
 
         // RENDER KARTU STATISTIK DETAIL PER POSISI
@@ -487,10 +615,10 @@ import '../styles/global.css';
             container.innerHTML = roles.map(role => {
                 const appsInRole = allApplicants.filter(a => (a.position || a.role_applied) === role);
                 const total = appsInRole.length;
-                const interview = appsInRole.filter(a => a.status === 'interview').length;
-                const accepted = appsInRole.filter(a => a.status === 'accepted').length;
-                const bookmark = appsInRole.filter(a => a.status === 'bookmark').length;
-                const rejected = appsInRole.filter(a => a.status === 'rejected').length;
+                const interview = appsInRole.filter(a => (a.status || '').trim() === 'interview').length;
+                const accepted = appsInRole.filter(a => (a.status || '').trim() === 'accepted').length;
+                const bookmark = appsInRole.filter(a => (a.status || '').trim() === 'bookmark').length;
+                const rejected = appsInRole.filter(a => (a.status || '').trim() === 'rejected').length;
 
                 return `
                     <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
@@ -521,7 +649,7 @@ import '../styles/global.css';
             }).join('');
         }
 
-        // Buka Pop Up Modal Detail Pelamar Berdasarkan Posisi & Status
+        // Modal Daftar Pelamar Per Posisi
         (window as any).openPositionModal = (role: string, status: string) => {
             const modal = document.getElementById('position-detail-modal');
             const title = document.getElementById('pos-modal-role-title');
@@ -530,7 +658,7 @@ import '../styles/global.css';
 
             if (!modal || !title || !badge || !list) return;
 
-            const filtered = allApplicants.filter(a => (a.position || a.role_applied) === role && a.status === status);
+            const filtered = allApplicants.filter(a => (a.position || a.role_applied) === role && (a.status || '').trim() === status);
 
             title.innerText = role;
             badge.innerText = `Status: ${status}`;
@@ -658,15 +786,11 @@ import '../styles/global.css';
             }
         };
 
-        (window as any).updateStatus = async (id: string, newStatus: string) => {
-            const { error } = await supabase.from('applications').update({ status: newStatus, acknowledged: false, email_status: 'pending' }).eq('id', id);
-            if (!error) {
-                await loadApplicants();
-                if(activeApplicantId) (window as any).selectApplicantForPreview(activeApplicantId);
-            }
-        };
-
         (window as any).deleteMember = async (id: string) => {
+            if (currentAdminRole.toLowerCase() !== 'master admin') {
+                alert("Hanya Master Admin yang dapat menghapus anggota tim.");
+                return;
+            }
             if (!confirm("Hapus akses admin ini?")) return;
             const { error } = await supabase.from('admin_members').delete().eq('id', id);
             if (!error) loadTeam();
@@ -674,9 +798,28 @@ import '../styles/global.css';
 
         // BULK ACTIONS
         async function bulkUpdate(status: string) {
-            if (!confirm(`Ubah ${selectedIds.length} pelamar ke ${status.toUpperCase()}?`)) return;
-            const { error } = await supabase.from('applications').update({ status, acknowledged: false, email_status: 'pending' }).in('id', selectedIds);
+            const cleanStatus = status.trim();
+            const isMaster = currentAdminRole.toLowerCase() === 'master admin';
+
+            if (!isMaster && cleanStatus !== 'bookmark') {
+                alert("Akses Ditolak: Hanya Master Admin yang dapat melakukan aksi bulk untuk Wawancara / Terima.");
+                return;
+            }
+
+            if (!confirm(`Ubah ${selectedIds.length} pelamar terdaftar ke ${cleanStatus.toUpperCase()}?`)) return;
+
+            const { error } = await supabase.from('applications').update({ status: cleanStatus, acknowledged: false, email_status: 'pending' }).in('id', selectedIds);
+            
             if (!error) { 
+                // Catat Log Massal ke History
+                const logsToInsert = selectedIds.map(appId => ({
+                    application_id: appId,
+                    changed_by_email: currentUserEmail,
+                    old_status: 'bulk_action',
+                    new_status: cleanStatus
+                }));
+                await supabase.from('application_logs').insert(logsToInsert);
+
                 selectedIds = []; 
                 await loadApplicants(); 
                 document.getElementById('bulk-action-panel')?.classList.replace('flex', 'hidden'); 
@@ -686,9 +829,14 @@ import '../styles/global.css';
 
         // EVENT LISTENERS
         document.getElementById('invite-member-btn')?.addEventListener('click', async () => {
+            if (currentAdminRole.toLowerCase() !== 'master admin') {
+                alert("Hanya Master Admin yang dapat menambah anggota tim baru.");
+                return;
+            }
             const email = (document.getElementById('invite-email') as HTMLInputElement).value.trim().toLowerCase();
+            const role = (document.getElementById('invite-role') as HTMLSelectElement).value;
             if (!email) return;
-            const { error } = await supabase.from('admin_members').insert([{ email, role: 'Reviewer' }]);
+            const { error } = await supabase.from('admin_members').insert([{ email, role }]);
             if (!error) { (document.getElementById('invite-email') as HTMLInputElement).value = ''; loadTeam(); }
             else alert(error.message);
         });
@@ -729,10 +877,10 @@ import '../styles/global.css';
 
         function updateStats() {
             document.getElementById('stat-total')!.innerText = allApplicants.length.toString();
-            document.getElementById('stat-interview')!.innerText = allApplicants.filter(a => a.status === 'interview').length.toString();
-            document.getElementById('stat-accepted')!.innerText = allApplicants.filter(a => a.status === 'accepted').length.toString();
-            document.getElementById('stat-bookmark')!.innerText = allApplicants.filter(a => a.status === 'bookmark').length.toString();
-            document.getElementById('stat-rejected')!.innerText = allApplicants.filter(a => a.status === 'rejected').length.toString();
+            document.getElementById('stat-interview')!.innerText = allApplicants.filter(a => (a.status || '').trim() === 'interview').length.toString();
+            document.getElementById('stat-accepted')!.innerText = allApplicants.filter(a => (a.status || '').trim() === 'accepted').length.toString();
+            document.getElementById('stat-bookmark')!.innerText = allApplicants.filter(a => (a.status || '').trim() === 'bookmark').length.toString();
+            document.getElementById('stat-rejected')!.innerText = allApplicants.filter(a => (a.status || '').trim() === 'rejected').length.toString();
         }
 
         function renderFilterOptions() {
