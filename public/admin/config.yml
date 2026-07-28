@@ -50,17 +50,16 @@ collections:
       - { label: "Nama Batch", name: "batch_name", widget: "string", hint: "Contoh: Mahardika Internship Batch 10" }
       - { label: "Status Pendaftaran", name: "status", widget: "select", options: ["Open", "Closed"], default: "Open" }
       
-      # --- TIMELINE EKSPLISIT BERDASARKAN BANNER REKRUTMEN ---
+      # --- TIMELINE SELEKSI LIST DINAMIS (PAS SESUAI FILE YAML) ---
       - label: "Detail Timeline Seleksi"
         name: "timeline_details"
-        widget: "object"
+        widget: "list"
+        summary: "{{fields.step_name}} - {{fields.period}}"
         fields:
-          - { label: "Tanggal Registrasi", name: "registrasi", widget: "string", default: "22-28 JUL 2026 (17.00 WIB)", hint: "Contoh: 22-28 JUL 2026 17.00 WIB" }
-          - { label: "Pengumuman Seleksi Administratif", name: "pengumuman_admin", widget: "string", default: "29 JUL 2026 (20.00 WIB)", hint: "Contoh: 29 JUL 2026 20.00 WIB" }
-          - { label: "Tanggal Wawancara", name: "wawancara", widget: "string", default: "3-4 AGU 2026", hint: "Contoh: 3-4 AGU 2026" }
-          - { label: "Pengumuman Akhir", name: "pengumuman_akhir", widget: "string", default: "5 AGU 2026", hint: "Contoh: 5 AGU 2026" }
-          - { label: "Tanggal Onboarding", name: "onboarding", widget: "string", default: "10 AGU 2026", hint: "Contoh: 10 AGU 2026" }
-          
+          - { label: "Nama Tahapan", name: "step_name", widget: "string", hint: "Contoh: Registrasi, Wawancara, dll." }
+          - { label: "Periode / Tanggal", name: "period", widget: "string", hint: "Contoh: 22-31 JUL 2026 (17.00 WIB)" }
+          - { label: "Sedang Berlangsung?", name: "is_active", widget: "boolean", default: false }
+
       - label: "Daftar Role Tersedia"
         name: "roles"
         widget: "list"
