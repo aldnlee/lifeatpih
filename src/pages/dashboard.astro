@@ -3,13 +3,7 @@ import '../styles/global.css';
 import { getCollection } from 'astro:content';
 
 // 1. Ambil data Batch Aktif dari Decap CMS secara aman
-let timelineDetails: any = {
-    registrasi: "22-28 JUL 2026 (17.00 WIB)",
-    pengumuman_admin: "29 JUL 2026 (20.00 WIB)",
-    wawancara: "3-4 AGU 2026",
-    pengumuman_akhir: "5 AGU 2026",
-    onboarding: "10 AGU 2026"
-};
+let cmsTimelineDetails: any[] = [];
 let cmsBatchName = "Mahardhika Internship";
 
 try {
@@ -23,23 +17,30 @@ try {
 
     if (activeBatchFromCMS) {
         const batchData = activeBatchFromCMS.data || activeBatchFromCMS;
-        if (batchData.timeline_details) {
-            timelineDetails = batchData.timeline_details;
+        
+        // Pengecekan cerdas: membaca format List Array maupun Object
+        if (Array.isArray(batchData.timeline_details)) {
+            cmsTimelineDetails = batchData.timeline_details;
+        } else if (batchData.timeline_details && typeof batchData.timeline_details === 'object') {
+            cmsTimelineDetails = Object.entries(batchData.timeline_details).map(([key, val]) => ({
+                step_name: key.replace('_', ' ').toUpperCase(),
+                period: val,
+                is_active: false
+            }));
+        } else if (Array.isArray(batchData.timeline)) {
+            // Fallback untuk skema lama
+            cmsTimelineDetails = batchData.timeline.map((t: any) => ({
+                step_name: t.label || t.step_name || 'Tahapan',
+                period: t.period || t.start_date || '-',
+                is_active: t.is_active || false
+            }));
         }
+
         cmsBatchName = batchData.batch_name || cmsBatchName;
     }
 } catch (e) {
     console.error("Gagal memuat collection vacancies dari CMS:", e);
 }
-
-// Array pasangan stage timeline untuk kemudahan looping di UI
-const timelineItems = [
-    { key: "registrasi", label: "Registrasi", val: timelineDetails.registrasi, is_active: true },
-    { key: "pengumuman_admin", label: "Pengumuman Administrasi", val: timelineDetails.pengumuman_admin, is_active: false },
-    { key: "wawancara", label: "Wawancara", val: timelineDetails.wawancara, is_active: false },
-    { key: "pengumuman_akhir", label: "Pengumuman Akhir", val: timelineDetails.pengumuman_akhir, is_active: false },
-    { key: "onboarding", label: "Onboarding", val: timelineDetails.onboarding, is_active: false }
-];
 ---
 
 <html lang="id">
@@ -48,7 +49,8 @@ const timelineItems = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard Pelamar | Life at PIH</title>
     <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Diperbaiki dengan atribut crossorigin untuk mencegah isu CORS CDN -->
+    <script src="https://cdn.tailwindcss.com" crossorigin="anonymous"></script>
     <style>
         body { 
             background-color: #f8fafc !important; 
@@ -193,23 +195,28 @@ const timelineItems = [
                     </div>
                 </div>
 
-                <!-- SIDEBAR / TIMELINE SELEKSI (OBJECT-BASED DINAMIS) -->
+                <!-- SIDEBAR / TIMELINE SELEKSI (READ DINAMIS ARRAY DECAP CMS) -->
                 <div class="space-y-6">
                     <div class="bg-[#1b509b] p-8 rounded-[3rem] text-white shadow-lg relative overflow-hidden">
                         <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🗓️</div>
                         <h3 class="text-[10px] font-black uppercase tracking-widest mb-6 border-b border-white/10 pb-4">Timeline Seleksi</h3>
             
                         <ul class="space-y-4 text-[11px]">
-                            {timelineItems.map((item) => (
-                                <li class="flex justify-between items-center opacity-90">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-bold">{item.label}</span>
-                                    </div>
-                                    <span class="text-[9px] font-black uppercase tracking-tighter bg-white/10 px-2.5 py-1 rounded-lg ml-2 text-right">
-                                        {item.val || '-'}
-                                    </span>
-                                </li>
-                            ))}
+                            {cmsTimelineDetails.length > 0 ? (
+                                cmsTimelineDetails.map((item: any) => (
+                                    <li class={`flex justify-between items-center ${item.is_active ? 'font-bold text-yellow-400' : 'opacity-80'}`}>
+                                        <div class="flex items-center gap-2">
+                                            {item.is_active && <div class="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>}
+                                            <span>{item.step_name || item.label || 'Tahapan'}</span>
+                                        </div>
+                                        <span class="text-[9px] font-black uppercase tracking-tighter bg-white/10 px-2.5 py-1 rounded-lg ml-2 text-right">
+                                            {item.period || item.val || '-'}
+                                        </span>
+                                    </li>
+                                ))
+                            ) : (
+                                <li class="italic opacity-30">Belum ada timeline yang diatur di CMS.</li>
+                            )}
                         </ul>
                     </div>
     
