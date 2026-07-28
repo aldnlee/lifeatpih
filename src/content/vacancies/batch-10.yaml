@@ -2,11 +2,11 @@ batch_id: Batch-10
 batch_name: Mahardika Intership Batch 10
 status: Open
 timeline_details:
-  registrasi: "22-28 JUL 2026 (17.00 WIB)"
-  pengumuman_admin: "29 JUL 2026 (20.00 WIB)"
-  wawancara: "3-4 AGU 2026"
-  pengumuman_akhir: "5 AGU 2026"
-  onboarding: "10 AGU 2026"
+  registrasi: 22-28 JUL 2026 (23.59 WIB)
+  pengumuman_admin: 29 JUL 2026 (20.00 WIB)
+  wawancara: 3-4 AGU 2026
+  pengumuman_akhir: 5 AGU 2026
+  onboarding: 10 AGU 2026
 roles:
   - role_title: Project Manager
     description: PM
