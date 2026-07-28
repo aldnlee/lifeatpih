@@ -1,7 +1,7 @@
 import { defineCollection, z } from 'astro:content';
 
 const teamsCollection = defineCollection({
-  type: 'data', // PENTING: Gunakan 'data' untuk file JSON
+  type: 'data', // Gunakan 'data' untuk file YAML/JSON
   schema: z.object({
     title: z.string(),
     roles: z.array(z.object({
@@ -10,19 +10,29 @@ const teamsCollection = defineCollection({
     }))
   })
 });
-// src/content/config.ts
+
+// SKEMA VACANCIES DENGAN TIMELINE_DETAILS (DIPERBAIKI)
 const vacancies = defineCollection({
-  type: 'data', // PENTING: Gunakan 'data' untuk YAML/JSON
+  type: 'data',
   schema: z.object({
     batch_id: z.string(),
     batch_name: z.string(),
     status: z.string(),
+    
+    // --- TAMBAHKAN VALIDASI TIMELINE_DETAILS DI SINI ---
+    timeline_details: z.array(
+      z.object({
+        step_name: z.string(),
+        period: z.string(),
+        is_active: z.boolean().optional().default(false)
+      })
+    ).optional(),
+
     roles: z.array(z.object({
       role_title: z.string(),
       description: z.string().optional()
     })),
     body: z.string().optional(),
-    // Tambahkan ini jika CMS membungkus data dalam 'map'
     map: z.any().optional(), 
   }),
 });

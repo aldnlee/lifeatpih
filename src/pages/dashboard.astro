@@ -18,7 +18,6 @@ try {
     if (activeBatchFromCMS) {
         const batchData = activeBatchFromCMS.data || activeBatchFromCMS;
         
-        // Pengecekan cerdas: membaca format List Array maupun Object
         if (Array.isArray(batchData.timeline_details)) {
             cmsTimelineDetails = batchData.timeline_details;
         } else if (batchData.timeline_details && typeof batchData.timeline_details === 'object') {
@@ -28,7 +27,6 @@ try {
                 is_active: false
             }));
         } else if (Array.isArray(batchData.timeline)) {
-            // Fallback untuk skema lama
             cmsTimelineDetails = batchData.timeline.map((t: any) => ({
                 step_name: t.label || t.step_name || 'Tahapan',
                 period: t.period || t.start_date || '-',
@@ -49,7 +47,6 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard Pelamar | Life at PIH</title>
     <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;800&display=swap" rel="stylesheet">
-    <!-- Diperbaiki dengan atribut crossorigin untuk mencegah isu CORS CDN -->
     <script src="https://cdn.tailwindcss.com" crossorigin="anonymous"></script>
     <style>
         body { 
@@ -195,7 +192,7 @@ try {
                     </div>
                 </div>
 
-                <!-- SIDEBAR / TIMELINE SELEKSI (READ DINAMIS ARRAY DECAP CMS) -->
+                <!-- SIDEBAR / TIMELINE SELEKSI -->
                 <div class="space-y-6">
                     <div class="bg-[#1b509b] p-8 rounded-[3rem] text-white shadow-lg relative overflow-hidden">
                         <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🗓️</div>
@@ -300,6 +297,15 @@ try {
         let currentAppId = "";
         let lastStatus = "";
 
+        // HELPER SANGAT PENTING: MASKING STATUS BOOKMARK MENJADI ADMINISTRASI UNTUK PUBLIC/USER
+        function getPublicStatus(dbStatus: string): string {
+            const clean = (dbStatus || 'administrasi').trim().toLowerCase();
+            if (clean === 'bookmark') {
+                return 'administrasi'; // Menyembunyikan bookmark dari pandangan user
+            }
+            return clean;
+        }
+
         async function init() {
             try {
                 const { data: { user } } = await supabase.auth.getUser();
@@ -344,23 +350,35 @@ try {
                 if (batchIdVal) batchIdVal.innerText = `ID: ${application.batch_id || '-'}`;
 
                 appliedBanner?.classList.remove('hidden');
-                updateUI(application.status);
 
-                if (application.status !== 'administrasi' && !application.acknowledged) {
-                    showNotification(application.status);
+                // MASKING STATUS: Dapatkan status yang aman untuk publik
+                const publicStatus = getPublicStatus(application.status);
+                updateUI(publicStatus);
+
+                // HANYA MUNCULKAN NOTIFIKASI JIKA BUKAN ADMINISTRASI & BUKAN BOOKMARK
+                if (application.status !== 'administrasi' && application.status !== 'bookmark' && !application.acknowledged) {
+                    showNotification(publicStatus);
                 }
 
-                // Realtime Update
+                // Realtime Update dari Supabase
                 supabase
                     .channel('applicant-status')
                     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'applications', filter: `id=eq.${application.id}` },
                         async (payload) => {
-                            const newStatus = payload.new.status;
-                            if (newStatus !== lastStatus) {
-                                await supabase.from('applications').update({ acknowledged: false }).eq('id', application.id);
-                                showNotification(newStatus);
-                                lastStatus = newStatus;
-                                updateUI(newStatus);
+                            const rawNewStatus = payload.new.status;
+                            const newPublicStatus = getPublicStatus(rawNewStatus);
+
+                            if (rawNewStatus !== lastStatus) {
+                                // Jika status diubah ke bookmark, langsung anggap 'acknowledged' agar tidak pernah trigger notif
+                                if (rawNewStatus === 'bookmark') {
+                                    await supabase.from('applications').update({ acknowledged: true }).eq('id', application.id);
+                                } else {
+                                    await supabase.from('applications').update({ acknowledged: false }).eq('id', application.id);
+                                    showNotification(newPublicStatus);
+                                }
+
+                                lastStatus = rawNewStatus;
+                                updateUI(newPublicStatus);
                             }
                         }
                     ).subscribe();
@@ -375,6 +393,9 @@ try {
         function showNotification(status: string) {
             if (!modal || !modalTitle || !modalMsg || !modalIcon) return;
 
+            // Jangan memunculkan notifikasi apapun jika status publik masih 'administrasi'
+            if (status === 'administrasi') return;
+
             modalIcon.innerText = "🎉";
             modalTitle.innerText = "Selamat!";
             modalTitle.className = "text-2xl font-black text-slate-900 uppercase italic mb-3 tracking-tighter";
@@ -385,10 +406,6 @@ try {
                 modalIcon.innerText = "📩";
                 modalTitle.innerText = "Lolos Berkas!";
                 modalMsg.innerText = "Selamat! Kamu diundang untuk tahap wawancara Mahardhika. Mohon tunggu informasi jadwal selanjutnya.";
-            } else if (status === 'bookmark') {
-                modalIcon.innerText = "🔖";
-                modalTitle.innerText = "Masuk Bookmark";
-                modalMsg.innerText = "Lamaran kamu saat ini masuk dalam kandidat potensial (bookmark) PIH UIN Jakarta.";
             } else if (status === 'accepted') {
                 modalIcon.innerText = "🎉";
                 modalTitle.innerText = "Diterima Magang!";
@@ -412,10 +429,12 @@ try {
         }
 
         function updateUI(status: string) {
+            // Tampilan badge status publik
             if (badgeStatus) badgeStatus.innerText = status;
             const steps = document.querySelectorAll('.step-item');
+            
             let p = 0;
-            if (status === 'interview' || status === 'bookmark') p = 50;
+            if (status === 'interview') p = 50;
             if (status === 'accepted' || status === 'rejected') p = 100;
             if (progressBar) progressBar.style.width = `${p}%`;
 
@@ -428,11 +447,10 @@ try {
 
                 if (status === 'administrasi' && s === 'administrasi') {
                     circle.classList.add('border-[#1b509b]', 'bg-[#1b509b]', 'text-white');
+                    if (badgeStatus) badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-slate-100 text-slate-700 border border-slate-200 font-black uppercase tracking-widest";
                 } else if (status === 'interview' && (s === 'administrasi' || s === 'interview')) {
                     circle.classList.add('border-[#1b509b]', 'bg-[#1b509b]', 'text-white');
-                } else if (status === 'bookmark' && (s === 'administrasi' || s === 'interview')) {
-                    circle.classList.add('border-amber-500', 'bg-amber-500', 'text-white');
-                    if (badgeStatus) badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-amber-50 text-amber-600 border border-amber-100 font-black uppercase tracking-widest";
+                    if (badgeStatus) badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-blue-50 text-blue-700 border border-blue-100 font-black uppercase tracking-widest";
                 } else if (status === 'accepted') {
                     circle.classList.add('border-emerald-500', 'bg-emerald-500', 'text-white');
                     if (badgeStatus) badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-emerald-50 text-emerald-600 border border-emerald-100 font-black uppercase tracking-widest";
