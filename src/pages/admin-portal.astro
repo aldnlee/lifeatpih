@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v5.2 (Master Admin Locks, Toggle Unbookmark, Audit Trail, & Multi-Filter Fakultas/Divisi)
+// Admin Portal v5.3 (Mobile Responsive Preview Drawer, Multi-Filter Fakultas/Divisi, Master Admin Locks, Toggle Unbookmark, & Audit Trail)
 ---
 
 <html lang="id">
@@ -25,7 +25,23 @@ import '../styles/global.css';
         /* Active State Card */
         .applicant-card.active { border-color: #1b509b; background-color: #f8fafc; box-shadow: inset 4px 0 0 0 #1b509b; }
 
-        /* Animation Modal */
+        /* Mobile Drawer State Logic */
+        @media (max-width: 767px) {
+            #detail-preview-container {
+                position: fixed;
+                inset: 0;
+                z-index: 9999;
+                background: white;
+                display: none;
+            }
+            #detail-preview-container.mobile-active {
+                display: flex !important;
+                flex-direction: column;
+                animation: slideInUp 0.25s ease forwards;
+            }
+        }
+
+        /* Animation Modal & Drawer */
         #portfolio-modal, #position-detail-modal {
             display: none;
             position: fixed;
@@ -39,6 +55,7 @@ import '../styles/global.css';
         }
         #portfolio-modal.active, #position-detail-modal.active { display: flex; animation: fadeIn 0.2s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideInUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col overflow-hidden">
@@ -65,23 +82,23 @@ import '../styles/global.css';
     <div id="admin-content" class="hidden flex flex-col h-screen overflow-hidden">
         <!-- TOP NAVIGATION -->
         <nav class="bg-[#0f2854] text-white p-4 shadow-lg flex-shrink-0 z-50">
-            <div class="max-w-[1600px] mx-auto flex justify-between items-center">
-                <div class="flex items-center gap-6">
+            <div class="max-w-[1600px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+                <div class="flex items-center justify-between w-full sm:w-auto gap-6">
                     <h1 class="font-extrabold text-xl tracking-tighter uppercase italic">PIH <span class="font-light opacity-50">Admin</span></h1>
                     <div class="flex bg-black/20 p-1 rounded-xl">
-                        <button onclick="switchTab('applicants')" id="tab-applicants" class="nav-tab active px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all">Manajemen Pelamar</button>
-                        <button onclick="switchTab('team')" id="tab-team" class="nav-tab px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all">Tim Penyeleksi</button>
+                        <button onclick="switchTab('applicants')" id="tab-applicants" class="nav-tab active px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all">Pelamar</button>
+                        <button onclick="switchTab('team')" id="tab-team" class="nav-tab px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all">Tim Admin</button>
                     </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <span id="admin-email-tag" class="text-[10px] bg-white/10 px-4 py-1.5 rounded-full border border-white/20 font-bold uppercase"></span>
+                <div class="flex items-center justify-between w-full sm:w-auto gap-4">
+                    <span id="admin-email-tag" class="text-[9px] sm:text-[10px] bg-white/10 px-4 py-1.5 rounded-full border border-white/20 font-bold uppercase truncate max-w-[200px] sm:max-w-none"></span>
                     <button id="logout-admin-btn" class="text-xs bg-red-500/20 text-red-400 px-4 py-1.5 rounded-lg font-bold border border-red-500/20">LOGOUT</button>
                 </div>
             </div>
         </nav>
 
         <!-- MAIN WORKSPACE CONTAINER -->
-        <div class="flex-1 flex flex-col overflow-hidden max-w-[1600px] w-full mx-auto px-4 py-6">
+        <div class="flex-1 flex flex-col overflow-hidden max-w-[1600px] w-full mx-auto px-4 py-4 sm:py-6">
             
             <!-- VIEW: APPLICANTS -->
             <section id="view-applicants" class="tab-content flex-1 flex flex-col overflow-hidden">
@@ -109,7 +126,7 @@ import '../styles/global.css';
                     <div class="mb-4">
                         <div class="flex items-center justify-between mb-2">
                             <h3 class="text-xs font-black uppercase tracking-widest text-slate-500">Statistik Pelamar Per Posisi</h3>
-                            <span class="text-[9px] font-bold text-slate-400 italic">*Klik angka status untuk melihat daftar pelamar terpilih</span>
+                            <span class="text-[9px] font-bold text-slate-400 italic hidden sm:inline">*Klik angka status untuk melihat daftar pelamar terpilih</span>
                         </div>
                         <div id="position-stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                             <!-- Cards per posisi disuntikkan via JS -->
@@ -120,9 +137,8 @@ import '../styles/global.css';
                     <div class="flex flex-col lg:flex-row gap-3">
                         <input type="text" id="search-input" placeholder="Cari Nama/NIM/Email/Fakultas..." class="flex-1 bg-white border border-slate-200 px-5 py-2.5 rounded-xl text-sm outline-none shadow-sm focus:ring-1 focus:ring-blue-500">
                         <select id="role-filter" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 outline-none shadow-sm min-w-[180px]"></select>
-                        <!-- DITAMBAHKAN: FILTER FAKULTAS -->
                         <select id="faculty-filter" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 outline-none shadow-sm min-w-[200px]"></select>
-                        <button id="refresh-btn" class="bg-white border border-slate-200 px-4 rounded-xl hover:bg-slate-50 text-xs font-bold">🔄 Refresh</button>
+                        <button id="refresh-btn" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-xs font-bold">🔄 Refresh</button>
                     </div>
 
                     <!-- Bulk Action Panel -->
@@ -138,7 +154,7 @@ import '../styles/global.css';
                 </div>
 
                 <!-- SPLIT VIEW BOX -->
-                <div class="flex-1 flex gap-6 overflow-hidden min-h-0">
+                <div class="flex-1 flex gap-6 overflow-hidden min-h-0 relative">
                     
                     <!-- LEFT SIDE: APPLICANTS LIST PANEL -->
                     <div class="w-full md:w-[420px] flex-shrink-0 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -154,33 +170,42 @@ import '../styles/global.css';
                         </div>
                     </div>
 
-                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL -->
-                    <div class="hidden md:flex flex-1 flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
+                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL (DIPERBAIKI UNTUK RESPONSIVE MOBILE & DESKTOP) -->
+                    <div id="detail-preview-container" class="hidden md:flex flex-1 flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v5.2</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v5.3</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
+                            
+                            <!-- BAR KEMBALI KHUSUS MOBILE (DIPERBAIKI) -->
+                            <div class="md:hidden bg-[#0f2854] text-white px-4 py-3 flex items-center justify-between flex-shrink-0">
+                                <button onclick="closeMobilePreview()" class="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider bg-white/10 px-3 py-1.5 rounded-lg active:scale-95 transition-all">
+                                    <span>⬅</span> <span>Kembali ke Daftar</span>
+                                </button>
+                                <span class="text-[9px] font-bold opacity-60 uppercase">Pratinjau Kandidat</span>
+                            </div>
+
                             <!-- Header Info -->
-                            <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-start">
+                            <div class="p-4 sm:p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start gap-4">
                                 <div>
-                                    <h2 id="preview-name" class="text-2xl font-black text-slate-900 italic uppercase leading-tight mb-1">-</h2>
+                                    <h2 id="preview-name" class="text-xl sm:text-2xl font-black text-slate-900 italic uppercase leading-tight mb-1">-</h2>
                                     <p id="preview-meta" class="text-blue-600 font-bold text-xs uppercase tracking-widest">-</p>
                                     <div class="mt-3 flex items-center gap-2">
                                         <span id="preview-status-badge" class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-white border border-slate-200">-</span>
                                         <span id="preview-email-status" class="text-xs" title="Status Notifikasi Email">⚪</span>
                                     </div>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5 justify-end" id="preview-action-buttons">
+                                <div class="flex flex-wrap gap-1.5 justify-start sm:justify-end w-full sm:w-auto" id="preview-action-buttons">
                                     <!-- Diisi Dinamis Berdasarkan Role -->
                                 </div>
                             </div>
                             
                             <!-- Body Info Content -->
-                            <div class="flex-1 overflow-y-auto p-6 space-y-5 custom-scroll">
-                                <div class="grid grid-cols-2 gap-4">
+                            <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 custom-scroll">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Pilihan Posisi Utama</label><p id="preview-pos-1" class="font-bold text-sm text-slate-800">-</p></div>
                                     <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Nomor Induk Mahasiswa</label><p id="preview-nim" class="font-bold text-sm text-slate-800">-</p></div>
                                 </div>
@@ -208,7 +233,7 @@ import '../styles/global.css';
                             </div>
 
                             <!-- Footer Actions -->
-                            <div class="p-4 border-t border-slate-100 bg-slate-50 flex gap-3 flex-shrink-0">
+                            <div class="p-4 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row gap-2.5 sm:gap-3 flex-shrink-0">
                                 <a id="preview-link-cv" href="#" target="_blank" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white text-center py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2">
                                     <span>📄</span> <span>Lihat CV</span>
                                 </a>
@@ -228,7 +253,7 @@ import '../styles/global.css';
             <!-- SECTION 2: TEAM -->
             <section id="view-team" class="tab-content hidden flex-1 overflow-y-auto custom-scroll">
                 <div class="max-w-4xl mx-auto">
-                    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm mb-6">
+                    <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm mb-6">
                         <h2 class="text-xl font-black text-slate-900 uppercase italic mb-4">Whitelist Tim Penyeleksi</h2>
                         <div class="flex flex-col md:flex-row gap-4">
                             <input type="email" id="invite-email" placeholder="Email Google Anggota Tim" class="flex-1 bg-slate-50 border border-slate-200 px-5 py-3 rounded-xl text-sm outline-none focus:ring-1 focus:ring-blue-500">
@@ -239,12 +264,12 @@ import '../styles/global.css';
                             <button id="invite-member-btn" class="bg-[#1b509b] text-white px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest">Tambah Admin</button>
                         </div>
                     </div>
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden overflow-x-auto">
                         <table class="w-full text-left">
                             <thead class="bg-slate-50 border-b border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-widest">
                                 <tr>
-                                    <th class="px-8 py-4">Email Admin</th>
-                                    <th class="px-8 py-4 text-right">Aksi</th>
+                                    <th class="px-6 sm:px-8 py-4">Email Admin</th>
+                                    <th class="px-6 sm:px-8 py-4 text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="team-list" class="divide-y divide-slate-100"></tbody>
@@ -351,7 +376,8 @@ import '../styles/global.css';
                 updateStats();
                 renderPositionStatsGrid();
                 
-                if (data.length > 0 && !activeApplicantId) {
+                // Di Desktop, otomatis pilih pelamar pertama jika belum ada yang terpilih
+                if (data.length > 0 && !activeApplicantId && window.innerWidth >= 768) {
                     (window as any).selectApplicantForPreview(data[0].id);
                 }
             }
@@ -431,7 +457,7 @@ import '../styles/global.css';
             attachCheckboxListeners();
         }
 
-        // PREVIEW GENERATION LOGIC
+        // PREVIEW GENERATION LOGIC (DIPERBAIKI UNTUK DUKUNGAN MOBILE DRAWER)
         (window as any).selectApplicantForPreview = (id: string) => {
             activeApplicantId = id;
             
@@ -442,6 +468,12 @@ import '../styles/global.css';
 
             const app = allApplicants.find(a => a.id === id);
             if (!app) return;
+
+            // Aktifkan Tampilan Mobile Preview Drawer
+            const previewContainer = document.getElementById('detail-preview-container');
+            if (window.innerWidth < 768) {
+                previewContainer?.classList.add('mobile-active');
+            }
 
             document.getElementById('empty-preview-state')?.classList.add('hidden');
             const previewArea = document.getElementById('detail-preview-area');
@@ -538,6 +570,11 @@ import '../styles/global.css';
 
             // Load History Perubahan Status untuk Seluruh Tim
             (window as any).loadApplicantHistory(id);
+        };
+
+        // FUNGSI UNTUK MENUTUP MOBILE PREVIEW DRAWER
+        (window as any).closeMobilePreview = () => {
+            document.getElementById('detail-preview-container')?.classList.remove('mobile-active');
         };
 
         // FUNGSI LOG & AUDIT TRAIL HISTORY UNTUK SELURUH TIM
@@ -788,11 +825,11 @@ import '../styles/global.css';
 
                 return `
                     <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-8 py-4">
+                        <td class="px-6 sm:px-8 py-4">
                             <div class="font-bold text-slate-800 text-sm">${m.email}</div>
                             <div class="text-[9px] text-slate-400 uppercase tracking-widest font-black">${m.role || 'Reviewer'}</div>
                         </td>
-                        <td class="px-8 py-4 text-right">
+                        <td class="px-6 sm:px-8 py-4 text-right">
                             ${!isMaster ? `
                                 <button onclick="deleteMember('${m.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-[10px] uppercase tracking-widest">Hapus Akses</button>
                             ` : '<span class="text-[9px] font-black uppercase opacity-20">Master Admin</span>'}
@@ -901,7 +938,6 @@ import '../styles/global.css';
 
         document.getElementById('search-input')?.addEventListener('input', renderList);
         document.getElementById('role-filter')?.addEventListener('change', renderList);
-        // DITAMBAHKAN: EVENT LISTENER UNTUK FILTER FAKULTAS
         document.getElementById('faculty-filter')?.addEventListener('change', renderList);
         document.getElementById('refresh-btn')?.addEventListener('click', loadApplicants);
         document.getElementById('admin-login-btn')?.addEventListener('click', () => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } }));
