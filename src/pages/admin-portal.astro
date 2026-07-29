@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v5.1 (Master Admin Locks, Toggle Unbookmark, & Audit Trail)
+// Admin Portal v5.2 (Master Admin Locks, Toggle Unbookmark, Audit Trail, & Multi-Filter Fakultas/Divisi)
 ---
 
 <html lang="id">
@@ -116,9 +116,12 @@ import '../styles/global.css';
                         </div>
                     </div>
 
+                    <!-- SEARCH & DUAL FILTER TOOLBAR -->
                     <div class="flex flex-col lg:flex-row gap-3">
-                        <input type="text" id="search-input" placeholder="Cari Nama/NIM/Email..." class="flex-1 bg-white border border-slate-200 px-5 py-2.5 rounded-xl text-sm outline-none shadow-sm focus:ring-1 focus:ring-blue-500">
-                        <select id="role-filter" class="bg-white border border-slate-200 px-5 py-2.5 rounded-xl text-xs font-bold text-slate-600 outline-none shadow-sm min-w-[180px]"></select>
+                        <input type="text" id="search-input" placeholder="Cari Nama/NIM/Email/Fakultas..." class="flex-1 bg-white border border-slate-200 px-5 py-2.5 rounded-xl text-sm outline-none shadow-sm focus:ring-1 focus:ring-blue-500">
+                        <select id="role-filter" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 outline-none shadow-sm min-w-[180px]"></select>
+                        <!-- DITAMBAHKAN: FILTER FAKULTAS -->
+                        <select id="faculty-filter" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 outline-none shadow-sm min-w-[200px]"></select>
                         <button id="refresh-btn" class="bg-white border border-slate-200 px-4 rounded-xl hover:bg-slate-50 text-xs font-bold">🔄 Refresh</button>
                     </div>
 
@@ -156,7 +159,7 @@ import '../styles/global.css';
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v5.1</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v5.2</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
@@ -355,8 +358,11 @@ import '../styles/global.css';
         }
 
         function renderList() {
-            const filterElement = document.getElementById('role-filter') as HTMLSelectElement;
-            const filter = filterElement && filterElement.value ? filterElement.value : 'all';
+            const roleFilterElement = document.getElementById('role-filter') as HTMLSelectElement;
+            const facultyFilterElement = document.getElementById('faculty-filter') as HTMLSelectElement;
+
+            const selectedRole = roleFilterElement && roleFilterElement.value ? roleFilterElement.value : 'all';
+            const selectedFaculty = facultyFilterElement && facultyFilterElement.value ? facultyFilterElement.value : 'all';
             const search = (document.getElementById('search-input') as HTMLInputElement).value.toLowerCase().trim();
             const listContainer = document.getElementById('applicant-list');
 
@@ -365,16 +371,19 @@ import '../styles/global.css';
                 
                 const fullName = (a.full_name || '').toString().toLowerCase();
                 const applicantRole = (a.position || a.role_applied || '').toString();
+                const applicantFaculty = (a.faculty || '').toString();
                 const applicantEmail = (a.email || a.user_email || '').toString().toLowerCase();
                 const applicantNim = (a.nim || '').toString();
 
-                const matchFilter = (filter === 'all' || applicantRole === filter);
+                const matchRole = (selectedRole === 'all' || applicantRole === selectedRole);
+                const matchFaculty = (selectedFaculty === 'all' || applicantFaculty === selectedFaculty);
                 const matchSearch = search === "" || 
                     fullName.includes(search) || 
                     applicantNim.includes(search) || 
+                    applicantFaculty.toLowerCase().includes(search) ||
                     applicantEmail.includes(search);
                 
-                return matchFilter && matchSearch;
+                return matchRole && matchFaculty && matchSearch;
             });
 
             document.getElementById('list-count-badge')!.innerText = filtered.length.toString();
@@ -892,6 +901,8 @@ import '../styles/global.css';
 
         document.getElementById('search-input')?.addEventListener('input', renderList);
         document.getElementById('role-filter')?.addEventListener('change', renderList);
+        // DITAMBAHKAN: EVENT LISTENER UNTUK FILTER FAKULTAS
+        document.getElementById('faculty-filter')?.addEventListener('change', renderList);
         document.getElementById('refresh-btn')?.addEventListener('click', loadApplicants);
         document.getElementById('admin-login-btn')?.addEventListener('click', () => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } }));
         document.getElementById('logout-admin-btn')?.addEventListener('click', async () => { await supabase.auth.signOut(); window.location.reload(); });
@@ -904,11 +915,28 @@ import '../styles/global.css';
             document.getElementById('stat-rejected')!.innerText = allApplicants.filter(a => (a.status || '').trim() === 'rejected').length.toString();
         }
 
+        // RENDER OPSI UNTUK ROLE FILTER & FACULTY FILTER DINAMIS WITH COUNT ACCUMULATION
         function renderFilterOptions() {
             const rf = document.getElementById('role-filter') as HTMLSelectElement;
-            if (!rf) return;
-            const roles = [...new Set(allApplicants.map(a => a.position || a.role_applied).filter(Boolean))];
-            rf.innerHTML = `<option value="all">Semua Posisi (${allApplicants.length})</option>` + roles.map(r => `<option value="${r}">${r}</option>`).join('');
+            const ff = document.getElementById('faculty-filter') as HTMLSelectElement;
+
+            if (rf) {
+                const roles = [...new Set(allApplicants.map(a => a.position || a.role_applied).filter(Boolean))];
+                rf.innerHTML = `<option value="all">Semua Posisi (${allApplicants.length})</option>` + 
+                    roles.map(r => {
+                        const count = allApplicants.filter(a => (a.position || a.role_applied) === r).length;
+                        return `<option value="${r}">${r} (${count})</option>`;
+                    }).join('');
+            }
+
+            if (ff) {
+                const faculties = [...new Set(allApplicants.map(a => a.faculty).filter(Boolean))].sort();
+                ff.innerHTML = `<option value="all">Semua Fakultas (${allApplicants.length})</option>` + 
+                    faculties.map(f => {
+                        const count = allApplicants.filter(a => a.faculty === f).length;
+                        return `<option value="${f}">${f} (${count})</option>`;
+                    }).join('');
+            }
         }
 
         function attachCheckboxListeners() {
