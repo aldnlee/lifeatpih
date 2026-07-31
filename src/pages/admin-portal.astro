@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v5.6 (Triple Filters: Role, Faculty, Status + Bulk Reject Sisa Candidates)
+// Admin Portal v5.7 (Fixed Bottom Toolbar, Triple Filters, Dual Choice, Mobile Responsive Drawer, & Master Locks)
 ---
 
 <html lang="id">
@@ -98,49 +98,51 @@ import '../styles/global.css';
         </nav>
 
         <!-- MAIN WORKSPACE CONTAINER -->
-        <div class="flex-1 flex flex-col overflow-hidden max-w-[1600px] w-full mx-auto px-4 py-4 sm:py-6">
+        <div class="flex-1 flex flex-col overflow-hidden max-w-[1600px] w-full mx-auto px-4 py-3 sm:py-4">
             
             <!-- VIEW: APPLICANTS -->
             <section id="view-applicants" class="tab-content flex-1 flex flex-col overflow-hidden">
-                <!-- Top Toolbar & Ringkasan Stats Utama -->
-                <div class="flex-shrink-0 mb-4 overflow-y-auto max-h-[35vh] custom-scroll pr-1">
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-                        <div class="stats-card bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
+                
+                <!-- 1. KONTEN RINGKASAN STATISTIK (DAPAT DI-SCROLL) -->
+                <div class="flex-shrink-0 mb-3 overflow-y-auto max-h-[22vh] custom-scroll pr-1">
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3">
+                        <div class="stats-card bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
                             <div><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Pelamar</p><p id="stat-total" class="text-2xl font-black text-slate-900">0</p></div>
                         </div>
-                        <div class="stats-card bg-amber-50 p-4 rounded-2xl border border-amber-100 flex justify-between items-center">
+                        <div class="stats-card bg-amber-50 p-3.5 rounded-2xl border border-amber-100 flex justify-between items-center">
                             <div><p class="text-[9px] font-black text-amber-600 uppercase">Wawancara</p><p id="stat-interview" class="text-2xl font-black text-amber-700">0</p></div>
                         </div>
-                        <div class="stats-card bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex justify-between items-center">
+                        <div class="stats-card bg-emerald-50 p-3.5 rounded-2xl border border-emerald-100 flex justify-between items-center">
                             <div><p class="text-[9px] font-black text-emerald-600 uppercase">Diterima</p><p id="stat-accepted" class="text-2xl font-black text-emerald-700">0</p></div>
                         </div>
-                        <div class="stats-card bg-yellow-50 p-4 rounded-2xl border border-yellow-200 flex justify-between items-center">
+                        <div class="stats-card bg-yellow-50 p-3.5 rounded-2xl border border-yellow-200 flex justify-between items-center">
                             <div><p class="text-[9px] font-black text-yellow-700 uppercase">Bookmark 🔖</p><p id="stat-bookmark" class="text-2xl font-black text-yellow-800">0</p></div>
                         </div>
-                        <div class="stats-card bg-rose-50 p-4 rounded-2xl border border-rose-100 flex justify-between items-center">
+                        <div class="stats-card bg-rose-50 p-3.5 rounded-2xl border border-rose-100 flex justify-between items-center">
                             <div><p class="text-[9px] font-black text-rose-600 uppercase">Ditolak</p><p id="stat-rejected" class="text-2xl font-black text-rose-700">0</p></div>
                         </div>
                     </div>
 
                     <!-- RINGKASAN DETAIL PER POSISI -->
-                    <div class="mb-4">
-                        <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
                             <h3 class="text-xs font-black uppercase tracking-widest text-slate-500">Statistik Pelamar Per Posisi</h3>
                             <span class="text-[9px] font-bold text-slate-400 italic hidden sm:inline">*Klik angka status untuk melihat daftar pelamar terpilih</span>
                         </div>
-                        <div id="position-stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div id="position-stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5">
                             <!-- Cards per posisi disuntikkan via JS -->
                         </div>
                     </div>
+                </div>
 
-                    <!-- SEARCH & TRIPLE FILTER TOOLBAR (ROLE, FAKULTAS, & STATUS) -->
-                    <div class="flex flex-col lg:flex-row gap-3">
-                        <input type="text" id="search-input" placeholder="Cari Nama/NIM/Email/Fakultas..." class="flex-1 bg-white border border-slate-200 px-5 py-2.5 rounded-xl text-sm outline-none shadow-sm focus:ring-1 focus:ring-blue-500">
-                        <select id="role-filter" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 outline-none shadow-sm min-w-[170px]"></select>
-                        <select id="faculty-filter" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 outline-none shadow-sm min-w-[180px]"></select>
+                <!-- 2. TOOLBAR FILTER STICKY / FIXED DI ATAS TABEL (TIDAK IKUT TER-SCROLL) -->
+                <div class="flex-shrink-0 mb-3 bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex flex-col lg:flex-row gap-2.5">
+                        <input type="text" id="search-input" placeholder="Cari Nama/NIM/Email/Fakultas..." class="flex-1 bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-xs outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 font-medium">
+                        <select id="role-filter" class="bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 outline-none focus:bg-white min-w-[160px]"></select>
+                        <select id="faculty-filter" class="bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 outline-none focus:bg-white min-w-[170px]"></select>
                         
-                        <!-- FILTER STATUS UNTUK CARI SISA KANDIDAT -->
-                        <select id="status-filter" class="bg-white border border-amber-300 px-4 py-2.5 rounded-xl text-xs font-black text-amber-900 outline-none shadow-sm min-w-[180px]">
+                        <select id="status-filter" class="bg-amber-50 border border-amber-300 px-3 py-2 rounded-xl text-xs font-black text-amber-900 outline-none focus:bg-white min-w-[170px]">
                             <option value="all">Semua Status</option>
                             <option value="administrasi">⏳ Belum Diproses (Sisa)</option>
                             <option value="interview">💬 Wawancara</option>
@@ -148,29 +150,28 @@ import '../styles/global.css';
                             <option value="bookmark">🔖 Bookmark</option>
                             <option value="rejected">❌ Ditolak</option>
                         </select>
-                        <button id="refresh-btn" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-xs font-bold">🔄 Refresh</button>
+                        <button id="refresh-btn" class="bg-slate-100 border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-200 text-xs font-black text-slate-700 transition-colors">🔄 Refresh</button>
                     </div>
 
-                    <!-- Bulk Action Panel DENGAN TOMBOL TOLAK MASSAL -->
-                    <div id="bulk-action-panel" class="hidden mt-3 bg-[#1b509b] p-3 rounded-xl items-center justify-between shadow-lg gap-4">
-                        <div class="flex items-center gap-2 ml-2"><span class="text-white font-black text-xs uppercase"><span id="selected-count" class="text-xl text-yellow-300">0</span> Terpilih</span></div>
+                    <!-- Bulk Action Panel -->
+                    <div id="bulk-action-panel" class="hidden mt-2 bg-[#1b509b] p-2.5 rounded-xl items-center justify-between shadow-lg gap-4">
+                        <div class="flex items-center gap-2 ml-2"><span class="text-white font-black text-xs uppercase"><span id="selected-count" class="text-lg text-yellow-300">0</span> Terpilih</span></div>
                         <div class="flex flex-wrap gap-2">
-                            <button id="bulk-bookmark-btn" class="bg-yellow-400 text-slate-900 px-3 py-2 rounded-lg text-[9px] font-black uppercase">🔖 Bookmark</button>
-                            <button id="bulk-interview-btn" class="master-only-btn bg-amber-400 text-slate-900 px-3 py-2 rounded-lg text-[9px] font-black uppercase">Wawancara</button>
-                            <button id="bulk-accept-btn" class="master-only-btn bg-emerald-500 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase">Terima</button>
-                            <!-- DITAMBAHKAN: TOMBOL TOLAK MASSAL -->
-                            <button id="bulk-reject-btn" class="master-only-btn bg-rose-600 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase hover:bg-rose-700">❌ Tolak Massal</button>
-                            <button id="clear-selection-btn" class="bg-white/10 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase">Batal</button>
+                            <button id="bulk-bookmark-btn" class="bg-yellow-400 text-slate-900 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase">🔖 Bookmark</button>
+                            <button id="bulk-interview-btn" class="master-only-btn bg-amber-400 text-slate-900 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase">Wawancara</button>
+                            <button id="bulk-accept-btn" class="master-only-btn bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase">Terima</button>
+                            <button id="bulk-reject-btn" class="master-only-btn bg-rose-600 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase hover:bg-rose-700">❌ Tolak Massal</button>
+                            <button id="clear-selection-btn" class="bg-white/10 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase">Batal</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- SPLIT VIEW BOX -->
+                <!-- 3. SPLIT VIEW BOX (PANEL DAFTAR & PREVIEW) -->
                 <div class="flex-1 flex gap-6 overflow-hidden min-h-0 relative">
                     
                     <!-- LEFT SIDE: APPLICANTS LIST PANEL -->
                     <div class="w-full md:w-[420px] flex-shrink-0 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                        <div class="bg-slate-50 border-b border-slate-200 p-4 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <div class="bg-slate-50 border-b border-slate-200 p-3.5 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             <div class="flex items-center gap-3">
                                 <input type="checkbox" id="master-checkbox" title="Centang Semua Kandidat Terfilter">
                                 <span>Daftar Kandidat</span>
@@ -187,7 +188,7 @@ import '../styles/global.css';
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v5.6</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v5.7</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
@@ -230,7 +231,7 @@ import '../styles/global.css';
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Nomor Induk Mahasiswa</label><p id="preview-nim" class="font-bold text-sm text-slate-800">-</p></div>
-                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Status Notifikasi</label><p id="preview-email-text" class="font-bold text-sm text-slate-800">-</p></div>
+                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Status Notifikasi Email</label><p id="preview-email-text" class="font-bold text-sm text-slate-800">-</p></div>
                                 </div>
 
                                 <div>
@@ -389,7 +390,6 @@ import '../styles/global.css';
             
             const isMaster = currentAdminRole.toLowerCase() === 'master admin';
 
-            // KONTROL AKSES STRICT KHUSUS MASTER ADMIN
             if (!isMaster) {
                 document.querySelectorAll('.master-only-btn').forEach(btn => btn.classList.add('hidden'));
                 const inviteForm = document.getElementById('invite-team-form');
@@ -441,7 +441,6 @@ import '../styles/global.css';
                 const applicantNim = (a.nim || '').toString();
                 const applicantStatus = (a.status || 'administrasi').toString().trim().toLowerCase();
 
-                // MATCH ROLE: Cek Pilihan 1 ATAU Pilihan 2
                 const matchRole = (selectedRole === 'all' || role1 === selectedRole || role2 === selectedRole);
                 const matchFaculty = (selectedFaculty === 'all' || applicantFaculty === selectedFaculty);
                 const matchStatus = (selectedStatus === 'all' || applicantStatus === selectedStatus);
@@ -735,25 +734,25 @@ import '../styles/global.css';
                 const rejected = appsInRole.filter(a => (a.status || '').trim() === 'rejected').length;
 
                 return `
-                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
-                        <div class="flex items-center justify-between mb-2">
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-1.5">
                             <h4 class="font-black text-slate-800 uppercase italic text-xs tracking-tight truncate">${role}</h4>
                             <span class="bg-slate-100 text-slate-600 font-black text-[9px] px-2 py-0.5 rounded-full">${total} Total</span>
                         </div>
                         <div class="grid grid-cols-4 gap-1 text-[9px] font-bold">
-                            <button onclick="openPositionModal('${role}', 'interview')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 p-1.5 rounded-lg text-center transition-colors">
+                            <button onclick="openPositionModal('${role}', 'interview')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 p-1 rounded-lg text-center transition-colors">
                                 <span class="block font-black">${interview}</span>
                                 <span class="text-[7px] uppercase opacity-75">Wawancara</span>
                             </button>
-                            <button onclick="openPositionModal('${role}', 'accepted')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-1.5 rounded-lg text-center transition-colors">
+                            <button onclick="openPositionModal('${role}', 'accepted')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-1 rounded-lg text-center transition-colors">
                                 <span class="block font-black">${accepted}</span>
                                 <span class="text-[7px] uppercase opacity-75">Lolos</span>
                             </button>
-                            <button onclick="openPositionModal('${role}', 'bookmark')" class="bg-yellow-50 hover:bg-yellow-100 text-yellow-800 p-1.5 rounded-lg text-center transition-colors">
+                            <button onclick="openPositionModal('${role}', 'bookmark')" class="bg-yellow-50 hover:bg-yellow-100 text-yellow-800 p-1 rounded-lg text-center transition-colors">
                                 <span class="block font-black">🔖 ${bookmark}</span>
                                 <span class="text-[7px] uppercase opacity-75">Bookm'k</span>
                             </button>
-                            <button onclick="openPositionModal('${role}', 'rejected')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 p-1.5 rounded-lg text-center transition-colors">
+                            <button onclick="openPositionModal('${role}', 'rejected')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 p-1 rounded-lg text-center transition-colors">
                                 <span class="block font-black">${rejected}</span>
                                 <span class="text-[7px] uppercase opacity-75">Tolak</span>
                             </button>
@@ -966,7 +965,6 @@ import '../styles/global.css';
         document.getElementById('bulk-interview-btn')?.addEventListener('click', () => bulkUpdate('interview'));
         document.getElementById('bulk-accept-btn')?.addEventListener('click', () => bulkUpdate('accepted'));
         document.getElementById('bulk-bookmark-btn')?.addEventListener('click', () => bulkUpdate('bookmark'));
-        // EVENT LISTENER TOLAK MASSAL
         document.getElementById('bulk-reject-btn')?.addEventListener('click', () => bulkUpdate('rejected'));
 
         document.getElementById('clear-selection-btn')?.addEventListener('click', () => { 
@@ -976,7 +974,6 @@ import '../styles/global.css';
             (document.getElementById('master-checkbox') as HTMLInputElement).checked = false;
         });
 
-        // Master Checkbox Logic (Hanya Mencentang Kandidat Hasil Filter)
         document.getElementById('master-checkbox')?.addEventListener('change', (e: any) => {
             const checkboxes = document.querySelectorAll('.applicant-checkbox') as NodeListOf<HTMLInputElement>;
             selectedIds = [];
