@@ -6,7 +6,7 @@ timeline_details:
     period: 22-31 JUL 2026 (23.59 WIB)
     is_active: true
   - step_name: Pengumuman Seleksi Administratif
-    period: 1 AGU 2026 (20.00 WIB)
+    period: 2 AGU 2026 (15.00WIB)
     is_active: false
   - step_name: Wawancara
     period: 4-5 AGU 2026
