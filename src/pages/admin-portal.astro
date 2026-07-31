@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v5.5 (Dual Choice Support, Strict Master Admin Protections, Mobile Responsive Drawer, Dual Filters, & Audit Trail)
+// Admin Portal v5.6 (Triple Filters: Role, Faculty, Status + Bulk Reject Sisa Candidates)
 ---
 
 <html lang="id">
@@ -133,21 +133,33 @@ import '../styles/global.css';
                         </div>
                     </div>
 
-                    <!-- SEARCH & DUAL FILTER TOOLBAR -->
+                    <!-- SEARCH & TRIPLE FILTER TOOLBAR (ROLE, FAKULTAS, & STATUS) -->
                     <div class="flex flex-col lg:flex-row gap-3">
                         <input type="text" id="search-input" placeholder="Cari Nama/NIM/Email/Fakultas..." class="flex-1 bg-white border border-slate-200 px-5 py-2.5 rounded-xl text-sm outline-none shadow-sm focus:ring-1 focus:ring-blue-500">
-                        <select id="role-filter" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 outline-none shadow-sm min-w-[180px]"></select>
-                        <select id="faculty-filter" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 outline-none shadow-sm min-w-[200px]"></select>
+                        <select id="role-filter" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 outline-none shadow-sm min-w-[170px]"></select>
+                        <select id="faculty-filter" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 outline-none shadow-sm min-w-[180px]"></select>
+                        
+                        <!-- FILTER STATUS UNTUK CARI SISA KANDIDAT -->
+                        <select id="status-filter" class="bg-white border border-amber-300 px-4 py-2.5 rounded-xl text-xs font-black text-amber-900 outline-none shadow-sm min-w-[180px]">
+                            <option value="all">Semua Status</option>
+                            <option value="administrasi">⏳ Belum Diproses (Sisa)</option>
+                            <option value="interview">💬 Wawancara</option>
+                            <option value="accepted">✅ Diterima (Lolos)</option>
+                            <option value="bookmark">🔖 Bookmark</option>
+                            <option value="rejected">❌ Ditolak</option>
+                        </select>
                         <button id="refresh-btn" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-xs font-bold">🔄 Refresh</button>
                     </div>
 
-                    <!-- Bulk Action Panel -->
+                    <!-- Bulk Action Panel DENGAN TOMBOL TOLAK MASSAL -->
                     <div id="bulk-action-panel" class="hidden mt-3 bg-[#1b509b] p-3 rounded-xl items-center justify-between shadow-lg gap-4">
                         <div class="flex items-center gap-2 ml-2"><span class="text-white font-black text-xs uppercase"><span id="selected-count" class="text-xl text-yellow-300">0</span> Terpilih</span></div>
-                        <div class="flex gap-2">
+                        <div class="flex flex-wrap gap-2">
                             <button id="bulk-bookmark-btn" class="bg-yellow-400 text-slate-900 px-3 py-2 rounded-lg text-[9px] font-black uppercase">🔖 Bookmark</button>
                             <button id="bulk-interview-btn" class="master-only-btn bg-amber-400 text-slate-900 px-3 py-2 rounded-lg text-[9px] font-black uppercase">Wawancara</button>
                             <button id="bulk-accept-btn" class="master-only-btn bg-emerald-500 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase">Terima</button>
+                            <!-- DITAMBAHKAN: TOMBOL TOLAK MASSAL -->
+                            <button id="bulk-reject-btn" class="master-only-btn bg-rose-600 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase hover:bg-rose-700">❌ Tolak Massal</button>
                             <button id="clear-selection-btn" class="bg-white/10 text-white px-3 py-2 rounded-lg text-[9px] font-black uppercase">Batal</button>
                         </div>
                     </div>
@@ -160,7 +172,7 @@ import '../styles/global.css';
                     <div class="w-full md:w-[420px] flex-shrink-0 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                         <div class="bg-slate-50 border-b border-slate-200 p-4 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             <div class="flex items-center gap-3">
-                                <input type="checkbox" id="master-checkbox">
+                                <input type="checkbox" id="master-checkbox" title="Centang Semua Kandidat Terfilter">
                                 <span>Daftar Kandidat</span>
                             </div>
                             <span id="list-count-badge" class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-[9px]">0</span>
@@ -170,12 +182,12 @@ import '../styles/global.css';
                         </div>
                     </div>
 
-                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL (DUAL CHOICE SUPPORT, RESPONSIVE MOBILE DRAWER & DESKTOP) -->
+                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL -->
                     <div id="detail-preview-container" class="hidden md:flex flex-1 flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v5.5</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v5.6</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
@@ -205,7 +217,6 @@ import '../styles/global.css';
                             
                             <!-- Body Info Content -->
                             <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 custom-scroll">
-                                <!-- DILENGKAPI: POSISI PILIHAN UTAMA (1) & CADANGAN (2) -->
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div class="bg-blue-50/60 p-4 rounded-xl border border-blue-100">
                                         <label class="text-[9px] font-black uppercase text-blue-600 tracking-wider block mb-1">🎯 Pilihan 1 (Utama)</label>
@@ -380,10 +391,7 @@ import '../styles/global.css';
 
             // KONTROL AKSES STRICT KHUSUS MASTER ADMIN
             if (!isMaster) {
-                // 1. Sembunyikan tombol bulk action khusus Master Admin
                 document.querySelectorAll('.master-only-btn').forEach(btn => btn.classList.add('hidden'));
-                
-                // 2. SEMBUNYIKAN FORM TAMBAH WHITELIST DARI REVIEWER
                 const inviteForm = document.getElementById('invite-team-form');
                 if (inviteForm) inviteForm.classList.add('hidden');
             }
@@ -405,7 +413,6 @@ import '../styles/global.css';
                 updateStats();
                 renderPositionStatsGrid();
                 
-                // Di Desktop, otomatis pilih pelamar pertama jika belum ada yang terpilih
                 if (data.length > 0 && !activeApplicantId && window.innerWidth >= 768) {
                     (window as any).selectApplicantForPreview(data[0].id);
                 }
@@ -415,9 +422,11 @@ import '../styles/global.css';
         function renderList() {
             const roleFilterElement = document.getElementById('role-filter') as HTMLSelectElement;
             const facultyFilterElement = document.getElementById('faculty-filter') as HTMLSelectElement;
+            const statusFilterElement = document.getElementById('status-filter') as HTMLSelectElement;
 
             const selectedRole = roleFilterElement && roleFilterElement.value ? roleFilterElement.value : 'all';
             const selectedFaculty = facultyFilterElement && facultyFilterElement.value ? facultyFilterElement.value : 'all';
+            const selectedStatus = statusFilterElement && statusFilterElement.value ? statusFilterElement.value : 'all';
             const search = (document.getElementById('search-input') as HTMLInputElement).value.toLowerCase().trim();
             const listContainer = document.getElementById('applicant-list');
 
@@ -430,17 +439,19 @@ import '../styles/global.css';
                 const applicantFaculty = (a.faculty || '').toString();
                 const applicantEmail = (a.email || a.user_email || '').toString().toLowerCase();
                 const applicantNim = (a.nim || '').toString();
+                const applicantStatus = (a.status || 'administrasi').toString().trim().toLowerCase();
 
-                // MATCH ROLE: Cek apakah divisi terpilih ada di Pilihan 1 ATAU Pilihan 2
+                // MATCH ROLE: Cek Pilihan 1 ATAU Pilihan 2
                 const matchRole = (selectedRole === 'all' || role1 === selectedRole || role2 === selectedRole);
                 const matchFaculty = (selectedFaculty === 'all' || applicantFaculty === selectedFaculty);
+                const matchStatus = (selectedStatus === 'all' || applicantStatus === selectedStatus);
                 const matchSearch = search === "" || 
                     fullName.includes(search) || 
                     applicantNim.includes(search) || 
                     applicantFaculty.toLowerCase().includes(search) ||
                     applicantEmail.includes(search);
                 
-                return matchRole && matchFaculty && matchSearch;
+                return matchRole && matchFaculty && matchStatus && matchSearch;
             });
 
             document.getElementById('list-count-badge')!.innerText = filtered.length.toString();
@@ -466,7 +477,6 @@ import '../styles/global.css';
                 else if (appStatus === 'bookmark') badgeClass = "bg-yellow-50 border-yellow-300 text-yellow-800 font-bold";
                 else if (appStatus === 'rejected') badgeClass = "bg-rose-50 border-rose-200 text-rose-700 font-bold";
 
-                // Indikator jika pencarian/filter mengenai Pilihan 2
                 const isMatchedOnRole2 = selectedRole !== 'all' && role2 === selectedRole && role1 !== selectedRole;
 
                 return `
@@ -480,7 +490,6 @@ import '../styles/global.css';
                                 <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${badgeClass} flex-shrink-0">${appStatus === 'bookmark' ? '🔖 Bookmark' : appStatus}</span>
                             </div>
                             
-                            <!-- DUAL ROLE BADGES DISPLAY -->
                             <div class="mt-1 flex flex-wrap items-center gap-1">
                                 <span class="text-[9px] font-bold text-[#1b509b] uppercase tracking-wider bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 truncate max-w-[180px]">
                                     1: ${role1}
@@ -504,7 +513,7 @@ import '../styles/global.css';
             attachCheckboxListeners();
         }
 
-        // PREVIEW GENERATION LOGIC (DIPERBAIKI UNTUK DUKUNGAN PILIHAN 1 & PILIHAN 2)
+        // PREVIEW GENERATION LOGIC
         (window as any).selectApplicantForPreview = (id: string) => {
             activeApplicantId = id;
             
@@ -516,7 +525,6 @@ import '../styles/global.css';
             const app = allApplicants.find(a => a.id === id);
             if (!app) return;
 
-            // Aktifkan Tampilan Mobile Preview Drawer jika di layar HP
             const previewContainer = document.getElementById('detail-preview-container');
             if (window.innerWidth < 768) {
                 previewContainer?.classList.add('mobile-active');
@@ -536,7 +544,6 @@ import '../styles/global.css';
             document.getElementById('preview-email-status')!.innerText = app.email_status === 'sent' ? '📧 Sent' : '⚪ Pending';
             document.getElementById('preview-email-text')!.innerText = app.email_status === 'sent' ? 'Sudah Terikirim' : 'Belum Dikirim';
             
-            // ISI DUA PILIHAN POSISI
             document.getElementById('preview-pos-1')!.innerText = app.position || app.role_applied || '-';
             document.getElementById('preview-pos-2')!.innerText = app.role_2 || app.position_2 || 'Tidak memilih pilihan ke-2';
             
@@ -583,7 +590,6 @@ import '../styles/global.css';
                 portfolioBtn.onclick = () => (window as any).openPortfolioModal(app.full_name, portoList);
             }
 
-            // LOGIKA DYNAMIC BUTTONS (BOOKMARK & UNBOOKMARK BISA DILAKUKAN SELURUH TIM)
             let buttonsHTML = ``;
 
             if (isBookmarked) {
@@ -600,7 +606,6 @@ import '../styles/global.css';
                 `;
             }
 
-            // HAK KEPUTUSAN EKSKLUSIF MASTER ADMIN
             if (isMaster) {
                 if (!isBookmarked) {
                     buttonsHTML += `
@@ -619,17 +624,13 @@ import '../styles/global.css';
             }
 
             document.getElementById('preview-action-buttons')!.innerHTML = buttonsHTML;
-
-            // Load History Perubahan Status untuk Seluruh Tim
             (window as any).loadApplicantHistory(id);
         };
 
-        // FUNGSI UNTUK MENUTUP MOBILE PREVIEW DRAWER
         (window as any).closeMobilePreview = () => {
             document.getElementById('detail-preview-container')?.classList.remove('mobile-active');
         };
 
-        // FUNGSI LOG & AUDIT TRAIL HISTORY UNTUK SELURUH TIM
         (window as any).loadApplicantHistory = async (applicationId: string) => {
             const historyContainer = document.getElementById('preview-history-list');
             if (!historyContainer) return;
@@ -669,7 +670,6 @@ import '../styles/global.css';
             }).join('');
         };
 
-        // PERBARUI STATUS + CATAT LOG HISTORY
         (window as any).updateStatus = async (id: string, newStatus: string) => {
             const cleanStatus = newStatus.trim();
             const isMaster = currentAdminRole.toLowerCase() === 'master admin';
@@ -677,11 +677,9 @@ import '../styles/global.css';
             const app = allApplicants.find(a => a.id === id);
             const oldStatus = app ? (app.status || 'administrasi').trim() : 'administrasi';
 
-            // Pengecekan Otoritas Unbookmark / Bookmark
             const isSettingBookmark = (cleanStatus === 'bookmark');
             const isUnbookmarking = (oldStatus === 'bookmark' && cleanStatus === 'administrasi');
 
-            // Jika bukan Master Admin, HANYA diizinkan Bookmark atau Unbookmark
             if (!isMaster && !isSettingBookmark && !isUnbookmarking) {
                 alert("Akses Ditolak: Hanya Master Admin yang berhak menentukan keputusan Wawancara, Lolos, Tolak, atau Reset.");
                 return;
@@ -698,7 +696,6 @@ import '../styles/global.css';
                 return;
             }
 
-            // 1. Update Database Applications
             const { error: updateError } = await supabase
                 .from('applications')
                 .update({ status: cleanStatus, acknowledged: false, email_status: 'pending' })
@@ -709,7 +706,6 @@ import '../styles/global.css';
                 return;
             }
 
-            // 2. Insert Log Audit History
             await supabase.from('application_logs').insert([{
                 application_id: id,
                 changed_by_email: currentUserEmail,
@@ -717,19 +713,16 @@ import '../styles/global.css';
                 new_status: cleanStatus
             }]);
 
-            // 3. UI Auto Refresh
             await loadApplicants();
             if (activeApplicantId) {
                 (window as any).selectApplicantForPreview(activeApplicantId);
             }
         };
 
-        // RENDER KARTU STATISTIK DETAIL PER POSISI
         function renderPositionStatsGrid() {
             const container = document.getElementById('position-stats-grid');
             if (!container) return;
 
-            // Mengumpulkan seluruh posisi dari Pilihan 1 maupun Pilihan 2
             const allRolesRaw = allApplicants.flatMap(a => [a.position || a.role_applied, a.role_2 || a.position_2]).filter(Boolean);
             const roles = [...new Set(allRolesRaw)];
             
@@ -770,7 +763,6 @@ import '../styles/global.css';
             }).join('');
         }
 
-        // Modal Daftar Pelamar Per Posisi
         (window as any).openPositionModal = (role: string, status: string) => {
             const modal = document.getElementById('position-detail-modal');
             const title = document.getElementById('pos-modal-role-title');
@@ -819,7 +811,6 @@ import '../styles/global.css';
             document.getElementById('position-detail-modal')?.classList.remove('active');
         };
 
-        // POP-UP MULTI PORTOFOLIO LOGIC
         (window as any).openPortfolioModal = (applicantName: string, urls: string[]) => {
             const modal = document.getElementById('portfolio-modal');
             const nameContainer = document.getElementById('modal-applicant-name');
@@ -863,7 +854,6 @@ import '../styles/global.css';
             activeApplicantId = null;
         }
 
-        // TEAM LOGIC
         async function loadTeam() {
             const { data, error } = await supabase.from('admin_members').select('*').order('email');
             if (!error && data) renderTeamList(data);
@@ -895,7 +885,6 @@ import '../styles/global.css';
             }).join('');
         }
 
-        // GLOBAL ACTIONS EXPOSED TO WINDOW
         (window as any).switchTab = (tab: string) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
@@ -925,16 +914,15 @@ import '../styles/global.css';
             const isMaster = currentAdminRole.toLowerCase() === 'master admin';
 
             if (!isMaster && cleanStatus !== 'bookmark') {
-                alert("Akses Ditolak: Hanya Master Admin yang dapat melakukan aksi bulk untuk Wawancara / Terima.");
+                alert("Akses Ditolak: Hanya Master Admin yang dapat melakukan aksi bulk untuk Wawancara / Terima / Tolak.");
                 return;
             }
 
-            if (!confirm(`Ubah ${selectedIds.length} pelamar terdaftar ke ${cleanStatus.toUpperCase()}?`)) return;
+            if (!confirm(`Yakin ingin mengubah status ${selectedIds.length} pelamar terdaftar ke [${cleanStatus.toUpperCase()}]?`)) return;
 
             const { error } = await supabase.from('applications').update({ status: cleanStatus, acknowledged: false, email_status: 'pending' }).in('id', selectedIds);
             
             if (!error) { 
-                // Catat Log Massal ke History
                 const logsToInsert = selectedIds.map(appId => ({
                     application_id: appId,
                     changed_by_email: currentUserEmail,
@@ -952,7 +940,6 @@ import '../styles/global.css';
 
         // EVENT LISTENERS
         document.getElementById('invite-member-btn')?.addEventListener('click', async () => {
-            // STRICT OTORITAS MASTER ADMIN
             if (currentAdminRole.toLowerCase() !== 'master admin') {
                 alert("Akses Ditolak: Hanya Master Admin yang dapat menambah anggota tim baru.");
                 return;
@@ -979,6 +966,9 @@ import '../styles/global.css';
         document.getElementById('bulk-interview-btn')?.addEventListener('click', () => bulkUpdate('interview'));
         document.getElementById('bulk-accept-btn')?.addEventListener('click', () => bulkUpdate('accepted'));
         document.getElementById('bulk-bookmark-btn')?.addEventListener('click', () => bulkUpdate('bookmark'));
+        // EVENT LISTENER TOLAK MASSAL
+        document.getElementById('bulk-reject-btn')?.addEventListener('click', () => bulkUpdate('rejected'));
+
         document.getElementById('clear-selection-btn')?.addEventListener('click', () => { 
             selectedIds = []; 
             renderList(); 
@@ -986,7 +976,7 @@ import '../styles/global.css';
             (document.getElementById('master-checkbox') as HTMLInputElement).checked = false;
         });
 
-        // Master Checkbox Logic
+        // Master Checkbox Logic (Hanya Mencentang Kandidat Hasil Filter)
         document.getElementById('master-checkbox')?.addEventListener('change', (e: any) => {
             const checkboxes = document.querySelectorAll('.applicant-checkbox') as NodeListOf<HTMLInputElement>;
             selectedIds = [];
@@ -1007,6 +997,7 @@ import '../styles/global.css';
         document.getElementById('search-input')?.addEventListener('input', renderList);
         document.getElementById('role-filter')?.addEventListener('change', renderList);
         document.getElementById('faculty-filter')?.addEventListener('change', renderList);
+        document.getElementById('status-filter')?.addEventListener('change', renderList);
         document.getElementById('refresh-btn')?.addEventListener('click', loadApplicants);
         document.getElementById('admin-login-btn')?.addEventListener('click', () => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } }));
         document.getElementById('logout-admin-btn')?.addEventListener('click', async () => { await supabase.auth.signOut(); window.location.reload(); });
@@ -1019,7 +1010,6 @@ import '../styles/global.css';
             document.getElementById('stat-rejected')!.innerText = allApplicants.filter(a => (a.status || '').trim() === 'rejected').length.toString();
         }
 
-        // RENDER OPSI UNTUK ROLE FILTER & FACULTY FILTER DINAMIS WITH COUNT ACCUMULATION
         function renderFilterOptions() {
             const rf = document.getElementById('role-filter') as HTMLSelectElement;
             const ff = document.getElementById('faculty-filter') as HTMLSelectElement;
