@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v5.3 (Mobile Responsive Preview Drawer, Multi-Filter Fakultas/Divisi, Master Admin Locks, Toggle Unbookmark, & Audit Trail)
+// Admin Portal v5.5 (Dual Choice Support, Strict Master Admin Protections, Mobile Responsive Drawer, Dual Filters, & Audit Trail)
 ---
 
 <html lang="id">
@@ -170,17 +170,17 @@ import '../styles/global.css';
                         </div>
                     </div>
 
-                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL (DIPERBAIKI UNTUK RESPONSIVE MOBILE & DESKTOP) -->
+                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL (DUAL CHOICE SUPPORT, RESPONSIVE MOBILE DRAWER & DESKTOP) -->
                     <div id="detail-preview-container" class="hidden md:flex flex-1 flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v5.3</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v5.5</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
                             
-                            <!-- BAR KEMBALI KHUSUS MOBILE (DIPERBAIKI) -->
+                            <!-- BAR KEMBALI KHUSUS MOBILE -->
                             <div class="md:hidden bg-[#0f2854] text-white px-4 py-3 flex items-center justify-between flex-shrink-0">
                                 <button onclick="closeMobilePreview()" class="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider bg-white/10 px-3 py-1.5 rounded-lg active:scale-95 transition-all">
                                     <span>⬅</span> <span>Kembali ke Daftar</span>
@@ -205,10 +205,23 @@ import '../styles/global.css';
                             
                             <!-- Body Info Content -->
                             <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 custom-scroll">
+                                <!-- DILENGKAPI: POSISI PILIHAN UTAMA (1) & CADANGAN (2) -->
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Pilihan Posisi Utama</label><p id="preview-pos-1" class="font-bold text-sm text-slate-800">-</p></div>
-                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Nomor Induk Mahasiswa</label><p id="preview-nim" class="font-bold text-sm text-slate-800">-</p></div>
+                                    <div class="bg-blue-50/60 p-4 rounded-xl border border-blue-100">
+                                        <label class="text-[9px] font-black uppercase text-blue-600 tracking-wider block mb-1">🎯 Pilihan 1 (Utama)</label>
+                                        <p id="preview-pos-1" class="font-black text-sm text-slate-800 italic uppercase leading-tight">-</p>
+                                    </div>
+                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/60">
+                                        <label class="text-[9px] font-black uppercase text-slate-400 tracking-wider block mb-1">🔄 Pilihan 2 (Cadangan)</label>
+                                        <p id="preview-pos-2" class="font-black text-sm text-slate-700 italic uppercase leading-tight">-</p>
+                                    </div>
                                 </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Nomor Induk Mahasiswa</label><p id="preview-nim" class="font-bold text-sm text-slate-800">-</p></div>
+                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Status Notifikasi</label><p id="preview-email-text" class="font-bold text-sm text-slate-800">-</p></div>
+                                </div>
+
                                 <div>
                                     <label class="text-[10px] font-black uppercase tracking-widest text-[#1b509b] mb-2 block">Kegiatan Saat Ini</label>
                                     <p id="preview-activities" class="text-sm text-slate-600 bg-slate-50/50 p-4 rounded-xl border border-slate-100 italic">-</p>
@@ -253,20 +266,29 @@ import '../styles/global.css';
             <!-- SECTION 2: TEAM -->
             <section id="view-team" class="tab-content hidden flex-1 overflow-y-auto custom-scroll">
                 <div class="max-w-4xl mx-auto">
-                    <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm mb-6">
-                        <h2 class="text-xl font-black text-slate-900 uppercase italic mb-4">Whitelist Tim Penyeleksi</h2>
+                    
+                    <!-- FORM TAMBAH ADMIN (HANYA DILIHAT & DIAKSES MASTER ADMIN) -->
+                    <div id="invite-team-form" class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm mb-6">
+                        <h2 class="text-xl font-black text-slate-900 uppercase italic mb-1">Tambah Whitelist Tim Penyeleksi</h2>
+                        <p class="text-xs text-slate-400 font-medium mb-4">Hanya Master Admin yang memiliki hak menambahkan anggota tim penyeleksi baru.</p>
+                        
                         <div class="flex flex-col md:flex-row gap-4">
                             <input type="email" id="invite-email" placeholder="Email Google Anggota Tim" class="flex-1 bg-slate-50 border border-slate-200 px-5 py-3 rounded-xl text-sm outline-none focus:ring-1 focus:ring-blue-500">
                             <select id="invite-role" class="bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl text-xs font-bold">
                                 <option value="Reviewer">Reviewer</option>
                                 <option value="Master Admin">Master Admin</option>
                             </select>
-                            <button id="invite-member-btn" class="bg-[#1b509b] text-white px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest">Tambah Admin</button>
+                            <button id="invite-member-btn" class="bg-[#1b509b] hover:bg-[#0f2854] text-white px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest transition-colors">Tambah Admin</button>
                         </div>
                     </div>
+
+                    <!-- DAFTAR ANGOTA TIM PENYELEKSI -->
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden overflow-x-auto">
+                        <div class="p-4 bg-slate-50 border-b border-slate-200">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-slate-600">Daftar Anggota Tim Terdaftar</h3>
+                        </div>
                         <table class="w-full text-left">
-                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                            <thead class="bg-slate-50/50 border-b border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-widest">
                                 <tr>
                                     <th class="px-6 sm:px-8 py-4">Email Admin</th>
                                     <th class="px-6 sm:px-8 py-4 text-right">Aksi</th>
@@ -354,9 +376,16 @@ import '../styles/global.css';
             document.getElementById('admin-loader')?.classList.add('hidden');
             document.getElementById('admin-content')?.classList.remove('hidden');
             
-            // Sembunyikan bulk action khusus jika bukan Master Admin
-            if (currentAdminRole.toLowerCase() !== 'master admin') {
+            const isMaster = currentAdminRole.toLowerCase() === 'master admin';
+
+            // KONTROL AKSES STRICT KHUSUS MASTER ADMIN
+            if (!isMaster) {
+                // 1. Sembunyikan tombol bulk action khusus Master Admin
                 document.querySelectorAll('.master-only-btn').forEach(btn => btn.classList.add('hidden'));
+                
+                // 2. SEMBUNYIKAN FORM TAMBAH WHITELIST DARI REVIEWER
+                const inviteForm = document.getElementById('invite-team-form');
+                if (inviteForm) inviteForm.classList.add('hidden');
             }
 
             loadApplicants();
@@ -396,12 +425,14 @@ import '../styles/global.css';
                 if (!a) return false;
                 
                 const fullName = (a.full_name || '').toString().toLowerCase();
-                const applicantRole = (a.position || a.role_applied || '').toString();
+                const role1 = (a.position || a.role_applied || '').toString();
+                const role2 = (a.role_2 || a.position_2 || '').toString();
                 const applicantFaculty = (a.faculty || '').toString();
                 const applicantEmail = (a.email || a.user_email || '').toString().toLowerCase();
                 const applicantNim = (a.nim || '').toString();
 
-                const matchRole = (selectedRole === 'all' || applicantRole === selectedRole);
+                // MATCH ROLE: Cek apakah divisi terpilih ada di Pilihan 1 ATAU Pilihan 2
+                const matchRole = (selectedRole === 'all' || role1 === selectedRole || role2 === selectedRole);
                 const matchFaculty = (selectedFaculty === 'all' || applicantFaculty === selectedFaculty);
                 const matchSearch = search === "" || 
                     fullName.includes(search) || 
@@ -422,7 +453,8 @@ import '../styles/global.css';
 
             listContainer!.innerHTML = filtered.map(app => {
                 const finalName = app.full_name || "Tanpa Nama";
-                const finalRole = app.position || app.role_applied || "-";
+                const role1 = app.position || app.role_applied || "-";
+                const role2 = app.role_2 || app.position_2;
                 const finalNim = app.nim || "-";
                 const finalSem = app.semester || "-";
                 const emailStatus = app.email_status || "pending";
@@ -434,6 +466,9 @@ import '../styles/global.css';
                 else if (appStatus === 'bookmark') badgeClass = "bg-yellow-50 border-yellow-300 text-yellow-800 font-bold";
                 else if (appStatus === 'rejected') badgeClass = "bg-rose-50 border-rose-200 text-rose-700 font-bold";
 
+                // Indikator jika pencarian/filter mengenai Pilihan 2
+                const isMatchedOnRole2 = selectedRole !== 'all' && role2 === selectedRole && role1 !== selectedRole;
+
                 return `
                     <div class="applicant-card p-4 flex items-start gap-3 cursor-pointer hover:bg-slate-50 transition-all ${activeApplicantId === app.id ? 'active' : ''}" data-id="${app.id}">
                         <div class="pt-1" onclick="event.stopPropagation();">
@@ -444,7 +479,19 @@ import '../styles/global.css';
                                 <h4 class="font-black text-slate-900 text-sm truncate leading-tight">${finalName}</h4>
                                 <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${badgeClass} flex-shrink-0">${appStatus === 'bookmark' ? '🔖 Bookmark' : appStatus}</span>
                             </div>
-                            <p class="text-[10px] text-[#1b509b] font-black uppercase tracking-wider mt-0.5">${finalRole}</p>
+                            
+                            <!-- DUAL ROLE BADGES DISPLAY -->
+                            <div class="mt-1 flex flex-wrap items-center gap-1">
+                                <span class="text-[9px] font-bold text-[#1b509b] uppercase tracking-wider bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 truncate max-w-[180px]">
+                                    1: ${role1}
+                                </span>
+                                ${role2 ? `
+                                    <span class="text-[8px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded truncate max-w-[160px] ${isMatchedOnRole2 ? 'border border-amber-300 font-bold text-amber-800' : ''}">
+                                        2: ${role2}
+                                    </span>
+                                ` : ''}
+                            </div>
+
                             <div class="flex items-center justify-between mt-2 text-[9px] text-slate-400 font-medium">
                                 <span>NIM: ${finalNim} • Sem: ${finalSem}</span>
                                 <span class="text-xs" title="${emailStatus}">${emailStatus === 'sent' ? '📧' : '⚪'}</span>
@@ -457,7 +504,7 @@ import '../styles/global.css';
             attachCheckboxListeners();
         }
 
-        // PREVIEW GENERATION LOGIC (DIPERBAIKI UNTUK DUKUNGAN MOBILE DRAWER)
+        // PREVIEW GENERATION LOGIC (DIPERBAIKI UNTUK DUKUNGAN PILIHAN 1 & PILIHAN 2)
         (window as any).selectApplicantForPreview = (id: string) => {
             activeApplicantId = id;
             
@@ -469,7 +516,7 @@ import '../styles/global.css';
             const app = allApplicants.find(a => a.id === id);
             if (!app) return;
 
-            // Aktifkan Tampilan Mobile Preview Drawer
+            // Aktifkan Tampilan Mobile Preview Drawer jika di layar HP
             const previewContainer = document.getElementById('detail-preview-container');
             if (window.innerWidth < 768) {
                 previewContainer?.classList.add('mobile-active');
@@ -487,7 +534,12 @@ import '../styles/global.css';
             document.getElementById('preview-meta')!.innerText = `${app.faculty || app.major || '-'} • Semester ${app.semester || '-'}`;
             document.getElementById('preview-status-badge')!.innerText = currentStatus === 'bookmark' ? '🔖 Bookmark' : currentStatus;
             document.getElementById('preview-email-status')!.innerText = app.email_status === 'sent' ? '📧 Sent' : '⚪ Pending';
+            document.getElementById('preview-email-text')!.innerText = app.email_status === 'sent' ? 'Sudah Terikirim' : 'Belum Dikirim';
+            
+            // ISI DUA PILIHAN POSISI
             document.getElementById('preview-pos-1')!.innerText = app.position || app.role_applied || '-';
+            document.getElementById('preview-pos-2')!.innerText = app.role_2 || app.position_2 || 'Tidak memilih pilihan ke-2';
+            
             document.getElementById('preview-nim')!.innerText = app.nim || '-';
             document.getElementById('preview-activities')!.innerText = app.other_activities || 'Tidak ada kegiatan khusus yang diisi.';
             document.getElementById('preview-reason')!.innerText = app.reason_1 || 'Tidak ada alasan khusus yang dijabarkan.';
@@ -677,10 +729,12 @@ import '../styles/global.css';
             const container = document.getElementById('position-stats-grid');
             if (!container) return;
 
-            const roles = [...new Set(allApplicants.map(a => a.position || a.role_applied).filter(Boolean))];
+            // Mengumpulkan seluruh posisi dari Pilihan 1 maupun Pilihan 2
+            const allRolesRaw = allApplicants.flatMap(a => [a.position || a.role_applied, a.role_2 || a.position_2]).filter(Boolean);
+            const roles = [...new Set(allRolesRaw)];
             
             container.innerHTML = roles.map(role => {
-                const appsInRole = allApplicants.filter(a => (a.position || a.role_applied) === role);
+                const appsInRole = allApplicants.filter(a => (a.position || a.role_applied) === role || (a.role_2 || a.position_2) === role);
                 const total = appsInRole.length;
                 const interview = appsInRole.filter(a => (a.status || '').trim() === 'interview').length;
                 const accepted = appsInRole.filter(a => (a.status || '').trim() === 'accepted').length;
@@ -725,7 +779,7 @@ import '../styles/global.css';
 
             if (!modal || !title || !badge || !list) return;
 
-            const filtered = allApplicants.filter(a => (a.position || a.role_applied) === role && (a.status || '').trim() === status);
+            const filtered = allApplicants.filter(a => ((a.position || a.role_applied) === role || (a.role_2 || a.position_2) === role) && (a.status || '').trim() === status);
 
             title.innerText = role;
             badge.innerText = `Status: ${status}`;
@@ -819,9 +873,11 @@ import '../styles/global.css';
             const container = document.getElementById('team-list');
             if (!container) return;
 
+            const isMaster = currentAdminRole.toLowerCase() === 'master admin';
+
             container.innerHTML = members.map(m => {
-                const roleLower = (m.role || '').toLowerCase().trim();
-                const isMaster = roleLower === 'master admin';
+                const memberRoleLower = (m.role || '').toLowerCase().trim();
+                const isMemberMaster = memberRoleLower === 'master admin';
 
                 return `
                     <tr class="hover:bg-slate-50 transition-colors">
@@ -830,9 +886,9 @@ import '../styles/global.css';
                             <div class="text-[9px] text-slate-400 uppercase tracking-widest font-black">${m.role || 'Reviewer'}</div>
                         </td>
                         <td class="px-6 sm:px-8 py-4 text-right">
-                            ${!isMaster ? `
+                            ${(isMaster && !isMemberMaster) ? `
                                 <button onclick="deleteMember('${m.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-[10px] uppercase tracking-widest">Hapus Akses</button>
-                            ` : '<span class="text-[9px] font-black uppercase opacity-20">Master Admin</span>'}
+                            ` : `<span class="text-[9px] font-black uppercase opacity-20">${isMemberMaster ? 'Master Admin' : 'Terdaftar'}</span>`}
                         </td>
                     </tr>
                 `;
@@ -855,7 +911,7 @@ import '../styles/global.css';
 
         (window as any).deleteMember = async (id: string) => {
             if (currentAdminRole.toLowerCase() !== 'master admin') {
-                alert("Hanya Master Admin yang dapat menghapus anggota tim.");
+                alert("Akses Ditolak: Hanya Master Admin yang dapat menghapus anggota tim.");
                 return;
             }
             if (!confirm("Hapus akses admin ini?")) return;
@@ -896,16 +952,28 @@ import '../styles/global.css';
 
         // EVENT LISTENERS
         document.getElementById('invite-member-btn')?.addEventListener('click', async () => {
+            // STRICT OTORITAS MASTER ADMIN
             if (currentAdminRole.toLowerCase() !== 'master admin') {
-                alert("Hanya Master Admin yang dapat menambah anggota tim baru.");
+                alert("Akses Ditolak: Hanya Master Admin yang dapat menambah anggota tim baru.");
                 return;
             }
+
             const email = (document.getElementById('invite-email') as HTMLInputElement).value.trim().toLowerCase();
             const role = (document.getElementById('invite-role') as HTMLSelectElement).value;
-            if (!email) return;
+
+            if (!email) {
+                alert("Masukkan email Google calon admin!");
+                return;
+            }
+
             const { error } = await supabase.from('admin_members').insert([{ email, role }]);
-            if (!error) { (document.getElementById('invite-email') as HTMLInputElement).value = ''; loadTeam(); }
-            else alert(error.message);
+            if (!error) { 
+                (document.getElementById('invite-email') as HTMLInputElement).value = ''; 
+                loadTeam(); 
+                alert("Anggota tim berhasil ditambahkan ke whitelist!");
+            } else {
+                alert("Gagal menambah anggota tim: " + error.message);
+            }
         });
 
         document.getElementById('bulk-interview-btn')?.addEventListener('click', () => bulkUpdate('interview'));
@@ -957,10 +1025,12 @@ import '../styles/global.css';
             const ff = document.getElementById('faculty-filter') as HTMLSelectElement;
 
             if (rf) {
-                const roles = [...new Set(allApplicants.map(a => a.position || a.role_applied).filter(Boolean))];
+                const allRolesRaw = allApplicants.flatMap(a => [a.position || a.role_applied, a.role_2 || a.position_2]).filter(Boolean);
+                const roles = [...new Set(allRolesRaw)];
+                
                 rf.innerHTML = `<option value="all">Semua Posisi (${allApplicants.length})</option>` + 
                     roles.map(r => {
-                        const count = allApplicants.filter(a => (a.position || a.role_applied) === r).length;
+                        const count = allApplicants.filter(a => (a.position || a.role_applied) === r || (a.role_2 || a.position_2) === r).length;
                         return `<option value="${r}">${r} (${count})</option>`;
                     }).join('');
             }
