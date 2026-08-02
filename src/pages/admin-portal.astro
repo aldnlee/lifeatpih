@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v6.0 (Explicit Role Status Pos1/Pos2, Privilege System & Dynamic Action Buttons)
+// Admin Portal v6.1 (Strict Position-Based Statistics Privilege, Dual Filters, Dual Choice, Mobile Responsive Drawer, & Master Locks)
 ---
 
 <html lang="id">
@@ -17,12 +17,15 @@ import '../styles/global.css';
         .stats-card:hover { transform: translateY(-3px); }
         .nav-tab.active { background: white; color: #0f2854; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         
+        /* Custom Scrollbar */
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
+        /* Active State Card */
         .applicant-card.active { border-color: #1b509b; background-color: #f8fafc; box-shadow: inset 4px 0 0 0 #1b509b; }
 
+        /* Mobile Drawer State Logic */
         @media (max-width: 767px) {
             #detail-preview-container {
                 position: fixed;
@@ -38,6 +41,7 @@ import '../styles/global.css';
             }
         }
 
+        /* Animation Modal & Drawer */
         #portfolio-modal, #position-detail-modal {
             display: none;
             position: fixed;
@@ -99,7 +103,7 @@ import '../styles/global.css';
             <!-- VIEW: APPLICANTS -->
             <section id="view-applicants" class="tab-content flex-1 flex flex-col overflow-hidden">
                 
-                <!-- 1. KONTEN STATISTIK SCROLLABLE -->
+                <!-- 1. AREA STATISTIK SCROLLABLE -->
                 <div class="flex-shrink-0 mb-3 overflow-y-auto max-h-[22vh] custom-scroll pr-1">
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3">
                         <div class="stats-card bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
@@ -119,17 +123,19 @@ import '../styles/global.css';
                         </div>
                     </div>
 
-                    <!-- STATISTIK PER POSISI -->
+                    <!-- RINGKASAN DETAIL PER POSISI -->
                     <div>
                         <div class="flex items-center justify-between mb-1.5">
                             <h3 class="text-xs font-black uppercase tracking-widest text-slate-500">Statistik Pelamar Per Posisi</h3>
                             <span class="text-[9px] font-bold text-slate-400 italic hidden sm:inline">*Klik angka status untuk melihat daftar pelamar terpilih</span>
                         </div>
-                        <div id="position-stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5"></div>
+                        <div id="position-stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                            <!-- Cards per posisi disuntikkan via JS -->
+                        </div>
                     </div>
                 </div>
 
-                <!-- 2. FIXED TOOLBAR FILTER -->
+                <!-- 2. TOOLBAR FILTER FIXED / STANDALONE -->
                 <div class="flex-shrink-0 mb-3 bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm z-10">
                     <div class="flex flex-col lg:flex-row gap-2.5">
                         <input type="text" id="search-input" placeholder="Cari Nama/NIM/Email/Fakultas..." class="flex-1 bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-xs outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 font-medium">
@@ -167,11 +173,11 @@ import '../styles/global.css';
                 <!-- 3. SPLIT VIEW BOX -->
                 <div class="flex-1 flex gap-6 overflow-hidden min-h-0 relative">
                     
-                    <!-- DAFTAR KANDIDAT -->
+                    <!-- LEFT SIDE: APPLICANTS LIST PANEL -->
                     <div class="w-full md:w-[420px] flex-shrink-0 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                         <div class="bg-slate-50 border-b border-slate-200 p-3.5 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             <div class="flex items-center gap-3">
-                                <input type="checkbox" id="master-checkbox">
+                                <input type="checkbox" id="master-checkbox" title="Centang Semua Kandidat Terfilter">
                                 <span>Daftar Kandidat</span>
                             </div>
                             <span id="list-count-badge" class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-[9px]">0</span>
@@ -179,15 +185,17 @@ import '../styles/global.css';
                         <div id="applicant-list" class="flex-1 overflow-y-auto custom-scroll divide-y divide-slate-100"></div>
                     </div>
 
-                    <!-- DETAIL PREVIEW PANEL -->
+                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL -->
                     <div id="detail-preview-container" class="hidden md:flex flex-1 flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v6.1</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
                             
+                            <!-- BAR KEMBALI KHUSUS MOBILE -->
                             <div class="md:hidden bg-[#0f2854] text-white px-4 py-3 flex items-center justify-between flex-shrink-0">
                                 <button onclick="closeMobilePreview()" class="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider bg-white/10 px-3 py-1.5 rounded-lg active:scale-95 transition-all">
                                     <span>⬅</span> <span>Kembali ke Daftar</span>
@@ -202,7 +210,7 @@ import '../styles/global.css';
                                     <p id="preview-meta" class="text-blue-600 font-bold text-xs uppercase tracking-widest">-</p>
                                     <div class="mt-3 flex items-center gap-2">
                                         <span id="preview-status-badge" class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-white border border-slate-200">-</span>
-                                        <span id="preview-email-status" class="text-xs">⚪</span>
+                                        <span id="preview-email-status" class="text-xs" title="Status Notifikasi Email">⚪</span>
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap gap-1.5 justify-start sm:justify-end w-full sm:w-auto" id="preview-action-buttons"></div>
@@ -222,8 +230,8 @@ import '../styles/global.css';
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">NIM Mahasiswa</label><p id="preview-nim" class="font-bold text-sm text-slate-800">-</p></div>
-                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Notifikasi Email</label><p id="preview-email-text" class="font-bold text-sm text-slate-800">-</p></div>
+                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Nomor Induk Mahasiswa</label><p id="preview-nim" class="font-bold text-sm text-slate-800">-</p></div>
+                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Status Notifikasi Email</label><p id="preview-email-text" class="font-bold text-sm text-slate-800">-</p></div>
                                 </div>
 
                                 <div>
@@ -235,12 +243,13 @@ import '../styles/global.css';
                                     <p id="preview-reason" class="text-sm text-slate-600 bg-slate-50/50 p-4 rounded-xl border border-slate-100 italic">-</p>
                                 </div>
 
+                                <!-- TIMELINE AUDIT LOG -->
                                 <div class="mt-6 pt-6 border-t border-slate-100">
                                     <div class="flex justify-between items-center mb-3">
                                         <label class="text-[10px] font-black uppercase tracking-widest text-[#1b509b] flex items-center gap-1.5">
                                             <span>📜</span> <span>Riwayat Keputusan Tim</span>
                                         </label>
-                                        <span class="text-[8px] font-bold text-slate-400 uppercase bg-slate-100 px-2 py-0.5 rounded-full">Audit Trail</span>
+                                        <span class="text-[8px] font-bold text-slate-400 uppercase bg-slate-100 px-2 py-0.5 rounded-full">Transparan Seluruh Admin</span>
                                     </div>
                                     <div id="preview-history-list" class="space-y-2 max-h-48 overflow-y-auto custom-scroll pr-1"></div>
                                 </div>
@@ -248,14 +257,19 @@ import '../styles/global.css';
 
                             <!-- Footer Actions -->
                             <div class="p-4 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row gap-2.5 sm:gap-3 flex-shrink-0">
-                                <a id="preview-link-cv" href="#" target="_blank" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white text-center py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2">📄 Lihat CV</a>
+                                <a id="preview-link-cv" href="#" target="_blank" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white text-center py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2">
+                                    <span>📄</span> <span>Lihat CV</span>
+                                </a>
                                 <button id="preview-btn-portfolio" type="button" class="flex-1 bg-[#1b509b] hover:bg-[#0f2854] text-white text-center py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2">
-                                    🎨 <span id="portfolio-btn-label">Buka Portofolio</span>
+                                    <span>🎨</span> <span id="portfolio-btn-label">Buka Portofolio</span>
                                 </button>
-                                <a id="preview-link-wa" href="#" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white text-center px-5 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center">💬 WA</a>
+                                <a id="preview-link-wa" href="#" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white text-center px-5 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center">
+                                    <span>💬 WA</span>
+                                </a>
                             </div>
                         </div>
                     </div>
+                    
                 </div>
             </section>
 
@@ -265,6 +279,7 @@ import '../styles/global.css';
                     <div id="invite-team-form" class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm mb-6">
                         <h2 class="text-xl font-black text-slate-900 uppercase italic mb-1">Tambah Whitelist Tim Penyeleksi</h2>
                         <p class="text-xs text-slate-400 font-medium mb-4">Hanya Master Admin yang memiliki hak menambahkan anggota tim penyeleksi baru.</p>
+                        
                         <div class="flex flex-col md:flex-row gap-4">
                             <input type="email" id="invite-email" placeholder="Email Google Anggota Tim" class="flex-1 bg-slate-50 border border-slate-200 px-5 py-3 rounded-xl text-sm outline-none focus:ring-1 focus:ring-blue-500">
                             <select id="invite-role" class="bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl text-xs font-bold">
@@ -274,11 +289,17 @@ import '../styles/global.css';
                             <button id="invite-member-btn" class="bg-[#1b509b] hover:bg-[#0f2854] text-white px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest transition-colors">Tambah Admin</button>
                         </div>
                     </div>
+
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden overflow-x-auto">
-                        <div class="p-4 bg-slate-50 border-b border-slate-200"><h3 class="text-xs font-black uppercase tracking-widest text-slate-600">Daftar Anggota Tim Terdaftar</h3></div>
+                        <div class="p-4 bg-slate-50 border-b border-slate-200">
+                            <h3 class="text-xs font-black uppercase tracking-widest text-slate-600">Daftar Anggota Tim Terdaftar</h3>
+                        </div>
                         <table class="w-full text-left">
                             <thead class="bg-slate-50/50 border-b border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                                <tr><th class="px-6 sm:px-8 py-4">Email Admin</th><th class="px-6 sm:px-8 py-4 text-right">Aksi</th></tr>
+                                <tr>
+                                    <th class="px-6 sm:px-8 py-4">Email Admin</th>
+                                    <th class="px-6 sm:px-8 py-4 text-right">Aksi</th>
+                                </tr>
                             </thead>
                             <tbody id="team-list" class="divide-y divide-slate-100"></tbody>
                         </table>
@@ -292,7 +313,10 @@ import '../styles/global.css';
     <div id="portfolio-modal">
         <div class="bg-white max-w-lg w-full rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[85vh]">
             <div class="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                <div><h3 class="font-black text-slate-900 uppercase italic text-lg leading-tight">Daftar Link Portofolio</h3><p id="modal-applicant-name" class="text-xs text-blue-600 font-bold uppercase mt-0.5">-</p></div>
+                <div>
+                    <h3 class="font-black text-slate-900 uppercase italic text-lg leading-tight">Daftar Link Portofolio</h3>
+                    <p id="modal-applicant-name" class="text-xs text-blue-600 font-bold uppercase mt-0.5">-</p>
+                </div>
                 <button onclick="closePortfolioModal()" class="w-9 h-9 bg-slate-200/60 hover:bg-slate-200 text-slate-600 rounded-full font-bold flex items-center justify-center transition-all">✕</button>
             </div>
             <div id="modal-portfolio-list" class="p-6 overflow-y-auto space-y-3 custom-scroll flex-1"></div>
@@ -517,10 +541,9 @@ import '../styles/global.css';
                 portfolioBtn.onclick = () => (window as any).openPortfolioModal(app.full_name, portoList);
             }
 
-            // DYNAMIC BUTTONS DENGAN PRIVILEGE EKSPLISIT PILIHAN 1 & 2
+            // DYNAMIC BUTTONS PRIVILEGE PILIHAN 1 & 2
             let buttonsHTML = ``;
 
-            // AKSI BOOKMARK PER POSISI (BISA UNTUK SELURUH TIM)
             if (currentStatus === 'bookmark_pos1') {
                 buttonsHTML += `<button onclick="updateStatus('${app.id}', 'administrasi')" class="px-2.5 py-1.5 bg-yellow-100 border border-yellow-400 text-yellow-900 rounded-xl font-bold text-[9px] uppercase">❌ Unbookmark Pil 1</button>`;
             } else {
@@ -535,7 +558,6 @@ import '../styles/global.css';
                 }
             }
 
-            // HAK KEPUTUSAN KHUSUS MASTER ADMIN
             if (isMaster) {
                 buttonsHTML += `<button onclick="updateStatus('${app.id}', 'administrasi')" class="px-2.5 py-1.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-[9px] uppercase">🔄 Reset</button>`;
                 buttonsHTML += `<button onclick="updateStatus('${app.id}', 'interview_pos1')" class="px-2.5 py-1.5 bg-amber-100 text-amber-800 border border-amber-300 rounded-xl font-bold text-[9px] uppercase">💬 Wawancara (Pil 1)</button>`;
@@ -602,6 +624,7 @@ import '../styles/global.css';
             if (activeApplicantId) (window as any).selectApplicantForPreview(activeApplicantId);
         };
 
+        // STATISTIK PER POSISI DENGAN PRIVILEGE EKSPLISIT POSISI 1 & 2
         function renderPositionStatsGrid() {
             const container = document.getElementById('position-stats-grid');
             if (!container) return;
@@ -612,10 +635,35 @@ import '../styles/global.css';
             container.innerHTML = roles.map(role => {
                 const appsInRole = allApplicants.filter(a => (a.position || a.role_applied) === role || (a.role_2 || a.position_2) === role);
                 const total = appsInRole.length;
-                const interview = appsInRole.filter(a => (a.status || '').startsWith('interview_')).length;
-                const accepted = appsInRole.filter(a => (a.status || '').startsWith('accepted_')).length;
-                const bookmark = appsInRole.filter(a => (a.status || '').startsWith('bookmark_')).length;
-                const rejected = appsInRole.filter(a => (a.status || '').trim() === 'rejected').length;
+
+                // Cek kualifikasi posisi 1 dan posisi 2 secara ketat
+                const interview = allApplicants.filter(a => {
+                    const status = (a.status || '').trim();
+                    const pos1 = a.position || a.role_applied;
+                    const pos2 = a.role_2 || a.position_2;
+                    return (status === 'interview_pos1' && pos1 === role) || (status === 'interview_pos2' && pos2 === role);
+                }).length;
+
+                const accepted = allApplicants.filter(a => {
+                    const status = (a.status || '').trim();
+                    const pos1 = a.position || a.role_applied;
+                    const pos2 = a.role_2 || a.position_2;
+                    return (status === 'accepted_pos1' && pos1 === role) || (status === 'accepted_pos2' && pos2 === role);
+                }).length;
+
+                const bookmark = allApplicants.filter(a => {
+                    const status = (a.status || '').trim();
+                    const pos1 = a.position || a.role_applied;
+                    const pos2 = a.role_2 || a.position_2;
+                    return (status === 'bookmark_pos1' && pos1 === role) || (status === 'bookmark_pos2' && pos2 === role);
+                }).length;
+
+                const rejected = allApplicants.filter(a => {
+                    const status = (a.status || '').trim();
+                    const pos1 = a.position || a.role_applied;
+                    const pos2 = a.role_2 || a.position_2;
+                    return status === 'rejected' && (pos1 === role || pos2 === role);
+                }).length;
 
                 return `
                     <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
@@ -624,10 +672,10 @@ import '../styles/global.css';
                             <span class="bg-slate-100 text-slate-600 font-black text-[9px] px-2 py-0.5 rounded-full">${total} Total</span>
                         </div>
                         <div class="grid grid-cols-4 gap-1 text-[9px] font-bold">
-                            <button onclick="openPositionModal('${role}', 'interview')" class="bg-amber-50 text-amber-700 p-1 rounded-lg text-center"><span class="block font-black">${interview}</span><span class="text-[7px] uppercase opacity-75">Wawancara</span></button>
-                            <button onclick="openPositionModal('${role}', 'accepted')" class="bg-emerald-50 text-emerald-700 p-1 rounded-lg text-center"><span class="block font-black">${accepted}</span><span class="text-[7px] uppercase opacity-75">Lolos</span></button>
-                            <button onclick="openPositionModal('${role}', 'bookmark')" class="bg-yellow-50 text-yellow-800 p-1 rounded-lg text-center"><span class="block font-black">🔖 ${bookmark}</span><span class="text-[7px] uppercase opacity-75">Bookm'k</span></button>
-                            <button onclick="openPositionModal('${role}', 'rejected')" class="bg-rose-50 text-rose-700 p-1 rounded-lg text-center"><span class="block font-black">${rejected}</span><span class="text-[7px] uppercase opacity-75">Tolak</span></button>
+                            <button onclick="openPositionModal('${role}', 'interview')" class="bg-amber-50 text-amber-700 p-1 rounded-lg text-center transition-colors"><span class="block font-black">${interview}</span><span class="text-[7px] uppercase opacity-75">Wawancara</span></button>
+                            <button onclick="openPositionModal('${role}', 'accepted')" class="bg-emerald-50 text-emerald-700 p-1 rounded-lg text-center transition-colors"><span class="block font-black">${accepted}</span><span class="text-[7px] uppercase opacity-75">Lolos</span></button>
+                            <button onclick="openPositionModal('${role}', 'bookmark')" class="bg-yellow-50 text-yellow-800 p-1 rounded-lg text-center transition-colors"><span class="block font-black">🔖 ${bookmark}</span><span class="text-[7px] uppercase opacity-75">Bookm'k</span></button>
+                            <button onclick="openPositionModal('${role}', 'rejected')" class="bg-rose-50 text-rose-700 p-1 rounded-lg text-center transition-colors"><span class="block font-black">${rejected}</span><span class="text-[7px] uppercase opacity-75">Tolak</span></button>
                         </div>
                     </div>
                 `;
@@ -643,10 +691,18 @@ import '../styles/global.css';
             if (!modal || !title || !badge || !list) return;
 
             const filtered = allApplicants.filter(a => {
-                const matchPos = (a.position || a.role_applied) === role || (a.role_2 || a.position_2) === role;
+                const pos1 = a.position || a.role_applied;
+                const pos2 = a.role_2 || a.position_2;
                 const appStatus = (a.status || '').trim().toLowerCase();
-                if (statusType === 'rejected') return matchPos && appStatus === 'rejected';
-                return matchPos && appStatus.startsWith(statusType + '_');
+
+                if (statusType === 'rejected') {
+                    return appStatus === 'rejected' && (pos1 === role || pos2 === role);
+                }
+
+                const isMatchPos1 = appStatus === `${statusType}_pos1` && pos1 === role;
+                const isMatchPos2 = appStatus === `${statusType}_pos2` && pos2 === role;
+
+                return isMatchPos1 || isMatchPos2;
             });
 
             title.innerText = role;
