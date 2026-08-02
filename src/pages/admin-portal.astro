@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v6.1 (Strict Position-Based Statistics Privilege, Dual Filters, Dual Choice, Mobile Responsive Drawer, & Master Locks)
+// Admin Portal v6.2 (Strict Position-Based Statistics Privilege & Isolated Filtering)
 ---
 
 <html lang="id">
@@ -17,15 +17,12 @@ import '../styles/global.css';
         .stats-card:hover { transform: translateY(-3px); }
         .nav-tab.active { background: white; color: #0f2854; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         
-        /* Custom Scrollbar */
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* Active State Card */
         .applicant-card.active { border-color: #1b509b; background-color: #f8fafc; box-shadow: inset 4px 0 0 0 #1b509b; }
 
-        /* Mobile Drawer State Logic */
         @media (max-width: 767px) {
             #detail-preview-container {
                 position: fixed;
@@ -41,7 +38,6 @@ import '../styles/global.css';
             }
         }
 
-        /* Animation Modal & Drawer */
         #portfolio-modal, #position-detail-modal {
             display: none;
             position: fixed;
@@ -190,7 +186,7 @@ import '../styles/global.css';
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v6.1</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v6.2</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
@@ -624,7 +620,7 @@ import '../styles/global.css';
             if (activeApplicantId) (window as any).selectApplicantForPreview(activeApplicantId);
         };
 
-        // STATISTIK PER POSISI DENGAN PRIVILEGE EKSPLISIT POSISI 1 & 2
+        // LOGIKA PERHITUNGAN STATISTIK DENGAN ISOLASI PRIVILEGE POSISI 1 DAN POSISI 2 KETAT
         function renderPositionStatsGrid() {
             const container = document.getElementById('position-stats-grid');
             if (!container) return;
@@ -636,7 +632,7 @@ import '../styles/global.css';
                 const appsInRole = allApplicants.filter(a => (a.position || a.role_applied) === role || (a.role_2 || a.position_2) === role);
                 const total = appsInRole.length;
 
-                // Cek kualifikasi posisi 1 dan posisi 2 secara ketat
+                // Hanya hitung jika status sesuai dengan pilihan posisinya
                 const interview = allApplicants.filter(a => {
                     const status = (a.status || '').trim();
                     const pos1 = a.position || a.role_applied;
@@ -682,6 +678,7 @@ import '../styles/global.css';
             }).join('');
         }
 
+        // POP-UP MODAL POSITION FILTERING KETAT
         (window as any).openPositionModal = (role: string, statusType: string) => {
             const modal = document.getElementById('position-detail-modal');
             const title = document.getElementById('pos-modal-role-title');
