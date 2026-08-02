@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v6.3 (Isolated Statistics Privilege, CSV Export by Role, & Strict Layout Isolation)
+// Admin Portal v6.4 (Stage-Based Export CSV by Role, Strict Isolated Statistics Privilege, & Layout Isolation)
 ---
 
 <html lang="id">
@@ -152,10 +152,15 @@ import '../styles/global.css';
 
                         <button id="refresh-btn" class="bg-slate-100 border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-200 text-xs font-black text-slate-700 transition-colors">🔄 Refresh</button>
                         
-                        <!-- TOMBOL EXPORT CSV -->
-                        <button id="export-csv-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-1.5">
-                            <span>📥</span> <span>Export CSV</span>
-                        </button>
+                        <!-- TOMBOL EXPORT CSV TAHAP -->
+                        <div class="flex gap-1.5">
+                            <button id="export-interview-csv-btn" class="bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-1">
+                                <span>💬</span> <span>Export Wawancara</span>
+                            </button>
+                            <button id="export-accepted-csv-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-1">
+                                <span>✅</span> <span>Export Diterima</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Bulk Action Panel -->
@@ -192,7 +197,7 @@ import '../styles/global.css';
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v6.3</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v6.4</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
@@ -821,81 +826,87 @@ import '../styles/global.css';
             }
         }
 
-        // FUNGSI GENERATE DAN DOWNLOAD CSV TERKELOMPOK PER DIVISI
-        function exportToCSV() {
+        // FUNGSI EXPORT KHUSUS PER TAHAP / JALUR (WAWANCARA / DITERIMA) TERKELOMPOK PER DIVISI
+        function exportByStageToCSV(stagePrefix: 'interview' | 'accepted') {
             if (!allApplicants || allApplicants.length === 0) {
-                alert("Tidak ada data pelamar untuk diekspor!");
+                alert("Tidak ada data pelamar!");
                 return;
             }
 
-            const statusFilterElement = document.getElementById('status-filter') as HTMLSelectElement;
-            const selectedStatus = statusFilterElement?.value || 'all';
+            const stageName = stagePrefix === 'interview' ? 'WAWANCARA' : 'DITERIMA (LOLOS)';
 
-            const filteredApplicants = allApplicants.filter(a => {
+            const stageApplicants = allApplicants.filter(a => {
                 if (!a) return false;
-                const appStatus = (a.status || 'administrasi').trim().toLowerCase();
-                return selectedStatus === 'all' || appStatus === selectedStatus;
+                const appStatus = (a.status || '').trim().toLowerCase();
+                return appStatus.startsWith(`${stagePrefix}_`);
             });
 
-            if (filteredApplicants.length === 0) {
-                alert("Tidak ada data kandidat pada filter status ini untuk diekspor!");
+            if (stageApplicants.length === 0) {
+                alert(`Belum ada kandidat yang berada di tahap ${stageName}!`);
                 return;
             }
 
+            const mappedList = stageApplicants.map(app => {
+                const rawStatus = (app.status || '').trim().toLowerCase();
+                const isPos2 = rawStatus.endsWith('_pos2');
+                
+                const assignedRole = isPos2 ? (app.role_2 || app.position_2 || 'Tidak Diketahui') : (app.position || app.role_applied || 'Tidak Diketahui');
+                const choiceLabel = isPos2 ? "Pilihan 2 (Cadangan)" : "Pilihan 1 (Utama)";
+
+                let phone = (app.phone || '').toString().replace(/[^0-9]/g, '');
+                if (phone.startsWith('0')) phone = '62' + phone.slice(1);
+
+                return {
+                    assignedRole,
+                    choiceLabel,
+                    fullName: app.full_name || 'Tanpa Nama',
+                    nim: app.nim || '-',
+                    faculty: app.faculty || '-',
+                    major: app.major || app.study_program || '-',
+                    email: app.email || app.user_email || '-',
+                    phone,
+                    pos1: app.position || app.role_applied || '-',
+                    pos2: app.role_2 || app.position_2 || '-'
+                };
+            });
+
+            mappedList.sort((a, b) => {
+                const roleCompare = a.assignedRole.localeCompare(b.assignedRole);
+                if (roleCompare !== 0) return roleCompare;
+                return a.fullName.localeCompare(b.fullName);
+            });
+
             const headers = [
-                "Posisi Terpilih",
-                "Pilihan Ke",
-                "Status Keputusan",
-                "Nama Lengkap",
+                "Divisi / Role Terpilih",
+                "Jalur Pilihan",
+                "Nama Lengkap Pelamar",
                 "NIM",
                 "Fakultas",
                 "Program Studi",
-                "Email",
+                "Email Pelamar",
                 "No. WhatsApp",
-                "Posisi Pilihan 1",
-                "Posisi Pilihan 2"
+                "Minat Pilihan 1",
+                "Minat Pilihan 2"
             ];
 
             const csvRows = [];
             csvRows.push(headers.join(","));
 
-            const sortedApplicants = [...filteredApplicants].sort((a, b) => {
-                const posA = a.position || a.role_applied || '';
-                const posB = b.position || b.role_applied || '';
-                return posA.localeCompare(posB);
-            });
+            const clean = (text: any) => `"${(text || '').toString().replace(/"/g, '""')}"`;
 
-            sortedApplicants.forEach(app => {
-                const rawStatus = (app.status || 'administrasi').trim();
-                const badgeDetails = getStatusBadgeDetails(rawStatus);
-                
-                let targetRole = app.position || app.role_applied || '-';
-                let choiceNumber = "Pilihan 1";
-
-                if (rawStatus.endsWith('_pos2')) {
-                    targetRole = app.role_2 || app.position_2 || targetRole;
-                    choiceNumber = "Pilihan 2";
-                }
-
-                let phone = (app.phone || '').toString().replace(/[^0-9]/g, '');
-                if (phone.startsWith('0')) phone = '62' + phone.slice(1);
-
-                const clean = (text: any) => `"${(text || '').toString().replace(/"/g, '""')}"`;
-
+            mappedList.forEach(item => {
                 const row = [
-                    clean(targetRole),
-                    clean(choiceNumber),
-                    clean(badgeDetails.label),
-                    clean(app.full_name),
-                    clean(app.nim),
-                    clean(app.faculty),
-                    clean(app.major || app.study_program),
-                    clean(app.email || app.user_email),
-                    clean(phone),
-                    clean(app.position || app.role_applied),
-                    clean(app.role_2 || app.position_2)
+                    clean(item.assignedRole),
+                    clean(item.choiceLabel),
+                    clean(item.fullName),
+                    clean(item.nim),
+                    clean(item.faculty),
+                    clean(item.major),
+                    clean(item.email),
+                    clean(item.phone),
+                    clean(item.pos1),
+                    clean(item.pos2)
                 ];
-
                 csvRows.push(row.join(","));
             });
 
@@ -906,7 +917,7 @@ import '../styles/global.css';
             const link = document.createElement("a");
             const dateStr = new Date().toISOString().split('T')[0];
             link.setAttribute("href", url);
-            link.setAttribute("download", `Data_Kandidat_Mahardhika_${selectedStatus}_${dateStr}.csv`);
+            link.setAttribute("download", `Daftar_Kandidat_${stageName}_Per_Divisi_${dateStr}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -927,7 +938,9 @@ import '../styles/global.css';
         document.getElementById('bulk-interview-pos1-btn')?.addEventListener('click', () => bulkUpdate('interview_pos1'));
         document.getElementById('bulk-accept-pos1-btn')?.addEventListener('click', () => bulkUpdate('accepted_pos1'));
         document.getElementById('bulk-reject-btn')?.addEventListener('click', () => bulkUpdate('rejected'));
-        document.getElementById('export-csv-btn')?.addEventListener('click', exportToCSV);
+
+        document.getElementById('export-interview-csv-btn')?.addEventListener('click', () => exportByStageToCSV('interview'));
+        document.getElementById('export-accepted-csv-btn')?.addEventListener('click', () => exportByStageToCSV('accepted'));
 
         document.getElementById('clear-selection-btn')?.addEventListener('click', () => { 
             selectedIds = []; 
