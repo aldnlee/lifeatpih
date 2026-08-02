@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v6.2 (Strict Position-Based Statistics Privilege & Isolated Filtering)
+// Admin Portal v6.3 (Isolated Statistics Privilege, CSV Export by Role, & Strict Layout Isolation)
 ---
 
 <html lang="id">
@@ -149,7 +149,13 @@ import '../styles/global.css';
                             <option value="accepted_pos2">✅ Diterima (Pil 2)</option>
                             <option value="rejected">❌ Ditolak</option>
                         </select>
+
                         <button id="refresh-btn" class="bg-slate-100 border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-200 text-xs font-black text-slate-700 transition-colors">🔄 Refresh</button>
+                        
+                        <!-- TOMBOL EXPORT CSV -->
+                        <button id="export-csv-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-1.5">
+                            <span>📥</span> <span>Export CSV</span>
+                        </button>
                     </div>
 
                     <!-- Bulk Action Panel -->
@@ -186,7 +192,7 @@ import '../styles/global.css';
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v6.2</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v6.3</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
@@ -815,6 +821,97 @@ import '../styles/global.css';
             }
         }
 
+        // FUNGSI GENERATE DAN DOWNLOAD CSV TERKELOMPOK PER DIVISI
+        function exportToCSV() {
+            if (!allApplicants || allApplicants.length === 0) {
+                alert("Tidak ada data pelamar untuk diekspor!");
+                return;
+            }
+
+            const statusFilterElement = document.getElementById('status-filter') as HTMLSelectElement;
+            const selectedStatus = statusFilterElement?.value || 'all';
+
+            const filteredApplicants = allApplicants.filter(a => {
+                if (!a) return false;
+                const appStatus = (a.status || 'administrasi').trim().toLowerCase();
+                return selectedStatus === 'all' || appStatus === selectedStatus;
+            });
+
+            if (filteredApplicants.length === 0) {
+                alert("Tidak ada data kandidat pada filter status ini untuk diekspor!");
+                return;
+            }
+
+            const headers = [
+                "Posisi Terpilih",
+                "Pilihan Ke",
+                "Status Keputusan",
+                "Nama Lengkap",
+                "NIM",
+                "Fakultas",
+                "Program Studi",
+                "Email",
+                "No. WhatsApp",
+                "Posisi Pilihan 1",
+                "Posisi Pilihan 2"
+            ];
+
+            const csvRows = [];
+            csvRows.push(headers.join(","));
+
+            const sortedApplicants = [...filteredApplicants].sort((a, b) => {
+                const posA = a.position || a.role_applied || '';
+                const posB = b.position || b.role_applied || '';
+                return posA.localeCompare(posB);
+            });
+
+            sortedApplicants.forEach(app => {
+                const rawStatus = (app.status || 'administrasi').trim();
+                const badgeDetails = getStatusBadgeDetails(rawStatus);
+                
+                let targetRole = app.position || app.role_applied || '-';
+                let choiceNumber = "Pilihan 1";
+
+                if (rawStatus.endsWith('_pos2')) {
+                    targetRole = app.role_2 || app.position_2 || targetRole;
+                    choiceNumber = "Pilihan 2";
+                }
+
+                let phone = (app.phone || '').toString().replace(/[^0-9]/g, '');
+                if (phone.startsWith('0')) phone = '62' + phone.slice(1);
+
+                const clean = (text: any) => `"${(text || '').toString().replace(/"/g, '""')}"`;
+
+                const row = [
+                    clean(targetRole),
+                    clean(choiceNumber),
+                    clean(badgeDetails.label),
+                    clean(app.full_name),
+                    clean(app.nim),
+                    clean(app.faculty),
+                    clean(app.major || app.study_program),
+                    clean(app.email || app.user_email),
+                    clean(phone),
+                    clean(app.position || app.role_applied),
+                    clean(app.role_2 || app.position_2)
+                ];
+
+                csvRows.push(row.join(","));
+            });
+
+            const csvContent = "\uFEFF" + csvRows.join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement("a");
+            const dateStr = new Date().toISOString().split('T')[0];
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Data_Kandidat_Mahardhika_${selectedStatus}_${dateStr}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         document.getElementById('invite-member-btn')?.addEventListener('click', async () => {
             if (currentAdminRole.toLowerCase() !== 'master admin') return;
             const email = (document.getElementById('invite-email') as HTMLInputElement).value.trim().toLowerCase();
@@ -830,6 +927,7 @@ import '../styles/global.css';
         document.getElementById('bulk-interview-pos1-btn')?.addEventListener('click', () => bulkUpdate('interview_pos1'));
         document.getElementById('bulk-accept-pos1-btn')?.addEventListener('click', () => bulkUpdate('accepted_pos1'));
         document.getElementById('bulk-reject-btn')?.addEventListener('click', () => bulkUpdate('rejected'));
+        document.getElementById('export-csv-btn')?.addEventListener('click', exportToCSV);
 
         document.getElementById('clear-selection-btn')?.addEventListener('click', () => { 
             selectedIds = []; 
