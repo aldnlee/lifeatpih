@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v5.8 (Strict Layout Isolation: Fixed Toolbar, Triple Filters, Dual Choice, & Mobile Drawer)
+// Admin Portal v6.0 (Explicit Role Status Pos1/Pos2, Privilege System & Dynamic Action Buttons)
 ---
 
 <html lang="id">
@@ -17,15 +17,12 @@ import '../styles/global.css';
         .stats-card:hover { transform: translateY(-3px); }
         .nav-tab.active { background: white; color: #0f2854; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         
-        /* Custom Scrollbar */
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* Active State Card */
         .applicant-card.active { border-color: #1b509b; background-color: #f8fafc; box-shadow: inset 4px 0 0 0 #1b509b; }
 
-        /* Mobile Drawer State Logic */
         @media (max-width: 767px) {
             #detail-preview-container {
                 position: fixed;
@@ -41,7 +38,6 @@ import '../styles/global.css';
             }
         }
 
-        /* Animation Modal & Drawer */
         #portfolio-modal, #position-detail-modal {
             display: none;
             position: fixed;
@@ -103,7 +99,7 @@ import '../styles/global.css';
             <!-- VIEW: APPLICANTS -->
             <section id="view-applicants" class="tab-content flex-1 flex flex-col overflow-hidden">
                 
-                <!-- 1. HANYA AREA STATISTIK YANG BISA DI-SCROLL -->
+                <!-- 1. KONTEN STATISTIK SCROLLABLE -->
                 <div class="flex-shrink-0 mb-3 overflow-y-auto max-h-[22vh] custom-scroll pr-1">
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3">
                         <div class="stats-card bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
@@ -123,19 +119,17 @@ import '../styles/global.css';
                         </div>
                     </div>
 
-                    <!-- RINGKASAN DETAIL PER POSISI -->
+                    <!-- STATISTIK PER POSISI -->
                     <div>
                         <div class="flex items-center justify-between mb-1.5">
                             <h3 class="text-xs font-black uppercase tracking-widest text-slate-500">Statistik Pelamar Per Posisi</h3>
                             <span class="text-[9px] font-bold text-slate-400 italic hidden sm:inline">*Klik angka status untuk melihat daftar pelamar terpilih</span>
                         </div>
-                        <div id="position-stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5">
-                            <!-- Cards per posisi disuntikkan via JS -->
-                        </div>
+                        <div id="position-stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5"></div>
                     </div>
-                </div> <!-- PENUTUPAN TERPISAH UNTUK BLOK STATISTIK -->
+                </div>
 
-                <!-- 2. TOOLBAR FILTER FIXED / STANDALONE (TIDAK BERADA DI DALAM KONTEN SCROLL) -->
+                <!-- 2. FIXED TOOLBAR FILTER -->
                 <div class="flex-shrink-0 mb-3 bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm z-10">
                     <div class="flex flex-col lg:flex-row gap-2.5">
                         <input type="text" id="search-input" placeholder="Cari Nama/NIM/Email/Fakultas..." class="flex-1 bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-xs outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 font-medium">
@@ -145,9 +139,12 @@ import '../styles/global.css';
                         <select id="status-filter" class="bg-amber-50 border border-amber-300 px-3 py-2 rounded-xl text-xs font-black text-amber-900 outline-none focus:bg-white min-w-[170px]">
                             <option value="all">Semua Status</option>
                             <option value="administrasi">⏳ Belum Diproses (Sisa)</option>
-                            <option value="interview">💬 Wawancara</option>
-                            <option value="accepted">✅ Diterima (Lolos)</option>
-                            <option value="bookmark">🔖 Bookmark</option>
+                            <option value="bookmark_pos1">🔖 Bookmark (Pil 1)</option>
+                            <option value="bookmark_pos2">🔖 Bookmark (Pil 2)</option>
+                            <option value="interview_pos1">💬 Wawancara (Pil 1)</option>
+                            <option value="interview_pos2">💬 Wawancara (Pil 2)</option>
+                            <option value="accepted_pos1">✅ Diterima (Pil 1)</option>
+                            <option value="accepted_pos2">✅ Diterima (Pil 2)</option>
                             <option value="rejected">❌ Ditolak</option>
                         </select>
                         <button id="refresh-btn" class="bg-slate-100 border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-200 text-xs font-black text-slate-700 transition-colors">🔄 Refresh</button>
@@ -157,43 +154,40 @@ import '../styles/global.css';
                     <div id="bulk-action-panel" class="hidden mt-2 bg-[#1b509b] p-2.5 rounded-xl items-center justify-between shadow-lg gap-4">
                         <div class="flex items-center gap-2 ml-2"><span class="text-white font-black text-xs uppercase"><span id="selected-count" class="text-lg text-yellow-300">0</span> Terpilih</span></div>
                         <div class="flex flex-wrap gap-2">
-                            <button id="bulk-bookmark-btn" class="bg-yellow-400 text-slate-900 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase">🔖 Bookmark</button>
-                            <button id="bulk-interview-btn" class="master-only-btn bg-amber-400 text-slate-900 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase">Wawancara</button>
-                            <button id="bulk-accept-btn" class="master-only-btn bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase">Terima</button>
+                            <button id="bulk-bookmark-pos1-btn" class="bg-yellow-400 text-slate-900 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase">🔖 Bookmark Pil 1</button>
+                            <button id="bulk-bookmark-pos2-btn" class="bg-yellow-300 text-slate-900 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase">🔖 Bookmark Pil 2</button>
+                            <button id="bulk-interview-pos1-btn" class="master-only-btn bg-amber-400 text-slate-900 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase">💬 Wawancara Pil 1</button>
+                            <button id="bulk-accept-pos1-btn" class="master-only-btn bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase">✅ Terima Pil 1</button>
                             <button id="bulk-reject-btn" class="master-only-btn bg-rose-600 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase hover:bg-rose-700">❌ Tolak Massal</button>
                             <button id="clear-selection-btn" class="bg-white/10 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase">Batal</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3. SPLIT VIEW BOX (PANEL DAFTAR & PREVIEW) -->
+                <!-- 3. SPLIT VIEW BOX -->
                 <div class="flex-1 flex gap-6 overflow-hidden min-h-0 relative">
                     
-                    <!-- LEFT SIDE: APPLICANTS LIST PANEL -->
+                    <!-- DAFTAR KANDIDAT -->
                     <div class="w-full md:w-[420px] flex-shrink-0 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                         <div class="bg-slate-50 border-b border-slate-200 p-3.5 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             <div class="flex items-center gap-3">
-                                <input type="checkbox" id="master-checkbox" title="Centang Semua Kandidat Terfilter">
+                                <input type="checkbox" id="master-checkbox">
                                 <span>Daftar Kandidat</span>
                             </div>
                             <span id="list-count-badge" class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-[9px]">0</span>
                         </div>
-                        <div id="applicant-list" class="flex-1 overflow-y-auto custom-scroll divide-y divide-slate-100">
-                            <!-- Data dimuat via JS -->
-                        </div>
+                        <div id="applicant-list" class="flex-1 overflow-y-auto custom-scroll divide-y divide-slate-100"></div>
                     </div>
 
-                    <!-- RIGHT SIDE: DETAIL PREVIEW PANEL -->
+                    <!-- DETAIL PREVIEW PANEL -->
                     <div id="detail-preview-container" class="hidden md:flex flex-1 flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v5.8</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
                             
-                            <!-- BAR KEMBALI KHUSUS MOBILE -->
                             <div class="md:hidden bg-[#0f2854] text-white px-4 py-3 flex items-center justify-between flex-shrink-0">
                                 <button onclick="closeMobilePreview()" class="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider bg-white/10 px-3 py-1.5 rounded-lg active:scale-95 transition-all">
                                     <span>⬅</span> <span>Kembali ke Daftar</span>
@@ -208,12 +202,10 @@ import '../styles/global.css';
                                     <p id="preview-meta" class="text-blue-600 font-bold text-xs uppercase tracking-widest">-</p>
                                     <div class="mt-3 flex items-center gap-2">
                                         <span id="preview-status-badge" class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-white border border-slate-200">-</span>
-                                        <span id="preview-email-status" class="text-xs" title="Status Notifikasi Email">⚪</span>
+                                        <span id="preview-email-status" class="text-xs">⚪</span>
                                     </div>
                                 </div>
-                                <div class="flex flex-wrap gap-1.5 justify-start sm:justify-end w-full sm:w-auto" id="preview-action-buttons">
-                                    <!-- Diisi Dinamis Berdasarkan Role -->
-                                </div>
+                                <div class="flex flex-wrap gap-1.5 justify-start sm:justify-end w-full sm:w-auto" id="preview-action-buttons"></div>
                             </div>
                             
                             <!-- Body Info Content -->
@@ -230,8 +222,8 @@ import '../styles/global.css';
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Nomor Induk Mahasiswa</label><p id="preview-nim" class="font-bold text-sm text-slate-800">-</p></div>
-                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Status Notifikasi Email</label><p id="preview-email-text" class="font-bold text-sm text-slate-800">-</p></div>
+                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">NIM Mahasiswa</label><p id="preview-nim" class="font-bold text-sm text-slate-800">-</p></div>
+                                    <div class="bg-slate-50 p-4 rounded-xl"><label class="text-[9px] font-black uppercase opacity-40 block mb-1">Notifikasi Email</label><p id="preview-email-text" class="font-bold text-sm text-slate-800">-</p></div>
                                 </div>
 
                                 <div>
@@ -243,47 +235,36 @@ import '../styles/global.css';
                                     <p id="preview-reason" class="text-sm text-slate-600 bg-slate-50/50 p-4 rounded-xl border border-slate-100 italic">-</p>
                                 </div>
 
-                                <!-- TIMELINE AUDIT LOG / HISTORY UNTUK SELURUH TIM -->
                                 <div class="mt-6 pt-6 border-t border-slate-100">
                                     <div class="flex justify-between items-center mb-3">
                                         <label class="text-[10px] font-black uppercase tracking-widest text-[#1b509b] flex items-center gap-1.5">
                                             <span>📜</span> <span>Riwayat Keputusan Tim</span>
                                         </label>
-                                        <span class="text-[8px] font-bold text-slate-400 uppercase bg-slate-100 px-2 py-0.5 rounded-full">Transparan Seluruh Admin</span>
+                                        <span class="text-[8px] font-bold text-slate-400 uppercase bg-slate-100 px-2 py-0.5 rounded-full">Audit Trail</span>
                                     </div>
-                                    <div id="preview-history-list" class="space-y-2 max-h-48 overflow-y-auto custom-scroll pr-1">
-                                        <!-- Data History Disuntikkan Via JS -->
-                                    </div>
+                                    <div id="preview-history-list" class="space-y-2 max-h-48 overflow-y-auto custom-scroll pr-1"></div>
                                 </div>
                             </div>
 
                             <!-- Footer Actions -->
                             <div class="p-4 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row gap-2.5 sm:gap-3 flex-shrink-0">
-                                <a id="preview-link-cv" href="#" target="_blank" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white text-center py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2">
-                                    <span>📄</span> <span>Lihat CV</span>
-                                </a>
+                                <a id="preview-link-cv" href="#" target="_blank" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white text-center py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2">📄 Lihat CV</a>
                                 <button id="preview-btn-portfolio" type="button" class="flex-1 bg-[#1b509b] hover:bg-[#0f2854] text-white text-center py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2">
-                                    <span>🎨</span> <span id="portfolio-btn-label">Buka Portofolio</span>
+                                    🎨 <span id="portfolio-btn-label">Buka Portofolio</span>
                                 </button>
-                                <a id="preview-link-wa" href="#" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white text-center px-5 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center">
-                                    <span>💬 WA</span>
-                                </a>
+                                <a id="preview-link-wa" href="#" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white text-center px-5 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center">💬 WA</a>
                             </div>
                         </div>
                     </div>
-                    
                 </div>
             </section>
 
             <!-- SECTION 2: TEAM -->
             <section id="view-team" class="tab-content hidden flex-1 overflow-y-auto custom-scroll">
                 <div class="max-w-4xl mx-auto">
-                    
-                    <!-- FORM TAMBAH ADMIN (HANYA DILIHAT & DIAKSES MASTER ADMIN) -->
                     <div id="invite-team-form" class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm mb-6">
                         <h2 class="text-xl font-black text-slate-900 uppercase italic mb-1">Tambah Whitelist Tim Penyeleksi</h2>
                         <p class="text-xs text-slate-400 font-medium mb-4">Hanya Master Admin yang memiliki hak menambahkan anggota tim penyeleksi baru.</p>
-                        
                         <div class="flex flex-col md:flex-row gap-4">
                             <input type="email" id="invite-email" placeholder="Email Google Anggota Tim" class="flex-1 bg-slate-50 border border-slate-200 px-5 py-3 rounded-xl text-sm outline-none focus:ring-1 focus:ring-blue-500">
                             <select id="invite-role" class="bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl text-xs font-bold">
@@ -293,18 +274,11 @@ import '../styles/global.css';
                             <button id="invite-member-btn" class="bg-[#1b509b] hover:bg-[#0f2854] text-white px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest transition-colors">Tambah Admin</button>
                         </div>
                     </div>
-
-                    <!-- DAFTAR ANGOTA TIM PENYELEKSI -->
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden overflow-x-auto">
-                        <div class="p-4 bg-slate-50 border-b border-slate-200">
-                            <h3 class="text-xs font-black uppercase tracking-widest text-slate-600">Daftar Anggota Tim Terdaftar</h3>
-                        </div>
+                        <div class="p-4 bg-slate-50 border-b border-slate-200"><h3 class="text-xs font-black uppercase tracking-widest text-slate-600">Daftar Anggota Tim Terdaftar</h3></div>
                         <table class="w-full text-left">
                             <thead class="bg-slate-50/50 border-b border-slate-200 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                                <tr>
-                                    <th class="px-6 sm:px-8 py-4">Email Admin</th>
-                                    <th class="px-6 sm:px-8 py-4 text-right">Aksi</th>
-                                </tr>
+                                <tr><th class="px-6 sm:px-8 py-4">Email Admin</th><th class="px-6 sm:px-8 py-4 text-right">Aksi</th></tr>
                             </thead>
                             <tbody id="team-list" class="divide-y divide-slate-100"></tbody>
                         </table>
@@ -314,36 +288,24 @@ import '../styles/global.css';
         </div>
     </div>
 
-    <!-- POP-UP MODAL MULTI-PORTOFOLIO -->
+    <!-- POP-UP MODALS -->
     <div id="portfolio-modal">
         <div class="bg-white max-w-lg w-full rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[85vh]">
             <div class="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                <div>
-                    <h3 class="font-black text-slate-900 uppercase italic text-lg leading-tight">Daftar Link Portofolio</h3>
-                    <p id="modal-applicant-name" class="text-xs text-blue-600 font-bold uppercase mt-0.5">-</p>
-                </div>
+                <div><h3 class="font-black text-slate-900 uppercase italic text-lg leading-tight">Daftar Link Portofolio</h3><p id="modal-applicant-name" class="text-xs text-blue-600 font-bold uppercase mt-0.5">-</p></div>
                 <button onclick="closePortfolioModal()" class="w-9 h-9 bg-slate-200/60 hover:bg-slate-200 text-slate-600 rounded-full font-bold flex items-center justify-center transition-all">✕</button>
             </div>
-            
             <div id="modal-portfolio-list" class="p-6 overflow-y-auto space-y-3 custom-scroll flex-1"></div>
-
-            <div class="p-4 bg-slate-50 border-t border-slate-100 text-center">
-                <button onclick="closePortfolioModal()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-black py-3 rounded-xl uppercase text-xs tracking-widest transition-colors">Tutup</button>
-            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 text-center"><button onclick="closePortfolioModal()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-black py-3 rounded-xl uppercase text-xs tracking-widest">Tutup</button></div>
         </div>
     </div>
 
-    <!-- POP-UP MODAL DETAIL DAFTAR PELAMAR PER POSISI & STATUS -->
     <div id="position-detail-modal">
         <div class="bg-white max-w-2xl w-full rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[85vh] p-6">
             <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-100">
-                <div>
-                    <span id="pos-modal-status-badge" class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 border border-blue-100">Status</span>
-                    <h2 id="pos-modal-role-title" class="text-xl font-black text-slate-900 uppercase italic mt-1 leading-tight tracking-tighter">Posisi</h2>
-                </div>
+                <div><span id="pos-modal-status-badge" class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 border border-blue-100">Status</span><h2 id="pos-modal-role-title" class="text-xl font-black text-slate-900 uppercase italic mt-1 leading-tight tracking-tighter">Posisi</h2></div>
                 <button onclick="closePositionModal()" class="w-9 h-9 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full font-bold flex items-center justify-center transition-all">✕</button>
             </div>
-
             <div id="pos-modal-applicants-list" class="overflow-y-auto space-y-2.5 pr-2 flex-1 custom-scroll"></div>
         </div>
     </div>
@@ -351,14 +313,25 @@ import '../styles/global.css';
     <script>
         import { supabase } from '../lib/supabase';
 
-        // Variables
         let allApplicants: any[] = [];
         let selectedIds: string[] = [];
         let activeApplicantId: string | null = null;
         let currentAdminRole: string = "Reviewer"; 
         let currentUserEmail: string = "";
 
-        // OTENTIKASI DINAMIS DARI DATABASE SUPABASE
+        // FORMATTER DISPLAY BADGE
+        function getStatusBadgeDetails(rawStatus: string) {
+            const status = (rawStatus || 'administrasi').trim().toLowerCase();
+            if (status === 'accepted_pos1') return { label: '✅ Diterima (Pil 1)', css: 'bg-emerald-100 text-emerald-800 border-emerald-300 font-black' };
+            if (status === 'accepted_pos2') return { label: '✅ Diterima (Pil 2)', css: 'bg-emerald-50 text-emerald-700 border-emerald-200 font-bold' };
+            if (status === 'interview_pos1') return { label: '💬 Wawancara (Pil 1)', css: 'bg-amber-100 text-amber-800 border-amber-300 font-black' };
+            if (status === 'interview_pos2') return { label: '💬 Wawancara (Pil 2)', css: 'bg-amber-50 text-amber-700 border-amber-200 font-bold' };
+            if (status === 'bookmark_pos1') return { label: '🔖 Bookmark (Pil 1)', css: 'bg-yellow-100 text-yellow-900 border-yellow-400 font-black' };
+            if (status === 'bookmark_pos2') return { label: '🔖 Bookmark (Pil 2)', css: 'bg-yellow-50 text-yellow-800 border-yellow-200 font-bold' };
+            if (status === 'rejected') return { label: '❌ Ditolak', css: 'bg-rose-50 text-rose-700 border-rose-200 font-bold' };
+            return { label: '⏳ Administrasi', css: 'bg-slate-100 text-slate-600 border-slate-200' };
+        }
+
         async function checkAdminAccess() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) { 
@@ -369,28 +342,20 @@ import '../styles/global.css';
 
             currentUserEmail = (user.email || '').toLowerCase().trim();
 
-            const { data: member } = await supabase
-                .from('admin_members')
-                .select('*')
-                .eq('email', currentUserEmail)
-                .maybeSingle();
-
+            const { data: member } = await supabase.from('admin_members').select('*').eq('email', currentUserEmail).maybeSingle();
             if (!member) {
-                alert("Akses Ditolak: Email " + currentUserEmail + " tidak terdaftar di whitelist Admin.");
+                alert("Akses Ditolak: Email " + currentUserEmail + " tidak terdaftar.");
                 await supabase.auth.signOut();
                 window.location.href = "/";
                 return;
             }
 
             currentAdminRole = (member.role || 'Reviewer').trim();
-
             document.getElementById('admin-email-tag')!.innerText = `${user.email} (${currentAdminRole})`;
             document.getElementById('admin-loader')?.classList.add('hidden');
             document.getElementById('admin-content')?.classList.remove('hidden');
             
-            const isMaster = currentAdminRole.toLowerCase() === 'master admin';
-
-            if (!isMaster) {
+            if (currentAdminRole.toLowerCase() !== 'master admin') {
                 document.querySelectorAll('.master-only-btn').forEach(btn => btn.classList.add('hidden'));
                 const inviteForm = document.getElementById('invite-team-form');
                 if (inviteForm) inviteForm.classList.add('hidden');
@@ -400,7 +365,6 @@ import '../styles/global.css';
             loadTeam();
         }
 
-        // PELAMAR LOGIC
         async function loadApplicants() {
             const listContainer = document.getElementById('applicant-list');
             listContainer!.innerHTML = `<div class="p-10 text-center animate-pulse text-[10px] font-black uppercase text-slate-400">Syncing Database...</div>`;
@@ -424,15 +388,14 @@ import '../styles/global.css';
             const facultyFilterElement = document.getElementById('faculty-filter') as HTMLSelectElement;
             const statusFilterElement = document.getElementById('status-filter') as HTMLSelectElement;
 
-            const selectedRole = roleFilterElement && roleFilterElement.value ? roleFilterElement.value : 'all';
-            const selectedFaculty = facultyFilterElement && facultyFilterElement.value ? facultyFilterElement.value : 'all';
-            const selectedStatus = statusFilterElement && statusFilterElement.value ? statusFilterElement.value : 'all';
+            const selectedRole = roleFilterElement?.value || 'all';
+            const selectedFaculty = facultyFilterElement?.value || 'all';
+            const selectedStatus = statusFilterElement?.value || 'all';
             const search = (document.getElementById('search-input') as HTMLInputElement).value.toLowerCase().trim();
             const listContainer = document.getElementById('applicant-list');
 
             const filtered = allApplicants.filter(a => {
                 if (!a) return false;
-                
                 const fullName = (a.full_name || '').toString().toLowerCase();
                 const role1 = (a.position || a.role_applied || '').toString();
                 const role2 = (a.role_2 || a.position_2 || '').toString();
@@ -444,11 +407,7 @@ import '../styles/global.css';
                 const matchRole = (selectedRole === 'all' || role1 === selectedRole || role2 === selectedRole);
                 const matchFaculty = (selectedFaculty === 'all' || applicantFaculty === selectedFaculty);
                 const matchStatus = (selectedStatus === 'all' || applicantStatus === selectedStatus);
-                const matchSearch = search === "" || 
-                    fullName.includes(search) || 
-                    applicantNim.includes(search) || 
-                    applicantFaculty.toLowerCase().includes(search) ||
-                    applicantEmail.includes(search);
+                const matchSearch = search === "" || fullName.includes(search) || applicantNim.includes(search) || applicantFaculty.toLowerCase().includes(search) || applicantEmail.includes(search);
                 
                 return matchRole && matchFaculty && matchStatus && matchSearch;
             });
@@ -468,15 +427,7 @@ import '../styles/global.css';
                 const finalNim = app.nim || "-";
                 const finalSem = app.semester || "-";
                 const emailStatus = app.email_status || "pending";
-                const appStatus = (app.status || 'Pending').trim();
-                
-                let badgeClass = "bg-white border-slate-200 text-slate-600";
-                if (appStatus === 'accepted') badgeClass = "bg-emerald-50 border-emerald-200 text-emerald-700 font-bold";
-                else if (appStatus === 'interview') badgeClass = "bg-amber-50 border-amber-200 text-amber-700 font-bold";
-                else if (appStatus === 'bookmark') badgeClass = "bg-yellow-50 border-yellow-300 text-yellow-800 font-bold";
-                else if (appStatus === 'rejected') badgeClass = "bg-rose-50 border-rose-200 text-rose-700 font-bold";
-
-                const isMatchedOnRole2 = selectedRole !== 'all' && role2 === selectedRole && role1 !== selectedRole;
+                const badgeInfo = getStatusBadgeDetails(app.status);
 
                 return `
                     <div class="applicant-card p-4 flex items-start gap-3 cursor-pointer hover:bg-slate-50 transition-all ${activeApplicantId === app.id ? 'active' : ''}" data-id="${app.id}">
@@ -486,18 +437,12 @@ import '../styles/global.css';
                         <div class="flex-1 min-w-0" onclick="(window).selectApplicantForPreview('${app.id}')">
                             <div class="flex justify-between items-start gap-2">
                                 <h4 class="font-black text-slate-900 text-sm truncate leading-tight">${finalName}</h4>
-                                <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${badgeClass} flex-shrink-0">${appStatus === 'bookmark' ? '🔖 Bookmark' : appStatus}</span>
+                                <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${badgeInfo.css} flex-shrink-0">${badgeInfo.label}</span>
                             </div>
                             
-                            <div class="mt-1 flex flex-wrap items-center gap-1">
-                                <span class="text-[9px] font-bold text-[#1b509b] uppercase tracking-wider bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 truncate max-w-[180px]">
-                                    1: ${role1}
-                                </span>
-                                ${role2 ? `
-                                    <span class="text-[8px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded truncate max-w-[160px] ${isMatchedOnRole2 ? 'border border-amber-300 font-bold text-amber-800' : ''}">
-                                        2: ${role2}
-                                    </span>
-                                ` : ''}
+                            <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                                <span class="text-[9px] font-bold text-[#1b509b] uppercase tracking-wider bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 truncate max-w-[180px]">1: ${role1}</span>
+                                ${role2 ? `<span class="text-[8px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded truncate max-w-[160px]">2: ${role2}</span>` : ''}
                             </div>
 
                             <div class="flex items-center justify-between mt-2 text-[9px] text-slate-400 font-medium">
@@ -512,158 +457,122 @@ import '../styles/global.css';
             attachCheckboxListeners();
         }
 
-        // PREVIEW GENERATION LOGIC
         (window as any).selectApplicantForPreview = (id: string) => {
             activeApplicantId = id;
-            
-            document.querySelectorAll('.applicant-card').forEach(card => {
-                if (card.getAttribute('data-id') === id) card.classList.add('active');
-                else card.classList.remove('active');
-            });
+            document.querySelectorAll('.applicant-card').forEach(card => card.classList.toggle('active', card.getAttribute('data-id') === id));
 
             const app = allApplicants.find(a => a.id === id);
             if (!app) return;
 
             const previewContainer = document.getElementById('detail-preview-container');
-            if (window.innerWidth < 768) {
-                previewContainer?.classList.add('mobile-active');
-            }
+            if (window.innerWidth < 768) previewContainer?.classList.add('mobile-active');
 
             document.getElementById('empty-preview-state')?.classList.add('hidden');
             const previewArea = document.getElementById('detail-preview-area');
             previewArea?.classList.remove('opacity-0', 'pointer-events-none');
 
             const currentStatus = (app.status || 'administrasi').trim();
-            const isBookmarked = currentStatus === 'bookmark';
+            const badgeInfo = getStatusBadgeDetails(currentStatus);
             const isMaster = currentAdminRole.toLowerCase() === 'master admin';
 
             document.getElementById('preview-name')!.innerText = app.full_name || "Tanpa Nama";
             document.getElementById('preview-meta')!.innerText = `${app.faculty || app.major || '-'} • Semester ${app.semester || '-'}`;
-            document.getElementById('preview-status-badge')!.innerText = currentStatus === 'bookmark' ? '🔖 Bookmark' : currentStatus;
+            document.getElementById('preview-status-badge')!.innerText = badgeInfo.label;
+            document.getElementById('preview-status-badge')!.className = `px-3 py-1 rounded-full text-[9px] uppercase tracking-widest border ${badgeInfo.css}`;
             document.getElementById('preview-email-status')!.innerText = app.email_status === 'sent' ? '📧 Sent' : '⚪ Pending';
-            document.getElementById('preview-email-text')!.innerText = app.email_status === 'sent' ? 'Sudah Terikirim' : 'Belum Dikirim';
+            document.getElementById('preview-email-text')!.innerText = app.email_status === 'sent' ? 'Sudah Terkirim' : 'Belum Dikirim';
             
             document.getElementById('preview-pos-1')!.innerText = app.position || app.role_applied || '-';
             document.getElementById('preview-pos-2')!.innerText = app.role_2 || app.position_2 || 'Tidak memilih pilihan ke-2';
             
             document.getElementById('preview-nim')!.innerText = app.nim || '-';
-            document.getElementById('preview-activities')!.innerText = app.other_activities || 'Tidak ada kegiatan khusus yang diisi.';
-            document.getElementById('preview-reason')!.innerText = app.reason_1 || 'Tidak ada alasan khusus yang dijabarkan.';
+            document.getElementById('preview-activities')!.innerText = app.other_activities || 'Tidak ada kegiatan khusus.';
+            document.getElementById('preview-reason')!.innerText = app.reason_1 || 'Tidak ada alasan khusus.';
 
-            // WhatsApp Format
             let formattedPhone = (app.phone || '').toString().replace(/[^0-9]/g, '');
             if (formattedPhone.startsWith('0')) formattedPhone = '62' + formattedPhone.slice(1);
             (document.getElementById('preview-link-wa') as HTMLAnchorElement).href = formattedPhone ? `https://wa.me/${formattedPhone}` : '#';
 
-            // CV Link
             const cvBtn = document.getElementById('preview-link-cv') as HTMLAnchorElement;
-            if (app.cv_url) {
-                cvBtn.href = app.cv_url;
-                cvBtn.classList.remove('opacity-40', 'pointer-events-none');
-            } else {
-                cvBtn.href = '#';
-                cvBtn.classList.add('opacity-40', 'pointer-events-none');
-            }
+            cvBtn.href = app.cv_url || '#';
+            cvBtn.classList.toggle('opacity-40', !app.cv_url);
 
-            // Portfolio Link
             const portfolioBtn = document.getElementById('preview-btn-portfolio') as HTMLButtonElement;
             const portfolioLabel = document.getElementById('portfolio-btn-label') as HTMLSpanElement;
-            
-            const rawPorto = app.portfolio_url || '';
-            const portoList = rawPorto.split(',').map((p: string) => p.trim()).filter((p: string) => p.length > 0);
+            const portoList = (app.portfolio_url || '').split(',').map((p: string) => p.trim()).filter((p: string) => p.length > 0);
 
             if (portoList.length === 0) {
                 portfolioLabel.innerText = "Tidak Ada Porto";
                 portfolioBtn.disabled = true;
-                portfolioBtn.className = "flex-1 bg-slate-200 text-slate-400 cursor-not-allowed py-3 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2";
-                portfolioBtn.onclick = null;
+                portfolioBtn.className = "flex-1 bg-slate-200 text-slate-400 py-3 rounded-xl font-black uppercase text-[10px]";
             } else if (portoList.length === 1) {
                 portfolioLabel.innerText = "Buka Portofolio";
                 portfolioBtn.disabled = false;
-                portfolioBtn.className = "flex-1 bg-[#1b509b] hover:bg-[#0f2854] text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2";
+                portfolioBtn.className = "flex-1 bg-[#1b509b] hover:bg-[#0f2854] text-white py-3 rounded-xl font-black uppercase text-[10px]";
                 portfolioBtn.onclick = () => window.open(portoList[0], '_blank');
             } else {
                 portfolioLabel.innerText = `Portofolio (${portoList.length} Link)`;
                 portfolioBtn.disabled = false;
-                portfolioBtn.className = "flex-1 bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-colors flex items-center justify-center gap-2 shadow-md";
+                portfolioBtn.className = "flex-1 bg-amber-500 text-white py-3 rounded-xl font-black uppercase text-[10px]";
                 portfolioBtn.onclick = () => (window as any).openPortfolioModal(app.full_name, portoList);
             }
 
+            // DYNAMIC BUTTONS DENGAN PRIVILEGE EKSPLISIT PILIHAN 1 & 2
             let buttonsHTML = ``;
 
-            if (isBookmarked) {
-                buttonsHTML += `
-                    <button onclick="updateStatus('${app.id}', 'administrasi')" class="px-2.5 py-1.5 bg-yellow-100 border border-yellow-400 text-yellow-900 rounded-xl hover:bg-yellow-200 font-bold text-[9px] uppercase transition-all" title="Klik untuk membatalkan bookmark">
-                        ❌ Hapus Bookmark
-                    </button>
-                `;
+            // AKSI BOOKMARK PER POSISI (BISA UNTUK SELURUH TIM)
+            if (currentStatus === 'bookmark_pos1') {
+                buttonsHTML += `<button onclick="updateStatus('${app.id}', 'administrasi')" class="px-2.5 py-1.5 bg-yellow-100 border border-yellow-400 text-yellow-900 rounded-xl font-bold text-[9px] uppercase">❌ Unbookmark Pil 1</button>`;
             } else {
-                buttonsHTML += `
-                    <button onclick="updateStatus('${app.id}', 'bookmark')" class="px-2.5 py-1.5 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-xl hover:bg-yellow-400 font-bold text-[9px] uppercase transition-all">
-                        🔖 Bookmark
-                    </button>
-                `;
+                buttonsHTML += `<button onclick="updateStatus('${app.id}', 'bookmark_pos1')" class="px-2.5 py-1.5 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-xl font-bold text-[9px] uppercase">🔖 Bookmark Pil 1</button>`;
             }
 
-            if (isMaster) {
-                if (!isBookmarked) {
-                    buttonsHTML += `
-                        <button onclick="updateStatus('${app.id}', 'administrasi')" class="px-2.5 py-1.5 bg-slate-100 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-200 font-bold text-[9px] uppercase transition-all" title="Kembalikan ke tahap Administrasi">🔄 Reset Status</button>
-                    `;
+            if (app.role_2 || app.position_2) {
+                if (currentStatus === 'bookmark_pos2') {
+                    buttonsHTML += `<button onclick="updateStatus('${app.id}', 'administrasi')" class="px-2.5 py-1.5 bg-yellow-100 border border-yellow-400 text-yellow-900 rounded-xl font-bold text-[9px] uppercase">❌ Unbookmark Pil 2</button>`;
+                } else {
+                    buttonsHTML += `<button onclick="updateStatus('${app.id}', 'bookmark_pos2')" class="px-2.5 py-1.5 bg-yellow-50/70 border border-yellow-200 text-yellow-800 rounded-xl font-bold text-[9px] uppercase">🔖 Bookmark Pil 2</button>`;
                 }
-                buttonsHTML += `
-                    <button onclick="updateStatus('${app.id}', 'interview')" class="px-2.5 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl hover:bg-amber-500 hover:text-white font-bold text-[9px] uppercase transition-all">💬 Wawancara</button>
-                    <button onclick="updateStatus('${app.id}', 'accepted')" class="px-2.5 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl hover:bg-emerald-500 hover:text-white font-bold text-[9px] uppercase transition-all">✅ Lolos</button>
-                    <button onclick="updateStatus('${app.id}', 'rejected')" class="px-2.5 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl hover:bg-rose-500 hover:text-white font-bold text-[9px] uppercase transition-all">❌ Tolak</button>
-                `;
-            } else {
-                buttonsHTML += `
-                    <span class="text-[8px] font-bold text-slate-400 uppercase italic self-center ml-1">(Status Keputusan dikunci khusus Master Admin)</span>
-                `;
+            }
+
+            // HAK KEPUTUSAN KHUSUS MASTER ADMIN
+            if (isMaster) {
+                buttonsHTML += `<button onclick="updateStatus('${app.id}', 'administrasi')" class="px-2.5 py-1.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-[9px] uppercase">🔄 Reset</button>`;
+                buttonsHTML += `<button onclick="updateStatus('${app.id}', 'interview_pos1')" class="px-2.5 py-1.5 bg-amber-100 text-amber-800 border border-amber-300 rounded-xl font-bold text-[9px] uppercase">💬 Wawancara (Pil 1)</button>`;
+                if (app.role_2 || app.position_2) {
+                    buttonsHTML += `<button onclick="updateStatus('${app.id}', 'interview_pos2')" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl font-bold text-[9px] uppercase">💬 Wawancara (Pil 2)</button>`;
+                }
+                buttonsHTML += `<button onclick="updateStatus('${app.id}', 'accepted_pos1')" class="px-2.5 py-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl font-bold text-[9px] uppercase">✅ Lolos (Pil 1)</button>`;
+                if (app.role_2 || app.position_2) {
+                    buttonsHTML += `<button onclick="updateStatus('${app.id}', 'accepted_pos2')" class="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-bold text-[9px] uppercase">✅ Lolos (Pil 2)</button>`;
+                }
+                buttonsHTML += `<button onclick="updateStatus('${app.id}', 'rejected')" class="px-2.5 py-1.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl font-bold text-[9px] uppercase">❌ Tolak</button>`;
             }
 
             document.getElementById('preview-action-buttons')!.innerHTML = buttonsHTML;
             (window as any).loadApplicantHistory(id);
         };
 
-        (window as any).closeMobilePreview = () => {
-            document.getElementById('detail-preview-container')?.classList.remove('mobile-active');
-        };
+        (window as any).closeMobilePreview = () => document.getElementById('detail-preview-container')?.classList.remove('mobile-active');
 
         (window as any).loadApplicantHistory = async (applicationId: string) => {
             const historyContainer = document.getElementById('preview-history-list');
             if (!historyContainer) return;
+            historyContainer.innerHTML = `<p class="text-slate-400 italic text-[10px]">Memuat riwayat...</p>`;
 
-            historyContainer.innerHTML = `<p class="text-slate-400 italic text-[10px]">Memuat riwayat keputusan...</p>`;
-
-            const { data: logs, error } = await supabase
-                .from('application_logs')
-                .select('*')
-                .eq('application_id', applicationId)
-                .order('created_at', { ascending: false });
-
-            if (error || !logs || logs.length === 0) {
-                historyContainer.innerHTML = `<p class="text-slate-400 italic text-[10px] bg-slate-50 p-3 rounded-xl border border-slate-100 text-center">Belum ada riwayat perubahan status dari tim.</p>`;
+            const { data: logs } = await supabase.from('application_logs').select('*').eq('application_id', applicationId).order('created_at', { ascending: false });
+            if (!logs || logs.length === 0) {
+                historyContainer.innerHTML = `<p class="text-slate-400 italic text-[10px] bg-slate-50 p-3 rounded-xl border border-slate-100 text-center">Belum ada riwayat keputusan.</p>`;
                 return;
             }
 
             historyContainer.innerHTML = logs.map(log => {
-                const timeFormatted = new Date(log.created_at).toLocaleString('id-ID', {
-                    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-                });
-
+                const timeFormatted = new Date(log.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
                 const adminName = log.changed_by_email ? log.changed_by_email.split('@')[0] : 'Admin';
-
                 return `
                     <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex justify-between items-center text-[10px]">
-                        <div>
-                            <span class="font-bold text-slate-900">${adminName}</span>
-                            <span class="text-slate-400">mengubah</span>
-                            <span class="font-black uppercase text-slate-500">${log.old_status || 'Awal'}</span>
-                            <span>➔</span>
-                            <span class="font-black uppercase text-[#1b509b]">${log.new_status}</span>
-                        </div>
-                        <span class="text-[8px] text-slate-400 font-medium">${timeFormatted}</span>
+                        <div><span class="font-bold text-slate-900">${adminName}</span> <span class="text-slate-400">mengubah</span> <span class="font-black uppercase text-slate-500">${log.old_status || 'Awal'}</span> ➔ <span class="font-black uppercase text-[#1b509b]">${log.new_status}</span></div>
+                        <span class="text-[8px] text-slate-400">${timeFormatted}</span>
                     </div>
                 `;
             }).join('');
@@ -672,50 +581,25 @@ import '../styles/global.css';
         (window as any).updateStatus = async (id: string, newStatus: string) => {
             const cleanStatus = newStatus.trim();
             const isMaster = currentAdminRole.toLowerCase() === 'master admin';
-
             const app = allApplicants.find(a => a.id === id);
             const oldStatus = app ? (app.status || 'administrasi').trim() : 'administrasi';
 
-            const isSettingBookmark = (cleanStatus === 'bookmark');
-            const isUnbookmarking = (oldStatus === 'bookmark' && cleanStatus === 'administrasi');
+            const isSettingBookmark = cleanStatus.startsWith('bookmark_');
+            const isUnbookmarking = oldStatus.startsWith('bookmark_') && cleanStatus === 'administrasi';
 
             if (!isMaster && !isSettingBookmark && !isUnbookmarking) {
-                alert("Akses Ditolak: Hanya Master Admin yang berhak menentukan keputusan Wawancara, Lolos, Tolak, atau Reset.");
+                alert("Akses Ditolak: Hanya Master Admin yang berhak menentukan Wawancara/Lolos/Tolak.");
                 return;
             }
 
-            if (oldStatus === cleanStatus) {
-                alert(`Pelamar ini sudah berada pada status: ${cleanStatus.toUpperCase()}`);
-                return;
-            }
+            if (!confirm(`Ubah status ${app?.full_name || 'pelamar'} dari [${oldStatus.toUpperCase()}] menjadi [${cleanStatus.toUpperCase()}]?`)) return;
 
-            const actionText = isUnbookmarking ? "MENGHAPUS BOOKMARK (Kembali ke Administrasi)" : cleanStatus.toUpperCase();
+            const { error: updateError } = await supabase.from('applications').update({ status: cleanStatus, acknowledged: false, email_status: 'pending' }).eq('id', id);
+            if (updateError) { alert("Gagal memperbarui: " + updateError.message); return; }
 
-            if (!confirm(`Ubah status ${app?.full_name || 'pelamar'} dari [${oldStatus.toUpperCase()}] menjadi [${actionText}]?`)) {
-                return;
-            }
-
-            const { error: updateError } = await supabase
-                .from('applications')
-                .update({ status: cleanStatus, acknowledged: false, email_status: 'pending' })
-                .eq('id', id);
-
-            if (updateError) {
-                alert("Gagal memperbarui status: " + updateError.message);
-                return;
-            }
-
-            await supabase.from('application_logs').insert([{
-                application_id: id,
-                changed_by_email: currentUserEmail,
-                old_status: oldStatus,
-                new_status: cleanStatus
-            }]);
-
+            await supabase.from('application_logs').insert([{ application_id: id, changed_by_email: currentUserEmail, old_status: oldStatus, new_status: cleanStatus }]);
             await loadApplicants();
-            if (activeApplicantId) {
-                (window as any).selectApplicantForPreview(activeApplicantId);
-            }
+            if (activeApplicantId) (window as any).selectApplicantForPreview(activeApplicantId);
         };
 
         function renderPositionStatsGrid() {
@@ -728,9 +612,9 @@ import '../styles/global.css';
             container.innerHTML = roles.map(role => {
                 const appsInRole = allApplicants.filter(a => (a.position || a.role_applied) === role || (a.role_2 || a.position_2) === role);
                 const total = appsInRole.length;
-                const interview = appsInRole.filter(a => (a.status || '').trim() === 'interview').length;
-                const accepted = appsInRole.filter(a => (a.status || '').trim() === 'accepted').length;
-                const bookmark = appsInRole.filter(a => (a.status || '').trim() === 'bookmark').length;
+                const interview = appsInRole.filter(a => (a.status || '').startsWith('interview_')).length;
+                const accepted = appsInRole.filter(a => (a.status || '').startsWith('accepted_')).length;
+                const bookmark = appsInRole.filter(a => (a.status || '').startsWith('bookmark_')).length;
                 const rejected = appsInRole.filter(a => (a.status || '').trim() === 'rejected').length;
 
                 return `
@@ -740,29 +624,17 @@ import '../styles/global.css';
                             <span class="bg-slate-100 text-slate-600 font-black text-[9px] px-2 py-0.5 rounded-full">${total} Total</span>
                         </div>
                         <div class="grid grid-cols-4 gap-1 text-[9px] font-bold">
-                            <button onclick="openPositionModal('${role}', 'interview')" class="bg-amber-50 hover:bg-amber-100 text-amber-700 p-1 rounded-lg text-center transition-colors">
-                                <span class="block font-black">${interview}</span>
-                                <span class="text-[7px] uppercase opacity-75">Wawancara</span>
-                            </button>
-                            <button onclick="openPositionModal('${role}', 'accepted')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-1 rounded-lg text-center transition-colors">
-                                <span class="block font-black">${accepted}</span>
-                                <span class="text-[7px] uppercase opacity-75">Lolos</span>
-                            </button>
-                            <button onclick="openPositionModal('${role}', 'bookmark')" class="bg-yellow-50 hover:bg-yellow-100 text-yellow-800 p-1 rounded-lg text-center transition-colors">
-                                <span class="block font-black">🔖 ${bookmark}</span>
-                                <span class="text-[7px] uppercase opacity-75">Bookm'k</span>
-                            </button>
-                            <button onclick="openPositionModal('${role}', 'rejected')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 p-1 rounded-lg text-center transition-colors">
-                                <span class="block font-black">${rejected}</span>
-                                <span class="text-[7px] uppercase opacity-75">Tolak</span>
-                            </button>
+                            <button onclick="openPositionModal('${role}', 'interview')" class="bg-amber-50 text-amber-700 p-1 rounded-lg text-center"><span class="block font-black">${interview}</span><span class="text-[7px] uppercase opacity-75">Wawancara</span></button>
+                            <button onclick="openPositionModal('${role}', 'accepted')" class="bg-emerald-50 text-emerald-700 p-1 rounded-lg text-center"><span class="block font-black">${accepted}</span><span class="text-[7px] uppercase opacity-75">Lolos</span></button>
+                            <button onclick="openPositionModal('${role}', 'bookmark')" class="bg-yellow-50 text-yellow-800 p-1 rounded-lg text-center"><span class="block font-black">🔖 ${bookmark}</span><span class="text-[7px] uppercase opacity-75">Bookm'k</span></button>
+                            <button onclick="openPositionModal('${role}', 'rejected')" class="bg-rose-50 text-rose-700 p-1 rounded-lg text-center"><span class="block font-black">${rejected}</span><span class="text-[7px] uppercase opacity-75">Tolak</span></button>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        (window as any).openPositionModal = (role: string, status: string) => {
+        (window as any).openPositionModal = (role: string, statusType: string) => {
             const modal = document.getElementById('position-detail-modal');
             const title = document.getElementById('pos-modal-role-title');
             const badge = document.getElementById('pos-modal-status-badge');
@@ -770,35 +642,27 @@ import '../styles/global.css';
 
             if (!modal || !title || !badge || !list) return;
 
-            const filtered = allApplicants.filter(a => ((a.position || a.role_applied) === role || (a.role_2 || a.position_2) === role) && (a.status || '').trim() === status);
+            const filtered = allApplicants.filter(a => {
+                const matchPos = (a.position || a.role_applied) === role || (a.role_2 || a.position_2) === role;
+                const appStatus = (a.status || '').trim().toLowerCase();
+                if (statusType === 'rejected') return matchPos && appStatus === 'rejected';
+                return matchPos && appStatus.startsWith(statusType + '_');
+            });
 
             title.innerText = role;
-            badge.innerText = `Status: ${status}`;
-
-            if (status === 'accepted') badge.className = "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700 border border-emerald-200";
-            else if (status === 'interview') badge.className = "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 border border-amber-200";
-            else if (status === 'bookmark') badge.className = "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-yellow-100 text-yellow-800 border border-yellow-200";
-            else if (status === 'rejected') badge.className = "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-rose-100 text-rose-700 border border-rose-200";
+            badge.innerText = `Kategori: ${statusType.toUpperCase()}`;
 
             if (filtered.length === 0) {
-                list.innerHTML = `
-                    <div class="text-center py-10 border-2 border-dashed border-slate-100 rounded-2xl">
-                        <p class="text-2xl mb-1">📂</p>
-                        <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Belum ada kandidat di status ini.</p>
-                    </div>
-                `;
+                list.innerHTML = `<div class="text-center py-10 border-2 border-dashed border-slate-100 rounded-2xl"><p class="text-2xl mb-1">📂</p><p class="text-xs font-black text-slate-400 uppercase tracking-widest">Belum ada kandidat di kategori ini.</p></div>`;
             } else {
                 list.innerHTML = filtered.map(app => `
-                    <div class="p-3.5 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between hover:bg-white hover:border-slate-200 transition-all">
-                        <div class="space-y-0.5">
-                            <p class="text-xs font-black text-slate-800 uppercase italic leading-none">${app.full_name || 'Tanpa Nama'}</p>
-                            <p class="text-[10px] font-bold text-slate-400">${app.faculty || '-'} • ${app.major || app.study_program || '-'} (Sem ${app.semester || '-'})</p>
-                            <p class="text-[9px] text-slate-400">NIM: ${app.nim || '-'}</p>
+                    <div class="p-3.5 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-black text-slate-800 uppercase italic">${app.full_name || 'Tanpa Nama'}</p>
+                            <p class="text-[10px] font-bold text-slate-400">${app.faculty || '-'} • NIM: ${app.nim || '-'}</p>
+                            <span class="text-[8px] font-black uppercase text-[#1b509b]">${getStatusBadgeDetails(app.status).label}</span>
                         </div>
-                        <div class="flex gap-2 items-center">
-                            ${app.portfolio_url ? `<a href="${app.portfolio_url.split(',')[0]}" target="_blank" class="bg-[#1b509b] text-white text-[9px] font-black uppercase px-3 py-1.5 rounded-lg hover:opacity-90">Portofolio</a>` : ''}
-                            <button onclick="closePositionModal(); (window).selectApplicantForPreview('${app.id}')" class="bg-slate-800 text-white text-[9px] font-black uppercase px-3 py-1.5 rounded-lg">Pilih</button>
-                        </div>
+                        <button onclick="closePositionModal(); (window).selectApplicantForPreview('${app.id}')" class="bg-slate-800 text-white text-[9px] font-black uppercase px-3 py-1.5 rounded-lg">Pilih</button>
                     </div>
                 `).join('');
             }
@@ -806,9 +670,7 @@ import '../styles/global.css';
             modal.classList.add('active');
         };
 
-        (window as any).closePositionModal = () => {
-            document.getElementById('position-detail-modal')?.classList.remove('active');
-        };
+        (window as any).closePositionModal = () => document.getElementById('position-detail-modal')?.classList.remove('active');
 
         (window as any).openPortfolioModal = (applicantName: string, urls: string[]) => {
             const modal = document.getElementById('portfolio-modal');
@@ -816,36 +678,22 @@ import '../styles/global.css';
             const listContainer = document.getElementById('modal-portfolio-list');
 
             if (!modal || !listContainer || !nameContainer) return;
-
             nameContainer.innerText = applicantName || "Pelamar";
             
-            listContainer.innerHTML = urls.map((url, index) => {
-                let domainTag = "Link Karya";
-                if (url.includes("behance")) domainTag = "Behance";
-                else if (url.includes("github")) domainTag = "GitHub";
-                else if (url.includes("drive.google")) domainTag = "Google Drive";
-                else if (url.includes("figma")) domainTag = "Figma";
-                else if (url.includes("dribbble")) domainTag = "Dribbble";
-
-                return `
-                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3 hover:border-blue-300 transition-all">
-                        <div class="min-w-0 flex-1">
-                            <span class="text-[9px] font-black uppercase tracking-wider text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full inline-block mb-1">${domainTag} #${index + 1}</span>
-                            <a href="${url}" target="_blank" class="block font-bold text-xs text-slate-800 hover:text-blue-600 truncate transition-colors">${url}</a>
-                        </div>
-                        <a href="${url}" target="_blank" class="px-4 py-2 bg-[#1b509b] hover:bg-[#0f2854] text-white text-[10px] font-black uppercase rounded-xl tracking-wider flex-shrink-0 transition-colors">
-                            Buka ↗
-                        </a>
+            listContainer.innerHTML = urls.map((url, index) => `
+                <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                        <span class="text-[9px] font-black uppercase text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full inline-block mb-1">Link #${index + 1}</span>
+                        <a href="${url}" target="_blank" class="block font-bold text-xs text-slate-800 truncate">${url}</a>
                     </div>
-                `;
-            }).join('');
+                    <a href="${url}" target="_blank" class="px-4 py-2 bg-[#1b509b] text-white text-[10px] font-black uppercase rounded-xl">Buka ↗</a>
+                </div>
+            `).join('');
 
             modal.classList.add('active');
         };
 
-        (window as any).closePortfolioModal = () => {
-            document.getElementById('portfolio-modal')?.classList.remove('active');
-        };
+        (window as any).closePortfolioModal = () => document.getElementById('portfolio-modal')?.classList.remove('active');
 
         function clearPreview() {
             document.getElementById('empty-preview-state')?.classList.remove('hidden');
@@ -854,8 +702,8 @@ import '../styles/global.css';
         }
 
         async function loadTeam() {
-            const { data, error } = await supabase.from('admin_members').select('*').order('email');
-            if (!error && data) renderTeamList(data);
+            const { data } = await supabase.from('admin_members').select('*').order('email');
+            if (data) renderTeamList(data);
         }
 
         function renderTeamList(members: any[]) {
@@ -863,31 +711,19 @@ import '../styles/global.css';
             if (!container) return;
 
             const isMaster = currentAdminRole.toLowerCase() === 'master admin';
-
-            container.innerHTML = members.map(m => {
-                const memberRoleLower = (m.role || '').toLowerCase().trim();
-                const isMemberMaster = memberRoleLower === 'master admin';
-
-                return `
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-6 sm:px-8 py-4">
-                            <div class="font-bold text-slate-800 text-sm">${m.email}</div>
-                            <div class="text-[9px] text-slate-400 uppercase tracking-widest font-black">${m.role || 'Reviewer'}</div>
-                        </td>
-                        <td class="px-6 sm:px-8 py-4 text-right">
-                            ${(isMaster && !isMemberMaster) ? `
-                                <button onclick="deleteMember('${m.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-[10px] uppercase tracking-widest">Hapus Akses</button>
-                            ` : `<span class="text-[9px] font-black uppercase opacity-20">${isMemberMaster ? 'Master Admin' : 'Terdaftar'}</span>`}
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            container.innerHTML = members.map(m => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 sm:px-8 py-4"><div class="font-bold text-slate-800 text-sm">${m.email}</div><div class="text-[9px] text-slate-400 uppercase font-black">${m.role || 'Reviewer'}</div></td>
+                    <td class="px-6 sm:px-8 py-4 text-right">
+                        ${(isMaster && m.role?.toLowerCase() !== 'master admin') ? `<button onclick="deleteMember('${m.id}')" class="text-rose-500 font-bold text-[10px] uppercase">Hapus Akses</button>` : '<span class="text-[9px] font-black opacity-20">Terdaftar</span>'}
+                    </td>
+                </tr>
+            `).join('');
         }
 
         (window as any).switchTab = (tab: string) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-            
             if (tab === 'applicants') {
                 document.getElementById('view-applicants')?.classList.remove('hidden');
                 document.getElementById('tab-applicants')?.classList.add('active');
@@ -898,38 +734,27 @@ import '../styles/global.css';
         };
 
         (window as any).deleteMember = async (id: string) => {
-            if (currentAdminRole.toLowerCase() !== 'master admin') {
-                alert("Akses Ditolak: Hanya Master Admin yang dapat menghapus anggota tim.");
-                return;
-            }
+            if (currentAdminRole.toLowerCase() !== 'master admin') return;
             if (!confirm("Hapus akses admin ini?")) return;
-            const { error } = await supabase.from('admin_members').delete().eq('id', id);
-            if (!error) loadTeam();
+            await supabase.from('admin_members').delete().eq('id', id);
+            loadTeam();
         };
 
-        // BULK ACTIONS
         async function bulkUpdate(status: string) {
             const cleanStatus = status.trim();
             const isMaster = currentAdminRole.toLowerCase() === 'master admin';
 
-            if (!isMaster && cleanStatus !== 'bookmark') {
-                alert("Akses Ditolak: Hanya Master Admin yang dapat melakukan aksi bulk untuk Wawancara / Terima / Tolak.");
+            if (!isMaster && !cleanStatus.startsWith('bookmark_')) {
+                alert("Akses Ditolak: Hanya Master Admin yang berhak melakukan aksi bulk ini.");
                 return;
             }
 
-            if (!confirm(`Yakin ingin mengubah status ${selectedIds.length} pelamar terdaftar ke [${cleanStatus.toUpperCase()}]?`)) return;
+            if (!confirm(`Ubah status ${selectedIds.length} pelamar terdaftar ke [${cleanStatus.toUpperCase()}]?`)) return;
 
             const { error } = await supabase.from('applications').update({ status: cleanStatus, acknowledged: false, email_status: 'pending' }).in('id', selectedIds);
-            
             if (!error) { 
-                const logsToInsert = selectedIds.map(appId => ({
-                    application_id: appId,
-                    changed_by_email: currentUserEmail,
-                    old_status: 'bulk_action',
-                    new_status: cleanStatus
-                }));
+                const logsToInsert = selectedIds.map(appId => ({ application_id: appId, changed_by_email: currentUserEmail, old_status: 'bulk_action', new_status: cleanStatus }));
                 await supabase.from('application_logs').insert(logsToInsert);
-
                 selectedIds = []; 
                 await loadApplicants(); 
                 document.getElementById('bulk-action-panel')?.classList.replace('flex', 'hidden'); 
@@ -937,34 +762,20 @@ import '../styles/global.css';
             }
         }
 
-        // EVENT LISTENERS
         document.getElementById('invite-member-btn')?.addEventListener('click', async () => {
-            if (currentAdminRole.toLowerCase() !== 'master admin') {
-                alert("Akses Ditolak: Hanya Master Admin yang dapat menambah anggota tim baru.");
-                return;
-            }
-
+            if (currentAdminRole.toLowerCase() !== 'master admin') return;
             const email = (document.getElementById('invite-email') as HTMLInputElement).value.trim().toLowerCase();
             const role = (document.getElementById('invite-role') as HTMLSelectElement).value;
-
-            if (!email) {
-                alert("Masukkan email Google calon admin!");
-                return;
-            }
+            if (!email) return;
 
             const { error } = await supabase.from('admin_members').insert([{ email, role }]);
-            if (!error) { 
-                (document.getElementById('invite-email') as HTMLInputElement).value = ''; 
-                loadTeam(); 
-                alert("Anggota tim berhasil ditambahkan ke whitelist!");
-            } else {
-                alert("Gagal menambah anggota tim: " + error.message);
-            }
+            if (!error) { (document.getElementById('invite-email') as HTMLInputElement).value = ''; loadTeam(); alert("Anggota tim ditambahkan!"); }
         });
 
-        document.getElementById('bulk-interview-btn')?.addEventListener('click', () => bulkUpdate('interview'));
-        document.getElementById('bulk-accept-btn')?.addEventListener('click', () => bulkUpdate('accepted'));
-        document.getElementById('bulk-bookmark-btn')?.addEventListener('click', () => bulkUpdate('bookmark'));
+        document.getElementById('bulk-bookmark-pos1-btn')?.addEventListener('click', () => bulkUpdate('bookmark_pos1'));
+        document.getElementById('bulk-bookmark-pos2-btn')?.addEventListener('click', () => bulkUpdate('bookmark_pos2'));
+        document.getElementById('bulk-interview-pos1-btn')?.addEventListener('click', () => bulkUpdate('interview_pos1'));
+        document.getElementById('bulk-accept-pos1-btn')?.addEventListener('click', () => bulkUpdate('accepted_pos1'));
         document.getElementById('bulk-reject-btn')?.addEventListener('click', () => bulkUpdate('rejected'));
 
         document.getElementById('clear-selection-btn')?.addEventListener('click', () => { 
@@ -1001,9 +812,9 @@ import '../styles/global.css';
 
         function updateStats() {
             document.getElementById('stat-total')!.innerText = allApplicants.length.toString();
-            document.getElementById('stat-interview')!.innerText = allApplicants.filter(a => (a.status || '').trim() === 'interview').length.toString();
-            document.getElementById('stat-accepted')!.innerText = allApplicants.filter(a => (a.status || '').trim() === 'accepted').length.toString();
-            document.getElementById('stat-bookmark')!.innerText = allApplicants.filter(a => (a.status || '').trim() === 'bookmark').length.toString();
+            document.getElementById('stat-interview')!.innerText = allApplicants.filter(a => (a.status || '').startsWith('interview_')).length.toString();
+            document.getElementById('stat-accepted')!.innerText = allApplicants.filter(a => (a.status || '').startsWith('accepted_')).length.toString();
+            document.getElementById('stat-bookmark')!.innerText = allApplicants.filter(a => (a.status || '').startsWith('bookmark_')).length.toString();
             document.getElementById('stat-rejected')!.innerText = allApplicants.filter(a => (a.status || '').trim() === 'rejected').length.toString();
         }
 
@@ -1014,21 +825,18 @@ import '../styles/global.css';
             if (rf) {
                 const allRolesRaw = allApplicants.flatMap(a => [a.position || a.role_applied, a.role_2 || a.position_2]).filter(Boolean);
                 const roles = [...new Set(allRolesRaw)];
-                
-                rf.innerHTML = `<option value="all">Semua Posisi (${allApplicants.length})</option>` + 
-                    roles.map(r => {
-                        const count = allApplicants.filter(a => (a.position || a.role_applied) === r || (a.role_2 || a.position_2) === r).length;
-                        return `<option value="${r}">${r} (${count})</option>`;
-                    }).join('');
+                rf.innerHTML = `<option value="all">Semua Posisi (${allApplicants.length})</option>` + roles.map(r => {
+                    const count = allApplicants.filter(a => (a.position || a.role_applied) === r || (a.role_2 || a.position_2) === r).length;
+                    return `<option value="${r}">${r} (${count})</option>`;
+                }).join('');
             }
 
             if (ff) {
                 const faculties = [...new Set(allApplicants.map(a => a.faculty).filter(Boolean))].sort();
-                ff.innerHTML = `<option value="all">Semua Fakultas (${allApplicants.length})</option>` + 
-                    faculties.map(f => {
-                        const count = allApplicants.filter(a => a.faculty === f).length;
-                        return `<option value="${f}">${f} (${count})</option>`;
-                    }).join('');
+                ff.innerHTML = `<option value="all">Semua Fakultas (${allApplicants.length})</option>` + faculties.map(f => {
+                    const count = allApplicants.filter(a => a.faculty === f).length;
+                    return `<option value="${f}">${f} (${count})</option>`;
+                }).join('');
             }
         }
 

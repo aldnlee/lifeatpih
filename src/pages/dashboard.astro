@@ -81,7 +81,7 @@ try {
 </head>
 <body class="bg-slate-50 min-h-screen pb-20">
 
-    <!-- MODAL NOTIFIKASI PERSISTEN -->
+    <!-- MODAL NOTIFIKASI DENGAN POSITION AWARENESS -->
     <div id="celebration-modal">
         <div class="modal-box bg-white max-w-sm w-full p-10 rounded-[3rem] text-center shadow-2xl relative overflow-hidden border border-slate-100">
             <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-400/10 rounded-full blur-3xl"></div>
@@ -296,14 +296,19 @@ try {
 
         let currentAppId = "";
         let lastStatus = "";
+        let rolePos1 = "";
+        let rolePos2 = "";
 
-        // HELPER SANGAT PENTING: MASKING STATUS BOOKMARK MENJADI ADMINISTRASI UNTUK PUBLIC/USER
+        // MASKING STATUS: MENGUBAH BOOKMARK_POS1 / BOOKMARK_POS2 MENJADI ADMINISTRASI
         function getPublicStatus(dbStatus: string): string {
             const clean = (dbStatus || 'administrasi').trim().toLowerCase();
-            if (clean === 'bookmark') {
+            if (clean.startsWith('bookmark')) {
                 return 'administrasi'; // Menyembunyikan bookmark dari pandangan user
             }
-            return clean;
+            if (clean.startsWith('interview')) return 'interview';
+            if (clean.startsWith('accepted')) return 'accepted';
+            if (clean === 'rejected') return 'rejected';
+            return 'administrasi';
         }
 
         async function init() {
@@ -336,14 +341,16 @@ try {
                 // Fill Data
                 currentAppId = application.id;
                 lastStatus = application.status;
+                rolePos1 = application.position || application.role_applied || '-';
+                rolePos2 = application.role_2 || application.position_2 || 'Tidak ada pilihan ke-2';
                 
-                if (role1Val) role1Val.innerText = application.role_applied || '-';
-                if (role2Val) role2Val.innerText = application.role_2 || "Tidak ada pilihan ke-2";
-                if (academicVal) academicVal.innerText = `${application.faculty || '-'} / ${application.study_program || '-'}`;
+                if (role1Val) role1Val.innerText = rolePos1;
+                if (role2Val) role2Val.innerText = rolePos2;
+                if (academicVal) academicVal.innerText = `${application.faculty || '-'} / ${application.study_program || application.major || '-'}`;
                 if (nimVal) nimVal.innerText = `${application.nim || '-'} (Semester ${application.semester || '-'})`;
                 
                 if (portfolioLink) {
-                    portfolioLink.href = application.portfolio_url || '#';
+                    portfolioLink.href = application.portfolio_url ? application.portfolio_url.split(',')[0] : '#';
                     portfolioLink.innerText = application.portfolio_url || 'Belum ada link';
                 }
                 
@@ -356,8 +363,8 @@ try {
                 updateUI(publicStatus);
 
                 // HANYA MUNCULKAN NOTIFIKASI JIKA BUKAN ADMINISTRASI & BUKAN BOOKMARK
-                if (application.status !== 'administrasi' && application.status !== 'bookmark' && !application.acknowledged) {
-                    showNotification(publicStatus);
+                if (!application.status.startsWith('bookmark') && application.status !== 'administrasi' && !application.acknowledged) {
+                    showNotification(application.status);
                 }
 
                 // Realtime Update dari Supabase
@@ -370,11 +377,11 @@ try {
 
                             if (rawNewStatus !== lastStatus) {
                                 // Jika status diubah ke bookmark, langsung anggap 'acknowledged' agar tidak pernah trigger notif
-                                if (rawNewStatus === 'bookmark') {
+                                if (rawNewStatus.startsWith('bookmark')) {
                                     await supabase.from('applications').update({ acknowledged: true }).eq('id', application.id);
                                 } else {
                                     await supabase.from('applications').update({ acknowledged: false }).eq('id', application.id);
-                                    showNotification(newPublicStatus);
+                                    showNotification(rawNewStatus);
                                 }
 
                                 lastStatus = rawNewStatus;
@@ -390,11 +397,11 @@ try {
             }
         }
 
-        function showNotification(status: string) {
+        function showNotification(rawStatus: string) {
             if (!modal || !modalTitle || !modalMsg || !modalIcon) return;
+            const status = (rawStatus || '').toLowerCase().trim();
 
-            // Jangan memunculkan notifikasi apapun jika status publik masih 'administrasi'
-            if (status === 'administrasi') return;
+            if (status === 'administrasi' || status.startsWith('bookmark')) return;
 
             modalIcon.innerText = "🎉";
             modalTitle.innerText = "Selamat!";
@@ -402,14 +409,23 @@ try {
             modalClose!.className = "w-full bg-[#1b509b] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-900/30 hover:scale-[1.03] active:scale-95 transition-all";
             if (modalDeco) modalDeco.className = "absolute -bottom-10 -left-10 w-32 h-32 bg-yellow-400/10 rounded-full blur-3xl";
 
-            if (status === 'interview') {
+            // LOGIKA DYNAMIC POSITION AWARENESS
+            if (status === 'interview_pos1' || status === 'interview') {
                 modalIcon.innerText = "📩";
                 modalTitle.innerText = "Lolos Berkas!";
-                modalMsg.innerText = "Selamat! Kamu diundang untuk tahap wawancara Mahardhika. Mohon tunggu informasi jadwal selanjutnya.";
-            } else if (status === 'accepted') {
+                modalMsg.innerText = `Selamat! Kamu diundang untuk tahap wawancara Mahardhika pada Pilihan Utama: [${rolePos1}]. Mohon tunggu informasi jadwal selanjutnya.`;
+            } else if (status === 'interview_pos2') {
+                modalIcon.innerText = "📩";
+                modalTitle.innerText = "Lolos Berkas (Pilihan 2)!";
+                modalMsg.innerText = `Selamat! Kamu diundang untuk tahap wawancara Mahardhika pada Pilihan Cadangan: [${rolePos2}]. Mohon tunggu informasi jadwal selanjutnya.`;
+            } else if (status === 'accepted_pos1' || status === 'accepted') {
                 modalIcon.innerText = "🎉";
                 modalTitle.innerText = "Diterima Magang!";
-                modalMsg.innerText = "Selamat bergabung dengan Squad PIH UIN Jakarta! Cek email kamu untuk surat pengantar dan jadwal Onboarding.";
+                modalMsg.innerText = `Selamat! Kamu resmi diterima magang di Mahardhika PIH UIN Jakarta untuk posisi utama: [${rolePos1}]. Cek email kamu untuk surat pengantar & jadwal onboarding.`;
+            } else if (status === 'accepted_pos2') {
+                modalIcon.innerText = "🎉";
+                modalTitle.innerText = "Diterima Magang!";
+                modalMsg.innerText = `Selamat! Kamu resmi diterima magang di Mahardhika PIH UIN Jakarta untuk posisi cadangan: [${rolePos2}]. Cek email kamu untuk surat pengantar & jadwal onboarding.`;
             } else if (status === 'rejected') {
                 modalIcon.innerText = "🤝"; 
                 modalTitle.innerText = "Belum Berhasil";
@@ -428,14 +444,13 @@ try {
             modal?.classList.remove('active');
         }
 
-        function updateUI(status: string) {
-            // Tampilan badge status publik
-            if (badgeStatus) badgeStatus.innerText = status;
+        function updateUI(publicStatus: string) {
+            if (badgeStatus) badgeStatus.innerText = publicStatus;
             const steps = document.querySelectorAll('.step-item');
             
             let p = 0;
-            if (status === 'interview') p = 50;
-            if (status === 'accepted' || status === 'rejected') p = 100;
+            if (publicStatus === 'interview') p = 50;
+            if (publicStatus === 'accepted' || publicStatus === 'rejected') p = 100;
             if (progressBar) progressBar.style.width = `${p}%`;
 
             steps.forEach((item) => {
@@ -443,18 +458,18 @@ try {
                 const circle = item.querySelector('.circle') as HTMLElement;
                 if (!circle) return;
 
-                circle.classList.remove('border-[#1b509b]', 'bg-[#1b509b]', 'text-white', 'border-emerald-500', 'bg-emerald-500', 'border-rose-500', 'text-rose-500', 'border-amber-500', 'bg-amber-500');
+                circle.classList.remove('border-[#1b509b]', 'bg-[#1b509b]', 'text-white', 'border-emerald-500', 'bg-emerald-500', 'border-rose-500', 'text-rose-500');
 
-                if (status === 'administrasi' && s === 'administrasi') {
+                if (publicStatus === 'administrasi' && s === 'administrasi') {
                     circle.classList.add('border-[#1b509b]', 'bg-[#1b509b]', 'text-white');
                     if (badgeStatus) badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-slate-100 text-slate-700 border border-slate-200 font-black uppercase tracking-widest";
-                } else if (status === 'interview' && (s === 'administrasi' || s === 'interview')) {
+                } else if (publicStatus === 'interview' && (s === 'administrasi' || s === 'interview')) {
                     circle.classList.add('border-[#1b509b]', 'bg-[#1b509b]', 'text-white');
                     if (badgeStatus) badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-blue-50 text-blue-700 border border-blue-100 font-black uppercase tracking-widest";
-                } else if (status === 'accepted') {
+                } else if (publicStatus === 'accepted') {
                     circle.classList.add('border-emerald-500', 'bg-emerald-500', 'text-white');
                     if (badgeStatus) badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-emerald-50 text-emerald-600 border border-emerald-100 font-black uppercase tracking-widest";
-                } else if (status === 'rejected') {
+                } else if (publicStatus === 'rejected') {
                     circle.classList.add('border-rose-500', 'text-rose-500');
                     if (badgeStatus) badgeStatus.className = "px-4 py-1.5 rounded-full text-[9px] bg-rose-50 text-rose-600 border border-rose-100 font-black uppercase tracking-widest";
                 }
