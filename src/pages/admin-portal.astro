@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-// Admin Portal v6.4 (Stage-Based Export CSV by Role, Strict Isolated Statistics Privilege, & Layout Isolation)
+// Admin Portal v6.5 (Multi-Batch Filter & Archiving, Stage-Based Export CSV, & Strict Isolated Statistics)
 ---
 
 <html lang="id">
@@ -133,12 +133,17 @@ import '../styles/global.css';
 
                 <!-- 2. TOOLBAR FILTER FIXED / STANDALONE -->
                 <div class="flex-shrink-0 mb-3 bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm z-10">
-                    <div class="flex flex-col lg:flex-row gap-2.5">
+                    <div class="flex flex-col lg:flex-row gap-2">
+                        <!-- FILTER BATCH BARU -->
+                        <select id="batch-filter" class="bg-blue-50 border border-blue-300 px-3 py-2 rounded-xl text-xs font-black text-[#0f2854] outline-none focus:bg-white min-w-[145px]">
+                            <option value="all">Semua Batch</option>
+                        </select>
+
                         <input type="text" id="search-input" placeholder="Cari Nama/NIM/Email/Fakultas..." class="flex-1 bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-xs outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 font-medium">
-                        <select id="role-filter" class="bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 outline-none focus:bg-white min-w-[160px]"></select>
-                        <select id="faculty-filter" class="bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 outline-none focus:bg-white min-w-[170px]"></select>
+                        <select id="role-filter" class="bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 outline-none focus:bg-white min-w-[155px]"></select>
+                        <select id="faculty-filter" class="bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 outline-none focus:bg-white min-w-[165px]"></select>
                         
-                        <select id="status-filter" class="bg-amber-50 border border-amber-300 px-3 py-2 rounded-xl text-xs font-black text-amber-900 outline-none focus:bg-white min-w-[170px]">
+                        <select id="status-filter" class="bg-amber-50 border border-amber-300 px-3 py-2 rounded-xl text-xs font-black text-amber-900 outline-none focus:bg-white min-w-[165px]">
                             <option value="all">Semua Status</option>
                             <option value="administrasi">⏳ Belum Diproses (Sisa)</option>
                             <option value="bookmark_pos1">🔖 Bookmark (Pil 1)</option>
@@ -150,14 +155,14 @@ import '../styles/global.css';
                             <option value="rejected">❌ Ditolak</option>
                         </select>
 
-                        <button id="refresh-btn" class="bg-slate-100 border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-200 text-xs font-black text-slate-700 transition-colors">🔄 Refresh</button>
+                        <button id="refresh-btn" class="bg-slate-100 border border-slate-200 px-3.5 py-2 rounded-xl hover:bg-slate-200 text-xs font-black text-slate-700 transition-colors">🔄 Refresh</button>
                         
                         <!-- TOMBOL EXPORT CSV TAHAP -->
                         <div class="flex gap-1.5">
-                            <button id="export-interview-csv-btn" class="bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-1">
+                            <button id="export-interview-csv-btn" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-1">
                                 <span>💬</span> <span>Export Wawancara</span>
                             </button>
-                            <button id="export-accepted-csv-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-1">
+                            <button id="export-accepted-csv-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-colors shadow-sm flex items-center gap-1">
                                 <span>✅</span> <span>Export Diterima</span>
                             </button>
                         </div>
@@ -197,7 +202,7 @@ import '../styles/global.css';
                         <div id="empty-preview-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-slate-400">
                             <span class="text-4xl mb-3">👤</span>
                             <p class="text-xs font-bold uppercase tracking-wider">Pilih pelamar untuk melihat detail pratinjau</p>
-                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v6.4</p>
+                            <p class="text-[10px] text-slate-400/70 italic mt-1">LinkedIn HR Dashboard Style Preview v6.5</p>
                         </div>
                         
                         <div id="detail-preview-area" class="flex-1 flex flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-200">
@@ -213,7 +218,10 @@ import '../styles/global.css';
                             <!-- Header Info -->
                             <div class="p-4 sm:p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start gap-4">
                                 <div>
-                                    <h2 id="preview-name" class="text-xl sm:text-2xl font-black text-slate-900 italic uppercase leading-tight mb-1">-</h2>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h2 id="preview-name" class="text-xl sm:text-2xl font-black text-slate-900 italic uppercase leading-tight">-</h2>
+                                        <span id="preview-batch-badge" class="px-2.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-[#0f2854] text-white">-</span>
+                                    </div>
                                     <p id="preview-meta" class="text-blue-600 font-bold text-xs uppercase tracking-widest">-</p>
                                     <div class="mt-3 flex items-center gap-2">
                                         <span id="preview-status-badge" class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-white border border-slate-200">-</span>
@@ -350,6 +358,21 @@ import '../styles/global.css';
         let currentAdminRole: string = "Reviewer"; 
         let currentUserEmail: string = "";
 
+        // NORMALISASI NAMA BATCH (Data lama tanpa batch_id otomatis jadi 'Batch-10')
+        function getNormalizedBatchId(app: any): string {
+            const raw = (app?.batch_id || app?.batch || '').toString().trim();
+            if (!raw || raw.toLowerCase() === 'unspecified') return 'Batch-10';
+            return raw;
+        }
+
+        // AMBIL DATA PELAMAR YANG SUDAH DISARING BERDASARKAN BATCH TERPILIH
+        function getBatchFilteredApplicants() {
+            const bf = document.getElementById('batch-filter') as HTMLSelectElement;
+            const selectedBatch = bf?.value || 'all';
+            if (selectedBatch === 'all') return allApplicants;
+            return allApplicants.filter(a => getNormalizedBatchId(a) === selectedBatch);
+        }
+
         // FORMATTER DISPLAY BADGE
         function getStatusBadgeDetails(rawStatus: string) {
             const status = (rawStatus || 'administrasi').trim().toLowerCase();
@@ -403,15 +426,49 @@ import '../styles/global.css';
             const { data, error } = await supabase.from('applications').select('*').order('created_at', { ascending: false });
             if (!error && data) {
                 allApplicants = data;
+                renderBatchFilterOptions();
                 renderFilterOptions();
                 renderList();
                 updateStats();
                 renderPositionStatsGrid();
                 
-                if (data.length > 0 && !activeApplicantId && window.innerWidth >= 768) {
-                    (window as any).selectApplicantForPreview(data[0].id);
+                const currentBatchApps = getBatchFilteredApplicants();
+                if (currentBatchApps.length > 0 && !activeApplicantId && window.innerWidth >= 768) {
+                    (window as any).selectApplicantForPreview(currentBatchApps[0].id);
                 }
             }
+        }
+
+        // RENDER DROPDOWN BATCH (URUT TERBARU DI ATAS & OTOMATIS TERPILIH)
+        function renderBatchFilterOptions() {
+            const bf = document.getElementById('batch-filter') as HTMLSelectElement;
+            if (!bf) return;
+
+            const previousValue = bf.dataset.initialized ? bf.value : '';
+            const uniqueBatches = [...new Set(allApplicants.map(a => getNormalizedBatchId(a)))];
+
+            // Urutkan descending berdasarkan angka batch (misal Batch-11 di atas Batch-10)
+            uniqueBatches.sort((a, b) => {
+                const numA = parseInt(a.replace(/\D/g, ''), 10) || 0;
+                const numB = parseInt(b.replace(/\D/g, ''), 10) || 0;
+                if (numB !== numA) return numB - numA;
+                return b.localeCompare(a);
+            });
+
+            bf.innerHTML = uniqueBatches.map(b => {
+                const count = allApplicants.filter(a => getNormalizedBatchId(a) === b).length;
+                return `<option value="${b}">${b} (${count})</option>`;
+            }).join('') + `<option value="all">Semua Batch (${allApplicants.length})</option>`;
+
+            if (previousValue && (previousValue === 'all' || uniqueBatches.includes(previousValue))) {
+                bf.value = previousValue;
+            } else if (uniqueBatches.length > 0) {
+                bf.value = uniqueBatches[0]; // Default otomatis memilih batch paling baru
+            } else {
+                bf.value = 'all';
+            }
+
+            bf.dataset.initialized = 'true';
         }
 
         function renderList() {
@@ -425,7 +482,9 @@ import '../styles/global.css';
             const search = (document.getElementById('search-input') as HTMLInputElement).value.toLowerCase().trim();
             const listContainer = document.getElementById('applicant-list');
 
-            const filtered = allApplicants.filter(a => {
+            const batchPool = getBatchFilteredApplicants();
+
+            const filtered = batchPool.filter(a => {
                 if (!a) return false;
                 const fullName = (a.full_name || '').toString().toLowerCase();
                 const role1 = (a.position || a.role_applied || '').toString();
@@ -446,7 +505,7 @@ import '../styles/global.css';
             document.getElementById('list-count-badge')!.innerText = filtered.length.toString();
 
             if (filtered.length === 0) {
-                listContainer!.innerHTML = `<div class="p-8 text-center text-xs text-slate-400 italic">Kandidat tidak ditemukan</div>`;
+                listContainer!.innerHTML = `<div class="p-8 text-center text-xs text-slate-400 italic">Kandidat tidak ditemukan pada batch ini</div>`;
                 clearPreview();
                 return;
             }
@@ -507,6 +566,7 @@ import '../styles/global.css';
             const isMaster = currentAdminRole.toLowerCase() === 'master admin';
 
             document.getElementById('preview-name')!.innerText = app.full_name || "Tanpa Nama";
+            document.getElementById('preview-batch-badge')!.innerText = getNormalizedBatchId(app);
             document.getElementById('preview-meta')!.innerText = `${app.faculty || app.major || '-'} • Semester ${app.semester || '-'}`;
             document.getElementById('preview-status-badge')!.innerText = badgeInfo.label;
             document.getElementById('preview-status-badge')!.className = `px-3 py-1 rounded-full text-[9px] uppercase tracking-widest border ${badgeInfo.css}`;
@@ -631,41 +691,41 @@ import '../styles/global.css';
             if (activeApplicantId) (window as any).selectApplicantForPreview(activeApplicantId);
         };
 
-        // LOGIKA PERHITUNGAN STATISTIK DENGAN ISOLASI PRIVILEGE POSISI 1 DAN POSISI 2 KETAT
+        // LOGIKA PERHITUNGAN STATISTIK DENGAN ISOLASI PRIVILEGE POSISI 1 DAN POSISI 2 KETAT (PER BATCH)
         function renderPositionStatsGrid() {
             const container = document.getElementById('position-stats-grid');
             if (!container) return;
 
-            const allRolesRaw = allApplicants.flatMap(a => [a.position || a.role_applied, a.role_2 || a.position_2]).filter(Boolean);
+            const batchPool = getBatchFilteredApplicants();
+            const allRolesRaw = batchPool.flatMap(a => [a.position || a.role_applied, a.role_2 || a.position_2]).filter(Boolean);
             const roles = [...new Set(allRolesRaw)];
             
             container.innerHTML = roles.map(role => {
-                const appsInRole = allApplicants.filter(a => (a.position || a.role_applied) === role || (a.role_2 || a.position_2) === role);
+                const appsInRole = batchPool.filter(a => (a.position || a.role_applied) === role || (a.role_2 || a.position_2) === role);
                 const total = appsInRole.length;
 
-                // Hanya hitung jika status sesuai dengan pilihan posisinya
-                const interview = allApplicants.filter(a => {
+                const interview = batchPool.filter(a => {
                     const status = (a.status || '').trim();
                     const pos1 = a.position || a.role_applied;
                     const pos2 = a.role_2 || a.position_2;
                     return (status === 'interview_pos1' && pos1 === role) || (status === 'interview_pos2' && pos2 === role);
                 }).length;
 
-                const accepted = allApplicants.filter(a => {
+                const accepted = batchPool.filter(a => {
                     const status = (a.status || '').trim();
                     const pos1 = a.position || a.role_applied;
                     const pos2 = a.role_2 || a.position_2;
                     return (status === 'accepted_pos1' && pos1 === role) || (status === 'accepted_pos2' && pos2 === role);
                 }).length;
 
-                const bookmark = allApplicants.filter(a => {
+                const bookmark = batchPool.filter(a => {
                     const status = (a.status || '').trim();
                     const pos1 = a.position || a.role_applied;
                     const pos2 = a.role_2 || a.position_2;
                     return (status === 'bookmark_pos1' && pos1 === role) || (status === 'bookmark_pos2' && pos2 === role);
                 }).length;
 
-                const rejected = allApplicants.filter(a => {
+                const rejected = batchPool.filter(a => {
                     const status = (a.status || '').trim();
                     const pos1 = a.position || a.role_applied;
                     const pos2 = a.role_2 || a.position_2;
@@ -689,7 +749,7 @@ import '../styles/global.css';
             }).join('');
         }
 
-        // POP-UP MODAL POSITION FILTERING KETAT
+        // POP-UP MODAL POSITION FILTERING KETAT (PER BATCH)
         (window as any).openPositionModal = (role: string, statusType: string) => {
             const modal = document.getElementById('position-detail-modal');
             const title = document.getElementById('pos-modal-role-title');
@@ -698,7 +758,9 @@ import '../styles/global.css';
 
             if (!modal || !title || !badge || !list) return;
 
-            const filtered = allApplicants.filter(a => {
+            const batchPool = getBatchFilteredApplicants();
+
+            const filtered = batchPool.filter(a => {
                 const pos1 = a.position || a.role_applied;
                 const pos2 = a.role_2 || a.position_2;
                 const appStatus = (a.status || '').trim().toLowerCase();
@@ -826,23 +888,26 @@ import '../styles/global.css';
             }
         }
 
-        // FUNGSI EXPORT KHUSUS PER TAHAP / JALUR (WAWANCARA / DITERIMA) TERKELOMPOK PER DIVISI
+        // FUNGSI EXPORT KHUSUS PER TAHAP / JALUR (WAWANCARA / DITERIMA) TERKELOMPOK PER DIVISI (SESUAI BATCH TERPILIH)
         function exportByStageToCSV(stagePrefix: 'interview' | 'accepted') {
-            if (!allApplicants || allApplicants.length === 0) {
-                alert("Tidak ada data pelamar!");
+            const batchPool = getBatchFilteredApplicants();
+            const selectedBatchLabel = (document.getElementById('batch-filter') as HTMLSelectElement)?.value || 'Semua_Batch';
+
+            if (!batchPool || batchPool.length === 0) {
+                alert("Tidak ada data pelamar pada batch ini!");
                 return;
             }
 
             const stageName = stagePrefix === 'interview' ? 'WAWANCARA' : 'DITERIMA (LOLOS)';
 
-            const stageApplicants = allApplicants.filter(a => {
+            const stageApplicants = batchPool.filter(a => {
                 if (!a) return false;
                 const appStatus = (a.status || '').trim().toLowerCase();
                 return appStatus.startsWith(`${stagePrefix}_`);
             });
 
             if (stageApplicants.length === 0) {
-                alert(`Belum ada kandidat yang berada di tahap ${stageName}!`);
+                alert(`Belum ada kandidat yang berada di tahap ${stageName} pada ${selectedBatchLabel}!`);
                 return;
             }
 
@@ -857,6 +922,7 @@ import '../styles/global.css';
                 if (phone.startsWith('0')) phone = '62' + phone.slice(1);
 
                 return {
+                    batchId: getNormalizedBatchId(app),
                     assignedRole,
                     choiceLabel,
                     fullName: app.full_name || 'Tanpa Nama',
@@ -877,6 +943,7 @@ import '../styles/global.css';
             });
 
             const headers = [
+                "Batch",
                 "Divisi / Role Terpilih",
                 "Jalur Pilihan",
                 "Nama Lengkap Pelamar",
@@ -896,6 +963,7 @@ import '../styles/global.css';
 
             mappedList.forEach(item => {
                 const row = [
+                    clean(item.batchId),
                     clean(item.assignedRole),
                     clean(item.choiceLabel),
                     clean(item.fullName),
@@ -917,7 +985,7 @@ import '../styles/global.css';
             const link = document.createElement("a");
             const dateStr = new Date().toISOString().split('T')[0];
             link.setAttribute("href", url);
-            link.setAttribute("download", `Daftar_Kandidat_${stageName}_Per_Divisi_${dateStr}.csv`);
+            link.setAttribute("download", `Daftar_Kandidat_${selectedBatchLabel}_${stageName}_Per_Divisi_${dateStr}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -966,6 +1034,25 @@ import '../styles/global.css';
             }
         });
 
+        // EVENT LISTENER SAAT BATCH DIGANTI
+        document.getElementById('batch-filter')?.addEventListener('change', () => {
+            selectedIds = [];
+            document.getElementById('bulk-action-panel')?.classList.replace('flex', 'hidden');
+            const masterCb = document.getElementById('master-checkbox') as HTMLInputElement;
+            if (masterCb) masterCb.checked = false;
+
+            clearPreview();
+            renderFilterOptions();
+            renderList();
+            updateStats();
+            renderPositionStatsGrid();
+
+            const currentBatchApps = getBatchFilteredApplicants();
+            if (currentBatchApps.length > 0 && window.innerWidth >= 768) {
+                (window as any).selectApplicantForPreview(currentBatchApps[0].id);
+            }
+        });
+
         document.getElementById('search-input')?.addEventListener('input', renderList);
         document.getElementById('role-filter')?.addEventListener('change', renderList);
         document.getElementById('faculty-filter')?.addEventListener('change', renderList);
@@ -975,30 +1062,32 @@ import '../styles/global.css';
         document.getElementById('logout-admin-btn')?.addEventListener('click', async () => { await supabase.auth.signOut(); window.location.reload(); });
 
         function updateStats() {
-            document.getElementById('stat-total')!.innerText = allApplicants.length.toString();
-            document.getElementById('stat-interview')!.innerText = allApplicants.filter(a => (a.status || '').startsWith('interview_')).length.toString();
-            document.getElementById('stat-accepted')!.innerText = allApplicants.filter(a => (a.status || '').startsWith('accepted_')).length.toString();
-            document.getElementById('stat-bookmark')!.innerText = allApplicants.filter(a => (a.status || '').startsWith('bookmark_')).length.toString();
-            document.getElementById('stat-rejected')!.innerText = allApplicants.filter(a => (a.status || '').trim() === 'rejected').length.toString();
+            const batchPool = getBatchFilteredApplicants();
+            document.getElementById('stat-total')!.innerText = batchPool.length.toString();
+            document.getElementById('stat-interview')!.innerText = batchPool.filter(a => (a.status || '').startsWith('interview_')).length.toString();
+            document.getElementById('stat-accepted')!.innerText = batchPool.filter(a => (a.status || '').startsWith('accepted_')).length.toString();
+            document.getElementById('stat-bookmark')!.innerText = batchPool.filter(a => (a.status || '').startsWith('bookmark_')).length.toString();
+            document.getElementById('stat-rejected')!.innerText = batchPool.filter(a => (a.status || '').trim() === 'rejected').length.toString();
         }
 
         function renderFilterOptions() {
             const rf = document.getElementById('role-filter') as HTMLSelectElement;
             const ff = document.getElementById('faculty-filter') as HTMLSelectElement;
+            const batchPool = getBatchFilteredApplicants();
 
             if (rf) {
-                const allRolesRaw = allApplicants.flatMap(a => [a.position || a.role_applied, a.role_2 || a.position_2]).filter(Boolean);
+                const allRolesRaw = batchPool.flatMap(a => [a.position || a.role_applied, a.role_2 || a.position_2]).filter(Boolean);
                 const roles = [...new Set(allRolesRaw)];
-                rf.innerHTML = `<option value="all">Semua Posisi (${allApplicants.length})</option>` + roles.map(r => {
-                    const count = allApplicants.filter(a => (a.position || a.role_applied) === r || (a.role_2 || a.position_2) === r).length;
+                rf.innerHTML = `<option value="all">Semua Posisi (${batchPool.length})</option>` + roles.map(r => {
+                    const count = batchPool.filter(a => (a.position || a.role_applied) === r || (a.role_2 || a.position_2) === r).length;
                     return `<option value="${r}">${r} (${count})</option>`;
                 }).join('');
             }
 
             if (ff) {
-                const faculties = [...new Set(allApplicants.map(a => a.faculty).filter(Boolean))].sort();
-                ff.innerHTML = `<option value="all">Semua Fakultas (${allApplicants.length})</option>` + faculties.map(f => {
-                    const count = allApplicants.filter(a => a.faculty === f).length;
+                const faculties = [...new Set(batchPool.map(a => a.faculty).filter(Boolean))].sort();
+                ff.innerHTML = `<option value="all">Semua Fakultas (${batchPool.length})</option>` + faculties.map(f => {
+                    const count = batchPool.filter(a => a.faculty === f).length;
                     return `<option value="${f}">${f} (${count})</option>`;
                 }).join('');
             }
