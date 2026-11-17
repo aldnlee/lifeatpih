@@ -1,0 +1,40 @@
+batch_id: Batch-11
+batch_name: Mahardika Intership Batch 11
+status: Open
+timeline_details:
+  - step_name: Registrasi
+    period: 17-27 JUL 2026 (23.59 WIB)
+    is_active: true
+  - step_name: Pengumuman Seleksi Administratif
+    period: 28 NOV 2026 (15.00 WIB)
+    is_active: false
+  - step_name: Wawancara
+    period: 30 NOV-4 DES 2026
+    is_active: false
+  - step_name: Pengumuman Akhir
+    period: 5 DES 2026
+    is_active: false
+roles:
+  - role_title: Project Manager
+    description: PM
+  - role_title: Graphic Designer
+    description: GD
+  - role_title: Social Media Officer
+    description: SMO
+  - role_title: Journalist
+    description: JO
+  - role_title: Content Creator
+    description: CC
+  - role_title: Editorial and Publish Management
+    description: EPM
+  - role_title: Media Analyst
+    description: MA
+  - role_title: Public Relation
+    description: PR
+  - role_title: Video Operation
+    description: VO
+  - role_title: Photografer
+    description: PH
+  - role_title: Finance and Administration
+    description: FA
+body: Silakan Pilih Role yang sesuai ya
