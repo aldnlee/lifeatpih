@@ -5,6 +5,7 @@ import { getCollection } from 'astro:content';
 // 1. Ambil data Batch Aktif dari Decap CMS secara aman
 let cmsTimelineDetails: any[] = [];
 let cmsBatchName = "Mahardhika Internship";
+let cmsBatchId = "";
 
 try {
     const allBatches: any[] = (await getCollection('vacancies' as any)) || [];
@@ -35,6 +36,7 @@ try {
         }
 
         cmsBatchName = batchData.batch_name || cmsBatchName;
+        cmsBatchId = batchData.batch_id || "";
     }
 } catch (e) {
     console.error("Gagal memuat collection vacancies dari CMS:", e);
@@ -79,7 +81,7 @@ try {
         .progress-dot { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-20">
+<body class="bg-slate-50 min-h-screen pb-20" data-active-batch={cmsBatchId}>
 
     <!-- MODAL NOTIFIKASI DENGAN POSITION AWARENESS -->
     <div id="celebration-modal">
@@ -321,12 +323,26 @@ try {
 
                 if (userName) userName.innerText = user.user_metadata?.full_name || user.email || "User";
 
-                const { data: application, error } = await supabase
+                const activeBatchId = document.body.dataset.activeBatch || "";
+
+                let query = supabase
                     .from('applications')
                     .select('*')
-                    .eq('user_id', user.id)
+                    .eq('user_id', user.id);
+
+                // Jika ada batch yang sedang Open di CMS, filter khusus untuk batch tersebut
+                if (activeBatchId) {
+                    query = query.eq('batch_id', activeBatchId);
+                }
+
+                const { data: application, error } = await query
                     .order('created_at', { ascending: false })
+                    .limit(1)
                     .maybeSingle();
+
+                if (error) {
+                    console.error("Query application error:", error);
+                }
 
                 loadingState?.classList.add('hidden');
                 dashboardContent?.classList.remove('hidden');
